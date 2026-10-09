@@ -129,6 +129,12 @@
   .track-tags { display: flex; gap: 8px; margin-top: 10px; justify-content: center; flex-wrap: wrap; }
   .track-tags span { font-size: 11px; font-weight: 700; background: #fff; color: var(--ink-soft); padding: 5px 11px; border-radius: 999px; }
   .track-tags span.hot { background: var(--red); color: #fff; }
+  .lang-pills { display: flex; gap: 8px; margin-top: 12px; justify-content: center; }
+  .lang-pills button {
+    border: none; border-radius: 999px; padding: 7px 16px; font-size: 12px; font-weight: 700;
+    background: #E8E2D6; color: var(--ink-soft); cursor: pointer; transition: all .2s;
+  }
+  .lang-pills button.on { background: var(--ink); color: #fff; }
   .play-hint { margin-top: 14px; font-size: 13px; color: var(--ink-soft); font-weight: 600; }
   .eq { display: flex; gap: 4px; align-items: flex-end; height: 30px; margin-top: 12px; }
   .eq i { width: 5px; background: var(--red); border-radius: 3px; height: 18%; }
@@ -228,6 +234,7 @@
   </div>
   <div class="track-name" id="trackName">《》</div>
   <div class="track-tags" id="trackTags"></div>
+  <div class="lang-pills" id="langPills"></div>
   <div class="play-hint" id="playHint">点唱片，播放你的主题曲</div>
   <div class="eq" id="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div class="src-tag" id="srcTag">演示数据 · 接入麦当劳 MCP 后为实时菜单与券价</div>
@@ -301,6 +308,37 @@ const CHORD_LIB = {
   crush:     [[0,4,7,11],[5,9,12,16],[9,12,16,19],[4,8,11,15]],
   zoned:     [[0,4,7,14],[5,9,12,19],[7,11,14,21],[0,4,7,14]]
 };
+
+/* 麦门金曲库：每种情绪 × 中/英/粤 三语候选。仅引用歌名/歌手/年份（事实信息），
+   播放为原创合成氛围伴奏，不复制原曲旋律（版权安全）。 */
+const TRACKS = {
+  energetic: { zh:  { t: "我就喜欢", a: "王力宏", y: "2003" },
+               en:  { t: "I'm Lovin' It", a: "Justin Timberlake × Pharrell", y: "2003" },
+               yue: { t: "心腹", a: "陈奕迅", y: "2010" } },
+  tired:     { zh:  { t: "我们的嘻哈食光", a: "吴亦凡", y: "2017" },
+               en:  { t: "You Deserve a Break Today", a: "McDonald's USA", y: "1971" },
+               yue: { t: "为午夜喝彩", a: "陈奕迅", y: "" } },
+  lazy:      { zh:  { t: "麦当劳主题曲", a: "孙燕姿", y: "2002" },
+               en:  { t: "Mac Tonight", a: "McDonald's USA", y: "1986" },
+               yue: { t: "甜蜜在十点五十九分前", a: "张蔓莎", y: "2023" } },
+  fired:     { zh:  { t: "我就喜欢薯条", a: "王力宏 × 汪苏泷", y: "2026" },
+               en:  { t: "Big Mac Jingle", a: "Two all-beef patties…", y: "1974" },
+               yue: { t: "Make A Beat", a: "张敬轩 × 容祖儿", y: "2018" } },
+  down:      { zh:  { t: "我喜欢", a: "陶喆", y: "2003" },
+               en:  { t: "You, You're the One", a: "McDonald's USA", y: "1975" },
+               yue: { t: "废话", a: "麦浚龙 × 谢安琪", y: "" } },
+  hype:      { zh:  { t: "我们的嘻哈食光", a: "吴亦凡", y: "2017" },
+               en:  { t: "Food, Folks and Fun", a: "McDonald's USA", y: "1988" },
+               yue: { t: "Feel The Heat", a: "张敬轩 × 容祖儿", y: "" } },
+  crush:     { zh:  { t: "我喜欢", a: "陶喆", y: "2003" },
+               en:  { t: "McDonald's Is Your Kind of Place", a: "McDonald's USA", y: "1967" },
+               yue: { t: "In Love In The Morning", a: "张蔓莎", y: "2024" } },
+  zoned:     { zh:  { t: "我就喜欢", a: "王力宏", y: "2003" },
+               en:  { t: "Mac Tonight", a: "McDonald's USA", y: "1986" },
+               yue: { t: "In Love In The Morning", a: "张蔓莎", y: "2024" } }
+};
+const LANGS = [ ["zh", "国语"], ["en", "英语"], ["yue", "粤语"] ];
+let curLang = "zh";
 
 /* 贴纸插画（扁平 SVG） */
 const ART = {
@@ -428,21 +466,37 @@ function pickMood(id) {
 
 /* ---------- Stage 3：主题曲 ---------- */
 let mealState = null;
+let curSong = "";
 function renderTrack(song) {
   const m = mood;
-  $("trackName").textContent = song ? "《" + song + " × 麦麦》" : m.track;
-  $("vinylInitial").textContent = m.label.slice(0, 1);
+  curSong = song || "";
+  const tr = TRACKS[m.id][curLang];
+  $("trackName").textContent = curSong ? "《" + curSong + " × 麦麦》" : "《" + tr.t + "》";
+  $("vinylInitial").textContent = (tr.t[0] || "麦").toUpperCase();
   const tags = $("trackTags");
   tags.innerHTML = "";
-  [m.genre, m.bpm + " BPM", m.label].forEach((t, i) => {
+  const langName = { zh: "国语", en: "英语", yue: "粤语" }[curLang];
+  [tr.a + (tr.y ? " · " + tr.y : ""), langName, m.label].forEach((t, i) => {
     const s = document.createElement("span");
     if (i === 2) s.className = "hot";
     s.textContent = t;
     tags.appendChild(s);
   });
-  $("playHint").textContent = "点唱片，播放你的主题曲";
+  buildLangPills();
+  $("playHint").textContent = "点唱片，播放你的主题曲（氛围伴奏为原创合成，向经典致敬）";
   $("srcTag").textContent = (D && D.realMenu) ? "菜单/券价来自麦当劳 MCP · " + (D.generatedAt || "") : "演示数据 · 接入麦当劳 MCP 后为实时菜单与券价";
-  prepareDeal(song);
+  prepareDeal(curSong);
+}
+function buildLangPills() {
+  const box = $("langPills");
+  box.innerHTML = "";
+  LANGS.forEach(([code, name]) => {
+    const b = document.createElement("button");
+    b.textContent = name;
+    b.className = code === curLang ? "on" : "";
+    b.onclick = () => { curLang = code; renderTrack(curSong); };
+    box.appendChild(b);
+  });
 }
 
 function prepareDeal(song) {
@@ -459,7 +513,7 @@ function prepareDeal(song) {
     names = items.map(x => x.name).join(" + ");
     price = items.reduce((s, x) => s + x.price, 0);
   }
-  const pct = 86 + hashStr(todayStr() + m.id + (song || "")) % 14;
+  const pct = 86 + hashStr(todayStr() + m.id + (song || "") + curLang) % 14;
   mealState = { names, price, saved, coupons, realMenu, pct, artKey: m.meal[0] };
 }
 
