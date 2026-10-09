@@ -19,9 +19,10 @@ description: 麦反应 McReaction（麦乐点唱机）——拍张自拍，读�
 
 1. **接收输入**：用户发自拍图片，或给情绪/场景描述。
 2. **视觉读情绪**（用户发自拍时）：判断情绪关键词 → mood id 映射：元气=energetic，疲惫/加班=tired，慵懒=lazy，燃/运动=fired，低落=down，嗨=hype，心动/crush，摸鱼=zoned。
-3. **拉真实菜单**：`query-meals` 获取在售餐品，匹配餐品用 `query-meal-detail` 补详情。
-4. **领券**：`auto-bind-coupons` 一键领券 → `query-my-coupons` 确认；指定门店时用 `query-store-coupons`。
-5. **算价**：`calculate-price` 传商品列表+最优券，得应付价与节省金额。
+3. **拉真实菜单**：`query-nearby-stores` 定位门店 → `query-meals` 获取在售餐品（含名称/图片/现价，图片为 menu-img.mcd.cn 官方 CDN）。
+4. **关键词匹配主食**：按情绪查 MOOD_FOOD 关键词表（主食+饮品 或 小吃组合），在菜单里按序做名称包含匹配；把匹配到的名称/图片/现价连同优惠券一起注入页面。
+5. **领券**：`auto-bind-coupons` 一键领券 → `query-my-coupons` 确认；指定门店时用 `query-store-coupons`。
+6. **算价**：`calculate-price` 传商品列表+最优券，得应付价与节省金额。
 6. **生成页面**：读取 `app/index.html`，将占位符 `__MCTRACK_DATA__` 替换为 JSON（只替换第一处；`<` 转义为 `\u003c`）：
 
 ```json

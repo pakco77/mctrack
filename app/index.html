@@ -154,17 +154,27 @@
 
   /* ===== 主食贴纸 ===== */
   #sticker {
-    position: absolute; right: 18px; bottom: 130px; z-index: 40; width: 150px;
+    position: absolute; right: 14px; bottom: 120px; z-index: 40; width: 220px;
     transform: scale(0) rotate(-30deg); display: none; cursor: pointer;
   }
   #sticker.pop { display: block; animation: stickerPop .65s var(--spring) forwards; }
   @keyframes stickerPop { to { transform: scale(1) rotate(-7deg); } }
   #sticker .sticker-body {
-    background: #fff; border-radius: 22px; padding: 12px 12px 10px;
+    background: #fff; border-radius: 22px; padding: 14px 14px 12px;
     border: 3px solid #fff; box-shadow: 0 14px 34px rgba(0,0,0,.25); text-align: center;
   }
-  #sticker .sticker-body svg { width: 100%; height: auto; display: block; }
-  #sticker .sticker-name { font-size: 13px; font-weight: 800; margin-top: 6px; }
+  #stickerArt { display: flex; align-items: flex-end; justify-content: center; }
+  .photo-a { transform: rotate(-3deg); z-index: 2; }
+  .photo-b { margin-left: -24px; transform: rotate(4deg); z-index: 3; }
+  .photo-frame {
+    background: #fff; border-radius: 12px; padding: 6px 6px 2px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.16); width: 106px; border: 1px solid var(--line);
+  }
+  .photo-b .photo-frame { width: 84px; }
+  .photo-frame img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; display: block; background: var(--cream); }
+  .photo-frame svg { width: 100%; height: auto; display: block; }
+  .photo-name { font-size: 10px; font-weight: 700; margin-top: 5px; text-align: center; }
+  #sticker .sticker-name { font-size: 13px; font-weight: 800; margin-top: 8px; }
   #sticker .sticker-cta { font-size: 10px; color: var(--red); font-weight: 700; margin-top: 3px; animation: pulse 1.2s ease infinite; }
   @keyframes pulse { 50% { opacity: .35; } }
 
@@ -286,20 +296,51 @@
 window.MCTRACK_DATA = __MCTRACK_DATA__;
 
 /* ---------- 数据 ---------- */
-const FOODS = {
-  doubleCheese: { name: "双层吉士汉堡", price: 12,   desc: "效率之王" },
-  mcSpicy:      { name: "麦辣鸡腿汉堡", price: 15,   desc: "回血必备" },
-  grilled:      { name: "板烧鸡腿堡",   price: 16,   desc: "沉稳担当" },
-  filet:        { name: "麦香鱼",       price: 14.5, desc: "温柔一刀" },
-  mcChicken:    { name: "麦香鸡",       price: 13,   desc: "干净清爽" },
-  bigMac:       { name: "巨无霸",       price: 25,   desc: "大佬出场" },
-  wings:        { name: "麦辣鸡翅",     price: 14,   desc: "提神核弹" },
-  nuggets:      { name: "麦乐鸡",       price: 13,   desc: "摸鱼零罪恶" },
-  fries:        { name: "中薯条",       price: 12,   desc: "最佳配角" },
-  flurry:       { name: "麦旋风",       price: 13.5, desc: "甜的治愈" },
-  coke:         { name: "中可乐",       price: 9.5,  desc: "气泡即正义" },
-  coffee:       { name: "热美式",       price: 9,    desc: "清醒燃料" }
+/* 真实菜单快照：来自麦当劳 MCP query-meals（东莞门店 1421187，2026-10-09），图片为官方 menu-img.mcd.cn CDN。
+   接 MCP 实时数据时由 Skill 注入覆盖；此处为离线兜底快照。 */
+const FOOD_DB = [
+  { k: "bigmac",     name: "巨无霸",       price: 26.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1100_320.png" },
+  { k: "doubleCheese", name: "双层吉士汉堡", price: 23,   img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1120_320.png" },
+  { k: "grilled",    name: "板烧鸡腿堡",   price: 23.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20241008/product/MS_1406_320.png" },
+  { k: "mcSpicy",    name: "麦辣鸡腿汉堡", price: 22.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_1440_320.png" },
+  { k: "mcChicken",  name: "麦香鸡",       price: 16.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_1450_320.png" },
+  { k: "filet",      name: "麦香鱼",       price: 22,   img: "https://menu-img.mcd.cn/pcm/prod/menu/20260101/product/MS_1600_320.png" },
+  { k: "fries",      name: "薯条",         price: 14,   img: "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_G4810_320_1745552987716.png" },
+  { k: "nuggets",    name: "麦乐鸡",       price: 14.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260529/product/MS_G1401_320.png" },
+  { k: "wings",      name: "麦辣鸡翅",     price: 14.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_G1700_320.png" },
+  { k: "vWings",     name: "薄皮焦香V翅",  price: 15.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20241202/product/MS_520445_320.png" },
+  { k: "hashbrown",  name: "心形薯饼5块",  price: 15,   img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900016082_320.png" },
+  { k: "corn",       name: "玉米杯",       price: 13,   img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G4437_320.png" },
+  { k: "flurry",     name: "经典麦旋风",   price: 15,   img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008754_320.png" },
+  { k: "sundae",     name: "新地",         price: 12.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008745_320.png" },
+  { k: "cone",       name: "圆筒冰淇淋",   price: 5,    img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_515837_320.png" },
+  { k: "coke",       name: "可乐",         price: 9.5,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008751_320.png" },
+  { k: "sprite",     name: "雪碧",         price: 9.5,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G3010_320.png" },
+  { k: "lemonTea",   name: "阳光柠檬红茶", price: 9.5,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G515280_320.png" },
+  { k: "coffee",     name: "鲜萃咖啡",     price: 10,   img: "https://menu-img.mcd.cn/pcm/prod/menu/20250324/product/MS_G520688_320.png" },
+  { k: "orange",     name: "阳光橙麦炫酷", price: 13.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_6352_320.png" },
+  { k: "appleJuice", name: "100% 苹果汁",  price: 11.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20250430/product/MS_6362_320_1745552987716.png" },
+  { k: "coco",       name: "椰奶雪冰",     price: 9.9,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_521717_320.png" }
+];
+
+/* 情绪 → 关键词匹配：主食+饮品 或 小吃组合。关键词在 FOOD_DB 里按序匹配。 */
+const MOOD_FOOD = {
+  energetic: { type: "main+drink",  main: ["双层吉士"],       drink: ["鲜萃咖啡", "咖啡"] },
+  tired:     { type: "main+drink",  main: ["麦辣鸡腿"],       drink: ["鲜萃咖啡", "咖啡"] },
+  lazy:      { type: "main+snack",  main: ["麦香鸡"],         drink: ["经典麦旋风", "麦旋风"] },
+  fired:     { type: "main+drink",  main: ["板烧鸡腿"],       drink: ["阳光橙", "橙"] },
+  down:      { type: "snack+snack", main: ["麦乐鸡"],         drink: ["经典麦旋风", "麦旋风"] },
+  hype:      { type: "snack+drink", main: ["麦辣鸡翅", "鸡翅"], drink: ["可乐"] },
+  crush:     { type: "main+snack",  main: ["麦香鱼"],         drink: ["薯条"] },
+  zoned:     { type: "snack+snack", main: ["麦乐鸡"],         drink: ["薯条"] }
 };
+function matchFood(kws) {
+  for (const kw of kws) {
+    const hit = FOOD_DB.find(f => f.name.includes(kw));
+    if (hit) return hit;
+  }
+  return null;
+}
 
 const MOODS = [
   { id: "energetic", label: "元气满满", sub: "干劲十足", track: "《早高峰进行曲》",    genre: "急行电子",   bpm: 122, root: 45, bright: 1600, swing: .08, hat: .5,  meal: ["doubleCheese","coffee"] },
@@ -323,40 +364,36 @@ const CHORD_LIB = {
   zoned:     [[0,4,7,14],[5,9,12,19],[7,11,14,21],[0,4,7,14]]
 };
 
-/* 麦门金曲库 v2「每日化学反应式」：曲目与情绪解耦。
-   今日金曲 = hash(日期+情绪+语言+重抽次数) % 该语言曲池。
+/* 麦门金曲库 v3：19 首合并曲池，每天只给用户抽一首（语言是标签不是选项）。
+   今日金曲 = hash(日期+情绪+重抽次数) % 19。
    艺人白名单规则（与参赛者确认）：刑事/政治问题艺人及其合唱曲一律排除，
    道德争议艺人保留。仅引用歌名/歌手/年份（事实信息），播放为原创合成伴奏。 */
-const SONG_POOLS = {
-  zh: [
-    { t: "麦当劳主题曲", a: "孙燕姿", y: "2002" },
-    { t: "我就喜欢", a: "王力宏", y: "2003" },
-    { t: "我喜欢", a: "陶喆", y: "2003" },
-    { t: "心腹", a: "陈奕迅", y: "2010" },
-    { t: "我就喜欢薯条", a: "王力宏 × 汪苏泷", y: "2026" }
-  ],
-  en: [
-    { t: "McDonald's Is Your Kind of Place", a: "McDonald's USA", y: "1967" },
-    { t: "You Deserve a Break Today", a: "McDonald's USA", y: "1971" },
-    { t: "Big Mac Jingle", a: "Two all-beef patties…", y: "1974" },
-    { t: "You, You're the One", a: "McDonald's USA", y: "1975" },
-    { t: "Mac Tonight", a: "McDonald's USA", y: "1986" },
-    { t: "Food, Folks and Fun", a: "McDonald's USA", y: "1988" },
-    { t: "I'm Lovin' It", a: "Justin Timberlake × Pharrell", y: "2003" }
-  ],
-  yue: [
-    { t: "听听", a: "陈奕迅", y: "2005" },
-    { t: "为午夜喝彩", a: "陈奕迅", y: "" },
-    { t: "心腹", a: "陈奕迅", y: "2010" },
-    { t: "青空", a: "谢霆锋", y: "2018" },
-    { t: "甜蜜在十点五十九分前", a: "张蔓莎", y: "2023" },
-    { t: "In Love In The Morning", a: "张蔓莎", y: "2024" },
-    { t: "废话", a: "麦浚龙 × 谢安琪", y: "" }
-  ]
-};
-const LANGS = [ ["zh", "国语"], ["en", "英语"], ["yue", "粤语"] ];
-let curLang = "zh", drawSalt = 0;
-
+const ALL_SONGS = [
+  { t: "麦当劳主题曲", a: "孙燕姿", y: "2002", lang: "国语" },
+  { t: "我就喜欢", a: "王力宏", y: "2003", lang: "国语" },
+  { t: "我喜欢", a: "陶喆", y: "2003", lang: "国语" },
+  { t: "心腹", a: "陈奕迅", y: "2010", lang: "国语" },
+  { t: "我就喜欢薯条", a: "王力宏 × 汪苏泷", y: "2026", lang: "国语" },
+  { t: "McDonald's Is Your Kind of Place", a: "McDonald's USA", y: "1967", lang: "英语" },
+  { t: "You Deserve a Break Today", a: "McDonald's USA", y: "1971", lang: "英语" },
+  { t: "Big Mac Jingle", a: "Two all-beef patties…", y: "1974", lang: "英语" },
+  { t: "You, You're the One", a: "McDonald's USA", y: "1975", lang: "英语" },
+  { t: "Mac Tonight", a: "McDonald's USA", y: "1986", lang: "英语" },
+  { t: "Food, Folks and Fun", a: "McDonald's USA", y: "1988", lang: "英语" },
+  { t: "I'm Lovin' It", a: "Justin Timberlake × Pharrell", y: "2003", lang: "英语" },
+  { t: "听听", a: "陈奕迅", y: "2005", lang: "粤语" },
+  { t: "为午夜喝彩", a: "陈奕迅", y: "", lang: "粤语" },
+  { t: "心腹", a: "陈奕迅", y: "2010", lang: "粤语" },
+  { t: "青空", a: "谢霆锋", y: "2018", lang: "粤语" },
+  { t: "甜蜜在十点五十九分前", a: "张蔓莎", y: "2023", lang: "粤语" },
+  { t: "In Love In The Morning", a: "张蔓莎", y: "2024", lang: "粤语" },
+  { t: "废话", a: "麦浚龙 × 谢安琪", y: "", lang: "粤语" }
+];
+let drawSalt = 0;
+function pickTrack(moodId) {
+  const h = hashStr(todayStr() + "|" + moodId + "|" + drawSalt);
+  return ALL_SONGS[h % ALL_SONGS.length];
+}
 function rarityOf(y) {
   if (!y) return { code: "r", label: "R · 千禧回响" };
   const n = parseInt(y, 10);
@@ -364,11 +401,6 @@ function rarityOf(y) {
   if (n <= 2003) return { code: "sr", label: "SR · 黄金年代" };
   if (n <= 2019) return { code: "r", label: "R · 千禧回响" };
   return { code: "n", label: "N · 新麦之声" };
-}
-function pickTrack(moodId, lang) {
-  const pool = SONG_POOLS[lang];
-  const h = hashStr(todayStr() + "|" + moodId + "|" + lang + "|" + drawSalt);
-  return pool[h % pool.length];
 }
 const VERDICTS = {
   energetic: "今天的你，薯条都追不上",
@@ -511,15 +543,14 @@ let curSong = "", curTrackTitle = "";
 function renderTrack(song) {
   const m = mood;
   curSong = song || "";
-  const tr = pickTrack(m.id, curLang);
+  const tr = pickTrack(m.id);
   curTrackTitle = tr.t;
   const rar = rarityOf(tr.y);
   $("trackName").innerHTML = (curSong ? "《" + curSong + " × 麦麦》" : "《" + tr.t + "》") + '<span class="rarity ' + rar.code + '">' + rar.label + "</span>";
   $("vinylInitial").textContent = (tr.t[0] || "麦").toUpperCase();
   const tags = $("trackTags");
   tags.innerHTML = "";
-  const langName = { zh: "国语", en: "英语", yue: "粤语" }[curLang];
-  [tr.a + (tr.y ? " · " + tr.y : ""), langName, m.label].forEach((t, i) => {
+  [tr.a + (tr.y ? " · " + tr.y : ""), tr.lang, m.label].forEach((t, i) => {
     const s = document.createElement("span");
     if (i === 2) s.className = "hot";
     s.textContent = t;
@@ -528,53 +559,62 @@ function renderTrack(song) {
   const vd = $("verdict");
   vd.style.display = "block";
   vd.textContent = "「" + (VERDICTS[m.id] || "今天也是麦门的一天") + "」";
-  buildLangPills();
-  $("playHint").textContent = "点唱片，播放你的主题曲（氛围伴奏为原创合成，向经典致敬）";
-  $("srcTag").textContent = (D && D.realMenu) ? "菜单/券价来自麦当劳 MCP · " + (D.generatedAt || "") : "演示数据 · 接入麦当劳 MCP 后为实时菜单与券价";
-  prepareDeal(curSong);
-}
-function buildLangPills() {
   const box = $("langPills");
   box.innerHTML = "";
-  LANGS.forEach(([code, name]) => {
-    const b = document.createElement("button");
-    b.textContent = name;
-    b.className = code === curLang ? "on" : "";
-    b.onclick = () => { curLang = code; renderTrack(curSong); };
-    box.appendChild(b);
-  });
+  const tip = document.createElement("span");
+  tip.style.cssText = "font-size:11px;color:var(--ink-soft);align-self:center;margin-right:2px";
+  tip.textContent = "今天只推一首";
+  box.appendChild(tip);
   const re = document.createElement("button");
   re.textContent = "换一首";
+  re.className = "on";
   re.onclick = () => { drawSalt++; renderTrack(curSong); };
   box.appendChild(re);
+  $("playHint").textContent = "点唱片，播放你的主题曲（氛围伴奏为原创合成，向经典致敬）";
+  $("srcTag").textContent = (D && D.realMenu) ? "菜单/券价来自麦当劳 MCP · " + (D.generatedAt || "") : "菜单为 MCP 东莞门店快照（2026-10-09）· 接 MCP 后实时更新";
+  prepareDeal(curSong);
 }
 
 function prepareDeal(song) {
   const m = mood;
-  let names, price, saved = 0, coupons = 0, realMenu = false;
+  let names, price, saved = 0, coupons = 0, realMenu = false, main, second;
   if (D && D.meals && D.meals.length) {
     names = D.meals.map(x => x.name).join(" + ");
     price = D.finalPrice != null ? D.finalPrice : D.meals.reduce((s, x) => s + (x.price || 0), 0);
     saved = D.saved || 0;
     coupons = D.couponCount || 0;
     realMenu = !!D.realMenu;
+    main = { name: D.meals[0].name, price: D.meals[0].price || 0, img: D.meals[0].img || "", k: "burger" };
+    second = D.meals[1] ? { name: D.meals[1].name, price: D.meals[1].price || 0, img: D.meals[1].img || "", k: "drink" } : null;
   } else {
-    const items = m.meal.map(k => FOODS[k]);
-    names = items.map(x => x.name).join(" + ");
-    price = items.reduce((s, x) => s + x.price, 0);
+    const cfg = MOOD_FOOD[m.id];
+    main = matchFood(cfg.main) || FOOD_DB.find(f => f.k === "nuggets");
+    second = matchFood(cfg.drink) || FOOD_DB.find(f => f.k === "coke");
+    names = main.name + " + " + (second ? second.name : "");
+    price = main.price + (second ? second.price : 0);
   }
-  const pct = 86 + hashStr(todayStr() + m.id + (song || "") + curLang + curTrackTitle + drawSalt) % 14;
-  mealState = { names, price, saved, coupons, realMenu, pct, artKey: m.meal[0] };
+  const pct = 86 + hashStr(todayStr() + m.id + (song || "") + curTrackTitle + drawSalt) % 14;
+  mealState = { main, second, names, price, saved, coupons, realMenu, pct };
 }
 
 $("vinyl").onclick = () => { playing ? stopAudio() : startAudio(); };
 
 /* 贴纸 */
+function photoHTML(item, cls) {
+  const inner = item.img
+    ? '<img src="' + item.img + '" alt="' + item.name + '" loading="lazy" onerror="window.__svgFallback(this,\'' + (item.k || "burger") + '\')">'
+    : (ART[MEAL_ART[item.k]] || ART.burger)();
+  return '<div class="' + cls + '"><div class="photo-frame">' + inner + '</div><div class="photo-name">' + item.name + '</div></div>';
+}
+window.__svgFallback = function(imgEl, k) {
+  const f = imgEl.parentNode;
+  if (f) f.innerHTML = (ART[MEAL_ART[k]] || ART.burger)();
+};
 function showSticker() {
   if (stickerShown || !mealState) return;
   stickerShown = true;
-  $("stickerArt").innerHTML = (ART[MEAL_ART[mealState.artKey]] || ART.burger)();
-  $("stickerName").textContent = mealState.names.split(" + ")[0];
+  $("stickerArt").innerHTML = photoHTML(mealState.main, "photo-a") + (mealState.second ? photoHTML(mealState.second, "photo-b") : "");
+  $("stickerName").textContent = mealState.main.name + (mealState.second ? " × " + mealState.second.name : "");
   $("sticker").classList.add("pop");
   $("playHint").textContent = "主食贴纸到手 · 点它领券";
 }
