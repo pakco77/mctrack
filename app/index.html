@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>麦乐点唱机 McTrack · 今日麦麦主题曲</title>
+<style>
+  :root {
+    --red: #DA291C;
+    --red-dark: #B01E12;
+    --yellow: #FFC72C;
+    --cream: #FFF6E5;
+    --ink: #2B2420;
+    --ink-soft: #6E6259;
+    --line: #EBDFC9;
+    --card: #FFFFFF;
+    --green: #1D9E75;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 0 16px 48px;
+  }
+  .hero { text-align: center; padding: 34px 0 4px; }
+  .hero .mark {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--red); color: #fff; font-weight: 700;
+    padding: 8px 18px; border-radius: 999px; font-size: 15px; letter-spacing: 1px;
+  }
+  .hero h1 { font-size: 25px; font-weight: 800; margin-top: 16px; letter-spacing: 2px; }
+  .hero p { font-size: 13px; color: var(--ink-soft); margin-top: 8px; line-height: 1.7; }
+  .hero .chem {
+    display: inline-flex; align-items: center; gap: 10px; margin-top: 14px;
+    background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px;
+    font-size: 13px; font-weight: 600;
+  }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 20px; margin-top: 22px; }
+  .panel h2 { font-size: 14px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .panel h2 .step { width: 20px; height: 20px; border-radius: 50%; background: var(--red); color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .panel .hint { font-size: 12px; color: var(--ink-soft); margin-top: 10px; line-height: 1.6; }
+  .selfie-row { display: flex; align-items: center; gap: 14px; }
+  .selfie-box {
+    width: 74px; height: 74px; border-radius: 50%; border: 2px dashed var(--line);
+    background: #FFFDF8; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; overflow: hidden; flex-shrink: 0; position: relative;
+  }
+  .selfie-box img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+  .selfie-box .plus { font-size: 22px; color: var(--ink-soft); font-weight: 300; }
+  .selfie-box .cap { font-size: 10px; color: var(--ink-soft); margin-top: 2px; }
+  .selfie-word { font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
+  .selfie-word b { color: var(--ink); }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    border: 1.5px solid var(--line); background: #fff; color: var(--ink);
+    border-radius: 999px; padding: 9px 15px; font-size: 14px; cursor: pointer; font-weight: 500;
+    transition: all .15s ease;
+  }
+  .chip.on { background: var(--red); border-color: var(--red); color: #fff; font-weight: 700; }
+  .song-input {
+    width: 100%; margin-top: 16px; padding: 13px 16px; font-size: 15px;
+    border: 1.5px solid var(--line); border-radius: 14px; outline: none; background: #FFFDF8;
+  }
+  .song-input:focus { border-color: var(--red); }
+  .go {
+    display: block; width: 100%; margin-top: 18px; padding: 15px; border: none; cursor: pointer;
+    background: var(--yellow); color: var(--ink); font-size: 16px; font-weight: 800;
+    border-radius: 14px; letter-spacing: 2px;
+  }
+  .go:active { transform: scale(.98); }
+  .shake {
+    display: block; width: 100%; margin-top: 10px; padding: 12px; cursor: pointer;
+    background: #fff; border: 1.5px dashed var(--line); color: var(--ink-soft);
+    font-size: 13px; border-radius: 14px;
+  }
+  /* 结果卡片 = 分享卡片 */
+  #card { display: none; margin-top: 24px; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); background: #fff; }
+  #card .top { background: var(--red); color: #fff; padding: 22px 20px 18px; position: relative; }
+  #card .top .no { font-size: 12px; opacity: .85; letter-spacing: 1px; display: flex; justify-content: space-between; }
+  #card .top .track { font-size: 21px; font-weight: 800; margin-top: 8px; line-height: 1.4; }
+  #card .top .meta { display: flex; gap: 8px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
+  .tag { font-size: 11px; background: rgba(255,255,255,.18); border-radius: 999px; padding: 4px 10px; font-weight: 600; }
+  .tag.solid { background: var(--yellow); color: var(--ink); }
+  .selfie-mini {
+    width: 58px; height: 58px; border-radius: 50%; border: 2.5px solid var(--yellow);
+    object-fit: cover; position: absolute; right: 18px; top: 18px; display: none; background: #fff;
+  }
+  #card .body { padding: 20px; }
+  .rxn { display: flex; align-items: center; justify-content: center; gap: 14px; background: var(--cream); border-radius: 16px; padding: 16px 10px; }
+  .rxn .item { text-align: center; }
+  .rxn .item .cap { font-size: 11px; color: var(--ink-soft); margin-top: 5px; }
+  .rxn .op { font-size: 20px; font-weight: 800; color: var(--red); }
+  .meal { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; gap: 10px; }
+  .meal .name { font-size: 17px; font-weight: 800; }
+  .meal .desc { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+  .meal .price { text-align: right; flex-shrink: 0; }
+  .meal .price .p { font-size: 19px; font-weight: 800; color: var(--red); }
+  .meal .price .s { font-size: 11px; color: var(--green); font-weight: 700; margin-top: 2px; }
+  .match { margin-top: 14px; }
+  .match .row { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+  .bar { height: 8px; background: #F3EADA; border-radius: 999px; margin-top: 6px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--red); border-radius: 999px; transition: width .8s ease; }
+  .deal { margin-top: 16px; background: #F2FAF6; border: 1px solid #CBEAD9; border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .deal .t { font-size: 13px; font-weight: 700; color: #0F6E56; }
+  .deal .d { font-size: 11px; color: #3D8F6E; margin-top: 3px; }
+  .player { margin-top: 16px; display: flex; align-items: center; gap: 14px; background: #FFFDF8; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+  .play-btn {
+    width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer; flex-shrink: 0;
+    background: var(--ink); display: flex; align-items: center; justify-content: center;
+  }
+  .play-info { flex: 1; min-width: 0; }
+  .play-info .t { font-size: 14px; font-weight: 700; }
+  .play-info .d { font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
+  .eq { display: flex; align-items: flex-end; gap: 3px; height: 26px; }
+  .eq i { width: 4px; background: var(--red); border-radius: 2px; height: 20%; }
+  .order-btn {
+    display: block; width: 100%; margin-top: 16px; padding: 14px; border: none; cursor: pointer;
+    background: var(--red); color: #fff; font-size: 15px; font-weight: 800; border-radius: 14px; letter-spacing: 1px;
+  }
+  .order-btn:active { transform: scale(.98); }
+  .share-tip { text-align: center; font-size: 12px; color: var(--ink-soft); margin-top: 14px; }
+  .src { text-align: center; font-size: 11px; color: #B4A795; margin-top: 8px; }
+  footer { text-align: center; font-size: 11px; color: #B4A795; margin-top: 36px; line-height: 1.8; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="mark">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 18V6l10-2v11" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="#fff"/><circle cx="16.5" cy="17" r="2.5" fill="#fff"/></svg>
+    麦乐点唱机 McTrack
+  </div>
+  <h1>今日麦麦主题曲</h1>
+  <p>拍张自拍，读懂你此刻的情绪<br>让歌和饭发生一场化学反应</p>
+  <div class="chem">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18V6l10-2v11" stroke="#DA291C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="#DA291C"/><circle cx="16.5" cy="17" r="2.5" fill="#DA291C"/></svg>
+    <span>情绪</span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10h16M5 10a7 7 0 0 1 14 0M4 14h16a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" stroke="#DA291C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span style="color:#DA291C;font-weight:800">今日最搭</span>
+  </div>
+</div>
+
+<div class="panel">
+  <h2><span class="step">1</span>拍一张，或选一个此刻的情绪</h2>
+  <div class="selfie-row">
+    <div class="selfie-box" id="selfieBox">
+      <span class="plus">+</span>
+      <span class="cap">拍自拍</span>
+      <input type="file" id="selfieInput" accept="image/*" capture="user" style="display:none">
+    </div>
+    <div class="selfie-word" id="selfieWord"><b>自拍是催化剂。</b><br>上传后它会上卡片；懒得拍就直接点下面的情绪关键词。</div>
+  </div>
+  <div class="chips" id="chips" style="margin-top:16px"></div>
+  <div class="hint">在 WorkBuddy 里直接发自拍给我，我来读出你的情绪并自动点唱。</div>
+</div>
+
+<div class="panel">
+  <h2><span class="step">2</span>在听什么（选填）</h2>
+  <input class="song-input" id="songText" placeholder="比如：晴天、爵士、白噪音……">
+</div>
+
+<button class="go" id="goBtn">生成今日最搭</button>
+<button class="shake" id="shakeBtn">懒得选，随机来一首</button>
+
+<div id="card">
+  <div class="top">
+    <img class="selfie-mini" id="cardSelfie" alt="">
+    <div class="no"><span id="cardNo">No.0000</span><span id="cardDate"></span></div>
+    <div class="track" id="cardTrack">《》</div>
+    <div class="meta" id="cardMeta"></div>
+  </div>
+  <div class="body">
+    <div class="rxn">
+      <div class="item">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M9 18V6l10-2v11" stroke="#DA291C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="#DA291C"/><circle cx="16.5" cy="17" r="2.5" fill="#DA291C"/></svg>
+        <div class="cap" id="rxnMood">情绪</div>
+      </div>
+      <div class="op">+</div>
+      <div class="item">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M4 10h16M5 10a7 7 0 0 1 14 0M4 14h16a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" stroke="#DA291C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="cap">麦当劳</div>
+      </div>
+      <div class="op">=</div>
+      <div class="item">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 5.3 5.6.6-4.2 3.9 1.2 5.6L12 14.5 7 17.4l1.2-5.6L4 7.9l5.6-.6z" fill="#FFC72C" stroke="#DA291C" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <div class="cap" style="color:#DA291C;font-weight:800">今日最搭</div>
+      </div>
+    </div>
+
+    <div class="meal">
+      <div>
+        <div class="name" id="mealName">—</div>
+        <div class="desc" id="mealDesc">—</div>
+      </div>
+      <div class="price">
+        <div class="p" id="mealPrice">¥0</div>
+        <div class="s" id="mealSaved"></div>
+      </div>
+    </div>
+
+    <div class="match">
+      <div class="row"><span id="matchLabel">耳朵和嘴巴的匹配度</span><span id="matchPct">0%</span></div>
+      <div class="bar"><i id="matchBar"></i></div>
+    </div>
+
+    <div class="deal" id="dealBox" style="display:none">
+      <div>
+        <div class="t" id="dealTitle">MCP 最省点法</div>
+        <div class="d" id="dealDesc">—</div>
+      </div>
+    </div>
+
+    <div class="player">
+      <button class="play-btn" id="playBtn" aria-label="播放">
+        <svg id="iconPlay" width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="iconStop" width="18" height="18" viewBox="0 0 24 24" fill="#fff" style="display:none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      </button>
+      <div class="play-info">
+        <div class="t" id="playTitle">主题曲片段</div>
+        <div class="d" id="playDesc">Web Audio 实时生成 · 每人一段专属旋律</div>
+      </div>
+      <div class="eq" id="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+
+    <button class="order-btn" id="orderBtn">一键下单 · 就点这个</button>
+    <div class="share-tip">截图这张卡片，去群里炸场</div>
+    <div class="src" id="srcTag">演示数据 · 接入麦当劳 MCP 后为主</div>
+  </div>
+</div>
+
+<footer>
+  麦乐点唱机 McTrack · 非官方粉丝作品，与金拱门（中国）无关<br>
+  点餐能力来自麦当劳 MCP · Token 自备 · 音乐为本地实时合成
+</footer>
+
+<script>
+window.MCTRACK_DATA = __MCTRACK_DATA__;
+
+/* ---------- 数据 ---------- */
+const FOODS = {
+  doubleCheese: { name: "双层吉士汉堡", price: 12,   desc: "效率之王 · 双层满足不废话" },
+  mcSpicy:      { name: "麦辣鸡腿汉堡", price: 15,   desc: "回血必备 · 一口辣回魂" },
+  grilled:      { name: "板烧鸡腿堡",   price: 16,   desc: "沉稳担当 · 烤出来的踏实" },
+  filet:        { name: "麦香鱼",       price: 14.5, desc: "温柔一刀 · 鱼肉的轻声细语" },
+  mcChicken:    { name: "麦香鸡",       price: 13,   desc: "干净清爽 · 简单不将就" },
+  bigMac:       { name: "巨无霸",       price: 25,   desc: "大佬出场 · 三层底气" },
+  wings:        { name: "麦辣鸡翅",     price: 14,   desc: "直接上头的辣 · 提神核弹" },
+  nuggets:      { name: "麦乐鸡",       price: 13,   desc: "小块无负担 · 摸鱼零罪恶" },
+  fries:        { name: "中薯条",       price: 12,   desc: "永远的最佳配角" },
+  flurry:       { name: "麦旋风",       price: 13.5, desc: "甜的治愈 · 冰淇淋疗法" },
+  coke:         { name: "中可乐",       price: 9.5,  desc: "气泡即正义" },
+  coffee:       { name: "热美式",       price: 9,    desc: "清醒燃料 · 苦得正直" }
+};
+
+const MOODS = [
+  { id: "energetic", label: "元气满满", kw: "精神、元气、干劲、早起",   track: "《早高峰进行曲》",   genre: "急行电子",     bpm: 122, root: 45, bright: 1600, swing: .08, hat: .5,  meal: ["doubleCheese","coffee"],   copy: "快、准、狠，和你的步频同拍" },
+  { id: "tired",     label: "累到发虚", kw: "疲惫、加班、虚、撑不住",   track: "《凌晨两点的和弦》", genre: "深夜 Lo-Fi",   bpm: 72,  root: 43, bright: 1200, swing: .16, hat: .3,  meal: ["mcSpicy","coffee"],        copy: "辣是打工人的强心针" },
+  { id: "lazy",      label: "慵懒放空", kw: "慵懒、松弛、周末、瘫",     track: "《阳光泡泡糖》",     genre: "法式摇摆",     bpm: 100, root: 48, bright: 1800, swing: .12, hat: .4,  meal: ["mcChicken","flurry"],      copy: "慢慢地吃，认真地懒" },
+  { id: "fired",     label: "燃起来了", kw: "燃、冲、健身、打卡",       track: "《步频一百七》",     genre: "律动电子",     bpm: 128, root: 50, bright: 2000, swing: .06, hat: .6,  meal: ["grilled"],                 copy: "蛋白质补位，节奏不掉线" },
+  { id: "down",      label: "有点 emo", kw: "低落、emo、难过、丧",       track: "《麦旋风治愈进行曲》", genre: "治愈民谣",   bpm: 68,  root: 45, bright: 1100, swing: .18, hat: .25, meal: ["flurry","nuggets"],        copy: "甜品是合法的情绪止痛药" },
+  { id: "hype",      label: "今天想嗨", kw: "嗨、庆祝、派对、爽",       track: "《气泡炸裂摇滚》",   genre: "车库摇滚",     bpm: 140, root: 52, bright: 2200, swing: .05, hat: .7,  meal: ["wings","coke"],            copy: "辣翅配可乐，快乐开物理外挂" },
+  { id: "crush",     label: "心动时刻", kw: "心动、约会、甜、暧昧",     track: "《爵士慢半拍》",     genre: "慢拍爵士",     bpm: 88,  root: 47, bright: 1500, swing: .2,  hat: .35, meal: ["filet","fries"],           copy: "经典搭配，像你们一样配" },
+  { id: "zoned",     label: "摸鱼ing",  kw: "摸鱼、发呆、无聊、划水",   track: "《白日梦循环》",     genre: "独立流行",     bpm: 92,  root: 43, bright: 1400, swing: .14, hat: .4,  meal: ["nuggets","fries"],         copy: "小块多吃，老板看不出你在加餐" }
+];
+
+const CHORD_LIB = {
+  energetic: [[0,3,7,10],[5,8,12,15],[3,7,10,14],[7,10,14,17]],
+  tired:     [[0,3,7,10],[8,12,15,19],[5,8,12,15],[3,7,10,14]],
+  lazy:      [[0,4,7,11],[5,9,12,16],[7,11,14,17],[0,4,7,11]],
+  fired:     [[0,3,7],[0,3,7],[1,4,8],[0,3,7]],
+  down:      [[0,5,7,12],[3,7,10,15],[10,14,17,22],[0,5,7,12]],
+  hype:      [[0,3,7],[0,3,7],[5,8,12],[6,10,13]],
+  crush:     [[0,4,7,11],[5,9,12,16],[9,12,16,19],[4,8,11,15]],
+  zoned:     [[0,4,7,14],[5,9,12,19],[7,11,14,21],[0,4,7,14]]
+};
+
+/* ---------- 状态 ---------- */
+const $ = id => document.getElementById(id);
+let moodId = null, selfieData = null, audio = null, playing = false, eqTimer = null;
+
+/* ---------- 情绪芯片 ---------- */
+const chipsEl = $("chips");
+MOODS.forEach((m, i) => {
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.textContent = m.label;
+  b.dataset.mood = m.id;
+  b.onclick = () => { setMood(m.id); };
+  chipsEl.appendChild(b);
+});
+function setMood(id) {
+  moodId = id;
+  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c.dataset.mood === id));
+}
+
+/* ---------- 自拍 ---------- */
+$("selfieBox").onclick = () => $("selfieInput").click();
+$("selfieInput").onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    selfieData = r.result;
+    $("selfieBox").innerHTML = '<img src="' + selfieData + '">';
+    $("selfieWord").innerHTML = "<b>催化剂已就位。</b><br>情绪识别交给 WorkBuddy，卡片上见。";
+  };
+  r.readAsDataURL(f);
+};
+
+/* ---------- 工具 ---------- */
+function hashStr(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0");
+}
+function midi2freq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+
+/* ---------- 生成卡片 ---------- */
+function pickMood() {
+  const song = $("songText").value.trim();
+  if (song) {
+    const hit = hashStr(song) % MOODS.length;
+    return MOODS[hit].id;
+  }
+  return moodId || MOODS[hashStr(todayStr()) % MOODS.length].id;
+}
+
+function generate(forcedMood) {
+  stopAudio();
+  const D = window.MCTRACK_DATA || null;
+  const id = forcedMood || (D && D.moodId) || pickMood();
+  const m = MOODS.find(x => x.id === id) || MOODS[0];
+  setMood(m.id);
+  const song = (D && D.songText) ? D.songText : $("songText").value.trim();
+
+  /* 主题曲名 */
+  const trackName = song ? "《" + song + " × 麦麦》" : m.track;
+  const noNum = String(hashStr(todayStr() + m.id) % 9000 + 1000);
+  $("cardNo").textContent = "No." + noNum;
+  const now = new Date();
+  $("cardDate").textContent = now.getMonth()+1 + "月" + now.getDate() + "日";
+  $("cardTrack").textContent = trackName;
+
+  /* meta 标签 */
+  const meta = $("cardMeta");
+  meta.innerHTML = "";
+  [[m.genre, false], [m.bpm + " BPM", false], [m.label, true]].forEach(([t, solid]) => {
+    const s = document.createElement("span");
+    s.className = "tag" + (solid ? " solid" : "");
+    s.textContent = t;
+    meta.appendChild(s);
+  });
+
+  /* 主餐 */
+  let mealName, mealDesc, mealPrice, savedTxt = "", dealHtml = null, realMenu = false;
+  if (D && D.meals && D.meals.length) {
+    mealName = D.meals.map(x => x.name).join(" + ");
+    mealDesc = D.meals[0].desc || m.copy;
+    mealPrice = D.meals.reduce((s, x) => s + (x.price || 0), 0);
+    realMenu = !!D.realMenu;
+    if (D.finalPrice != null) {
+      mealPrice = D.finalPrice;
+      if (D.saved) savedTxt = "已省 ¥" + Number(D.saved).toFixed(1);
+    }
+    if (D.couponCount != null) dealHtml = ["MCP 最省点法", "已自动领取 " + D.couponCount + " 张券" + (D.saved ? " · 本顿立省 ¥" + Number(D.saved).toFixed(1) : "")];
+  } else {
+    const items = m.meal.map(k => FOODS[k]);
+    mealName = items.map(x => x.name).join(" + ");
+    mealDesc = m.copy;
+    mealPrice = items.reduce((s, x) => s + x.price, 0);
+  }
+  $("mealName").textContent = mealName;
+  $("mealDesc").textContent = mealDesc;
+  $("mealPrice").textContent = "¥" + Number(mealPrice).toFixed(1);
+  $("mealSaved").textContent = savedTxt;
+  $("rxnMood").textContent = m.label;
+
+  /* 匹配度：同一天同情绪永远同数字 */
+  const pct = 86 + hashStr(todayStr() + m.id + (song || "")) % 14;
+  $("matchPct").textContent = pct + "%";
+  requestAnimationFrame(() => { $("matchBar").style.width = pct + "%"; });
+
+  /* 优惠条 */
+  if (dealHtml) {
+    $("dealBox").style.display = "flex";
+    $("dealTitle").textContent = dealHtml[0];
+    $("dealDesc").textContent = dealHtml[1];
+  } else {
+    $("dealBox").style.display = "none";
+  }
+
+  /* 自拍上卡 */
+  const selfieSrc = selfieData || (D && D.selfie) || null;
+  if (selfieSrc) {
+    $("cardSelfie").src = selfieSrc;
+    $("cardSelfie").style.display = "block";
+  } else {
+    $("cardSelfie").style.display = "none";
+  }
+
+  /* 来源标注 */
+  $("srcTag").textContent = realMenu
+    ? "菜单/券价来自麦当劳 MCP 实时数据 · " + (D.generatedAt || "")
+    : "演示数据 · 接入麦当劳 MCP 后为实时菜单与券价";
+
+  /* 播放器文案 */
+  $("playTitle").textContent = trackName + " · 片段";
+  $("playDesc").textContent = m.genre + " · " + m.bpm + " BPM · Web Audio 实时合成";
+
+  $("card").style.display = "block";
+  $("card").scrollIntoView({ behavior: "smooth", block: "start" });
+
+  /* 保存当前曲目供播放器用 */
+  currentTrack = m;
+}
+
+$("goBtn").onclick = () => generate();
+$("shakeBtn").onclick = () => {
+  const pool = MOODS.filter(x => x.id !== moodId);
+  generate(pool[Math.floor(Math.random() * pool.length)].id);
+};
+$("orderBtn").onclick = () => {
+  alert("在 WorkBuddy 里对我说「就点这个」，我调麦当劳 MCP 帮你一键下单。");
+};
+
+/* ---------- Web Audio 主题曲引擎 ---------- */
+let currentTrack = null;
+function buildAudio() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain(); master.gain.value = .5;
+  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1400;
+  master.connect(lp); lp.connect(ctx.destination);
+
+  /* 黑胶噪声 */
+  const nb = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+  const nd = nb.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1) * .25;
+  const vinyl = ctx.createBufferSource(); vinyl.buffer = nb; vinyl.loop = true;
+  const vg = ctx.createGain(); vg.gain.value = .012;
+  const vhp = ctx.createBiquadFilter(); vhp.type = "highpass"; vhp.frequency.value = 2500;
+  vinyl.connect(vhp); vhp.connect(vg); vg.connect(master); vinyl.start();
+
+  return { ctx, master, lp };
+}
+
+function scheduleNote(a, time, m, step, bar) {
+  const chords = CHORD_LIB[m.id];
+  const chord = chords[bar % chords.length];
+  const stepDur = 60 / m.bpm / 4;
+  const swingOff = (step % 2 === 1) ? m.swing * stepDur : 0;
+  const t = time + swingOff;
+
+  /* 底鼓 */
+  if (step === 0 || (m.id === "hype" && step === 10)) {
+    const o = a.ctx.createOscillator(), g = a.ctx.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(150, t);
+    o.frequency.exponentialRampToValueAtTime(45, t + .12);
+    g.gain.setValueAtTime(.9, t);
+    g.gain.exponentialRampToValueAtTime(.001, t + .18);
+    o.connect(g); g.connect(a.master);
+    o.start(t); o.stop(t + .2);
+  }
+  /* 镲 */
+  if (Math.random() < m.hat && step % 2 === 1) {
+    const s = a.ctx.createBufferSource();
+    const hb = a.ctx.createBuffer(1, a.ctx.sampleRate * .06, a.ctx.sampleRate);
+    const hd = hb.getChannelData(0);
+    for (let i = 0; i < hd.length; i++) hd[i] = (Math.random() * 2 - 1) * (1 - i / hd.length);
+    s.buffer = hb;
+    const hp = a.ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 8000;
+    const g = a.ctx.createGain(); g.gain.value = .18;
+    s.connect(hp); hp.connect(g); g.connect(a.master);
+    s.start(t);
+  }
+  /* 贝斯：和弦根音八分音 */
+  if (step % 4 === 0 || step % 8 === 6) {
+    const o = a.ctx.createOscillator(), g = a.ctx.createGain();
+    o.type = "triangle";
+    const oct = (step % 8 === 6) ? 12 : 0;
+    o.frequency.value = midi2freq(m.root + chord[0] - 12 + oct);
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.linearRampToValueAtTime(.4, t + .02);
+    g.gain.exponentialRampToValueAtTime(.001, t + stepDur * 3);
+    o.connect(g); g.connect(a.master);
+    o.start(t); o.stop(t + stepDur * 4);
+  }
+  /* 和弦垫：每小节第 0、8 步 */
+  if (step === 0 || step === 8) {
+    chord.forEach(semi => {
+      [-6, 6].forEach(det => {
+        const o = a.ctx.createOscillator(), g = a.ctx.createGain();
+        o.type = "sawtooth";
+        o.frequency.value = midi2freq(m.root + 12 + semi);
+        o.detune.value = det;
+        g.gain.setValueAtTime(.0001, t);
+        g.gain.linearRampToValueAtTime(.05, t + .05);
+        g.gain.exponentialRampToValueAtTime(.001, t + stepDur * 7);
+        o.connect(g); g.connect(a.master);
+        o.start(t); o.stop(t + stepDur * 8);
+      });
+    });
+  }
+}
+
+let schedTimer = null, nextTime = 0, step = 0, bar = 0;
+function startAudio() {
+  if (!currentTrack) return;
+  if (!audio) audio = buildAudio();
+  if (audio.ctx.state === "suspended") audio.ctx.resume();
+  audio.lp.frequency.value = currentTrack.bright;
+  playing = true;
+  step = 0; bar = 0;
+  nextTime = audio.ctx.currentTime + .06;
+  schedTimer = setInterval(() => {
+    while (nextTime < audio.ctx.currentTime + .12) {
+      scheduleNote(audio, nextTime, currentTrack, step, bar);
+      nextTime += 60 / currentTrack.bpm / 4;
+      step = (step + 1) % 16;
+      if (step === 0) bar++;
+    }
+  }, 25);
+  $("iconPlay").style.display = "none";
+  $("iconStop").style.display = "block";
+  eqTimer = setInterval(() => {
+    document.querySelectorAll("#eq i").forEach(b => {
+      b.style.height = (playing ? 15 + Math.random() * 85 : 20) + "%";
+    });
+  }, 120);
+}
+function stopAudio() {
+  if (schedTimer) clearInterval(schedTimer);
+  if (eqTimer) clearInterval(eqTimer);
+  schedTimer = eqTimer = null;
+  playing = false;
+  const pb = $("playBtn");
+  if (pb) { $("iconPlay").style.display = "block"; $("iconStop").style.display = "none"; }
+  document.querySelectorAll("#eq i").forEach(b => b.style.height = "20%");
+}
+$("playBtn").onclick = () => { playing ? stopAudio() : startAudio(); };
+
+/* ---------- WorkBuddy 注入：自动播放 ---------- */
+(function () {
+  const D = window.MCTRACK_DATA;
+  if (D && D.moodId) {
+    if (D.songText) $("songText").value = D.songText;
+    generate(D.moodId);
+  }
+})();
+</script>
+</body>
+</html>
