@@ -3,268 +3,292 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>麦乐点唱机 McTrack · 今日麦麦主题曲</title>
+<title>麦反应 McReaction · 你的耳朵和嘴巴发生了反应</title>
 <style>
   :root {
     --red: #DA291C;
     --red-dark: #B01E12;
     --yellow: #FFC72C;
-    --cream: #FFF6E5;
-    --ink: #2B2420;
+    --cream: #F5F5F7;
+    --ink: #1D1D1F;
     --ink-soft: #6E6259;
-    --line: #EBDFC9;
-    --card: #FFFFFF;
+    --line: #E8E0D2;
     --green: #1D9E75;
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
+    --sheet: cubic-bezier(.32, .72, 0, 1);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
-    background: var(--cream);
-    color: var(--ink);
-    max-width: 430px;
-    margin: 0 auto;
-    min-height: 100vh;
-    padding: 0 16px 48px;
+    background: #000; color: var(--ink);
+    max-width: 430px; margin: 0 auto;
+    overflow: hidden; position: relative;
   }
-  .hero { text-align: center; padding: 34px 0 4px; }
-  .hero .mark {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--red); color: #fff; font-weight: 700;
-    padding: 8px 18px; border-radius: 999px; font-size: 15px; letter-spacing: 1px;
+  .stage {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    opacity: 0; pointer-events: none;
+    transition: opacity .35s ease;
   }
-  .hero h1 { font-size: 25px; font-weight: 800; margin-top: 16px; letter-spacing: 2px; }
-  .hero p { font-size: 13px; color: var(--ink-soft); margin-top: 8px; line-height: 1.7; }
-  .hero .chem {
-    display: inline-flex; align-items: center; gap: 10px; margin-top: 14px;
-    background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px;
-    font-size: 13px; font-weight: 600;
+  .stage.on { opacity: 1; pointer-events: auto; }
+  .back {
+    position: absolute; top: max(14px, env(safe-area-inset-top)); left: 14px; z-index: 50;
+    width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(120,120,128,.16); backdrop-filter: blur(8px);
+    color: var(--ink); font-size: 18px; display: none; align-items: center; justify-content: center;
   }
-  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 20px; margin-top: 22px; }
-  .panel h2 { font-size: 14px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-  .panel h2 .step { width: 20px; height: 20px; border-radius: 50%; background: var(--red); color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-  .panel .hint { font-size: 12px; color: var(--ink-soft); margin-top: 10px; line-height: 1.6; }
-  .selfie-row { display: flex; align-items: center; gap: 14px; }
-  .selfie-box {
-    width: 74px; height: 74px; border-radius: 50%; border: 2px dashed var(--line);
-    background: #FFFDF8; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; overflow: hidden; flex-shrink: 0; position: relative;
+  .dots { position: absolute; top: max(24px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; gap: 7px; z-index: 50; }
+  .dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(120,120,128,.3); transition: all .3s; }
+  .dots i.on { background: var(--red); width: 20px; border-radius: 4px; }
+
+  /* ===== Stage 1 相机 ===== */
+  #st-camera { background: #000; color: #fff; align-items: center; justify-content: center; padding: 24px; }
+  #st-camera .kicker { font-size: 13px; letter-spacing: 4px; color: rgba(255,255,255,.55); font-weight: 600; }
+  #st-camera h1 { font-size: 34px; font-weight: 800; margin-top: 10px; letter-spacing: 1px; }
+  #st-camera .sub { font-size: 14px; color: rgba(255,255,255,.6); margin-top: 8px; line-height: 1.7; text-align: center; }
+  .lens {
+    width: 230px; height: 230px; border-radius: 50%; margin: 36px 0 28px;
+    border: 3px solid rgba(255,255,255,.25); position: relative; overflow: hidden;
+    background: #111; flex-shrink: 0;
   }
-  .selfie-box img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-  .selfie-box .plus { font-size: 22px; color: var(--ink-soft); font-weight: 300; }
-  .selfie-box .cap { font-size: 10px; color: var(--ink-soft); margin-top: 2px; }
-  .selfie-word { font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
-  .selfie-word b { color: var(--ink); }
-  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
-  .chip {
-    border: 1.5px solid var(--line); background: #fff; color: var(--ink);
-    border-radius: 999px; padding: 9px 15px; font-size: 14px; cursor: pointer; font-weight: 500;
-    transition: all .15s ease;
+  .lens img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .lens .scan {
+    position: absolute; inset: -3px; border-radius: 50%; display: none;
+    border: 3px solid var(--yellow); border-top-color: transparent; border-bottom-color: transparent;
+    animation: spin 1s linear infinite;
   }
-  .chip.on { background: var(--red); border-color: var(--red); color: #fff; font-weight: 700; }
-  .song-input {
-    width: 100%; margin-top: 16px; padding: 13px 16px; font-size: 15px;
-    border: 1.5px solid var(--line); border-radius: 14px; outline: none; background: #FFFDF8;
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .lens .face-line { position: absolute; inset: 18%; border: 2px dashed rgba(255,199,44,0); border-radius: 50%; transition: border-color .3s; }
+  .cam-status { font-size: 13px; color: var(--yellow); min-height: 20px; font-weight: 600; }
+  .cam-btns { display: flex; gap: 14px; margin-top: 20px; }
+  .cam-btn {
+    padding: 15px 26px; border-radius: 999px; border: none; cursor: pointer;
+    font-size: 16px; font-weight: 700;
   }
-  .song-input:focus { border-color: var(--red); }
-  .go {
-    display: block; width: 100%; margin-top: 18px; padding: 15px; border: none; cursor: pointer;
-    background: var(--yellow); color: var(--ink); font-size: 16px; font-weight: 800;
-    border-radius: 14px; letter-spacing: 2px;
+  .cam-btn.primary { background: #fff; color: #000; }
+  .cam-btn.ghost { background: rgba(255,255,255,.14); color: #fff; }
+  .skip { margin-top: 24px; color: rgba(255,255,255,.45); font-size: 13px; border: none; background: none; cursor: pointer; }
+
+  /* ===== 情绪抽屉 ===== */
+  #st-keywords { justify-content: flex-end; }
+  #st-keywords .underlay { position: absolute; inset: 0; background: rgba(0,0,0,.4); opacity: 0; transition: opacity .3s; }
+  #st-keywords.on .underlay { opacity: 1; }
+  .sheet {
+    position: relative; background: var(--cream); border-radius: 26px 26px 0 0;
+    padding: 12px 24px max(30px, env(safe-area-inset-bottom));
+    transform: translateY(105%); transition: transform .5s var(--sheet);
+    max-height: 86%; overflow-y: auto;
   }
-  .go:active { transform: scale(.98); }
-  .shake {
-    display: block; width: 100%; margin-top: 10px; padding: 12px; cursor: pointer;
-    background: #fff; border: 1.5px dashed var(--line); color: var(--ink-soft);
-    font-size: 13px; border-radius: 14px;
+  #st-keywords.on .sheet { transform: translateY(0); }
+  .grabber { width: 38px; height: 5px; border-radius: 3px; background: rgba(0,0,0,.15); margin: 4px auto 18px; }
+  .sheet h2 { font-size: 24px; font-weight: 800; }
+  .sheet .sub2 { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
+  .kw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
+  .kw {
+    border: none; border-radius: 18px; padding: 20px 10px; font-size: 17px; font-weight: 700;
+    background: #fff; color: var(--ink); cursor: pointer; position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    transition: transform .15s ease, background .2s, color .2s;
   }
-  /* 结果卡片 = 分享卡片 */
-  #card { display: none; margin-top: 24px; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); background: #fff; }
-  #card .top { background: var(--red); color: #fff; padding: 22px 20px 18px; position: relative; }
-  #card .top .no { font-size: 12px; opacity: .85; letter-spacing: 1px; display: flex; justify-content: space-between; }
-  #card .top .track { font-size: 21px; font-weight: 800; margin-top: 8px; line-height: 1.4; }
-  #card .top .meta { display: flex; gap: 8px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
-  .tag { font-size: 11px; background: rgba(255,255,255,.18); border-radius: 999px; padding: 4px 10px; font-weight: 600; }
-  .tag.solid { background: var(--yellow); color: var(--ink); }
-  .selfie-mini {
-    width: 58px; height: 58px; border-radius: 50%; border: 2.5px solid var(--yellow);
-    object-fit: cover; position: absolute; right: 18px; top: 18px; display: none; background: #fff;
+  .kw:active { transform: scale(.96); }
+  .kw.pick { background: var(--red); color: #fff; }
+  .kw .mini { display: block; font-size: 11px; font-weight: 500; opacity: .6; margin-top: 4px; }
+  .kw .guess { position: absolute; top: -9px; right: 12px; background: var(--yellow); color: var(--ink); font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
+  .reshuffle { margin-top: 16px; text-align: center; }
+  .reshuffle button { border: none; background: none; color: var(--ink-soft); font-size: 13px; cursor: pointer; text-decoration: underline; }
+  .song-mini { margin-top: 14px; }
+  .song-mini input {
+    width: 100%; border: none; background: #fff; border-radius: 14px; padding: 13px 16px;
+    font-size: 15px; outline: none; box-shadow: 0 1px 3px rgba(0,0,0,.06);
   }
-  #card .body { padding: 20px; }
-  .rxn { display: flex; align-items: center; justify-content: center; gap: 14px; background: var(--cream); border-radius: 16px; padding: 16px 10px; }
-  .rxn .item { text-align: center; }
-  .rxn .item .cap { font-size: 11px; color: var(--ink-soft); margin-top: 5px; }
-  .rxn .op { font-size: 20px; font-weight: 800; color: var(--red); }
-  .meal { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; gap: 10px; }
-  .meal .name { font-size: 17px; font-weight: 800; }
-  .meal .desc { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
-  .meal .price { text-align: right; flex-shrink: 0; }
-  .meal .price .p { font-size: 19px; font-weight: 800; color: var(--red); }
-  .meal .price .s { font-size: 11px; color: var(--green); font-weight: 700; margin-top: 2px; }
-  .match { margin-top: 14px; }
-  .match .row { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
-  .bar { height: 8px; background: #F3EADA; border-radius: 999px; margin-top: 6px; overflow: hidden; }
-  .bar i { display: block; height: 100%; width: 0; background: var(--red); border-radius: 999px; transition: width .8s ease; }
-  .deal { margin-top: 16px; background: #F2FAF6; border: 1px solid #CBEAD9; border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
-  .deal .t { font-size: 13px; font-weight: 700; color: #0F6E56; }
-  .deal .d { font-size: 11px; color: #3D8F6E; margin-top: 3px; }
-  .player { margin-top: 16px; display: flex; align-items: center; gap: 14px; background: #FFFDF8; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
-  .play-btn {
-    width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer; flex-shrink: 0;
-    background: var(--ink); display: flex; align-items: center; justify-content: center;
+
+  /* ===== 主题曲页 ===== */
+  #st-track { background: var(--cream); align-items: center; padding: 66px 24px 24px; }
+  #st-track .kicker { font-size: 12px; letter-spacing: 3px; color: var(--ink-soft); font-weight: 700; }
+  .vinyl-wrap { margin: 30px 0 8px; transform: scale(.2); opacity: 0; }
+  #st-track.on .vinyl-wrap { animation: springIn .7s var(--spring) .15s forwards; }
+  @keyframes springIn { to { transform: scale(1); opacity: 1; } }
+  .vinyl {
+    width: 240px; height: 240px; border-radius: 50%; background: #141414; position: relative;
+    box-shadow: 0 18px 40px rgba(0,0,0,.22); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
   }
-  .play-info { flex: 1; min-width: 0; }
-  .play-info .t { font-size: 14px; font-weight: 700; }
-  .play-info .d { font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
-  .eq { display: flex; align-items: flex-end; gap: 3px; height: 26px; }
-  .eq i { width: 4px; background: var(--red); border-radius: 2px; height: 20%; }
+  .vinyl .groove { position: absolute; border-radius: 50%; border: 1.5px solid #2c2c2c; }
+  .vinyl .g1 { inset: 12%; } .vinyl .g2 { inset: 20%; } .vinyl .g3 { inset: 28%; }
+  .vinyl .label {
+    width: 34%; height: 34%; border-radius: 50%; background: var(--yellow);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 800; color: var(--ink); position: relative; z-index: 2; text-align: center;
+  }
+  .vinyl .label .initial { font-size: 34px; line-height: 1; }
+  .vinyl .label .rpm { font-size: 9px; font-weight: 600; opacity: .6; margin-top: 3px; }
+  .vinyl .hole { width: 10px; height: 10px; border-radius: 50%; background: var(--cream); position: absolute; z-index: 3; }
+  .spinning { animation: spin 2.6s linear infinite; }
+  .track-name { font-size: 24px; font-weight: 800; margin-top: 16px; text-align: center; line-height: 1.4; }
+  .track-tags { display: flex; gap: 8px; margin-top: 10px; justify-content: center; flex-wrap: wrap; }
+  .track-tags span { font-size: 11px; font-weight: 700; background: #fff; color: var(--ink-soft); padding: 5px 11px; border-radius: 999px; }
+  .track-tags span.hot { background: var(--red); color: #fff; }
+  .play-hint { margin-top: 14px; font-size: 13px; color: var(--ink-soft); font-weight: 600; }
+  .eq { display: flex; gap: 4px; align-items: flex-end; height: 30px; margin-top: 12px; }
+  .eq i { width: 5px; background: var(--red); border-radius: 3px; height: 18%; }
+
+  /* ===== 主食贴纸 ===== */
+  #sticker {
+    position: absolute; right: 18px; bottom: 130px; z-index: 40; width: 150px;
+    transform: scale(0) rotate(-30deg); display: none; cursor: pointer;
+  }
+  #sticker.pop { display: block; animation: stickerPop .65s var(--spring) forwards; }
+  @keyframes stickerPop { to { transform: scale(1) rotate(-7deg); } }
+  #sticker .sticker-body {
+    background: #fff; border-radius: 22px; padding: 12px 12px 10px;
+    border: 3px solid #fff; box-shadow: 0 14px 34px rgba(0,0,0,.25); text-align: center;
+  }
+  #sticker .sticker-body svg { width: 100%; height: auto; display: block; }
+  #sticker .sticker-name { font-size: 13px; font-weight: 800; margin-top: 6px; }
+  #sticker .sticker-cta { font-size: 10px; color: var(--red); font-weight: 700; margin-top: 3px; animation: pulse 1.2s ease infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+
+  /* ===== 领券抽屉 ===== */
+  #st-deal { justify-content: flex-end; z-index: 60; }
+  #st-deal .underlay { position: absolute; inset: 0; background: rgba(0,0,0,.45); opacity: 0; transition: opacity .3s; }
+  #st-deal.on .underlay { opacity: 1; }
+  #st-deal .sheet { transform: translateY(105%); }
+  #st-deal.on .sheet { transform: translateY(0); }
+  .coupon-row { display: flex; gap: 10px; margin-top: 18px; overflow-x: auto; padding-bottom: 4px; }
+  .coupon {
+    flex-shrink: 0; background: #FFF4D6; border: 1.5px dashed #E8B93B; border-radius: 12px;
+    padding: 10px 14px; font-size: 12px; font-weight: 700; color: #7A5B0B;
+  }
+  .price-line { display: flex; align-items: baseline; gap: 10px; margin-top: 18px; }
+  .price-line .now { font-size: 34px; font-weight: 800; color: var(--red); }
+  .price-line .was { font-size: 14px; color: var(--ink-soft); text-decoration: line-through; }
+  .price-line .save { font-size: 12px; font-weight: 800; color: var(--green); }
   .order-btn {
-    display: block; width: 100%; margin-top: 16px; padding: 14px; border: none; cursor: pointer;
-    background: var(--red); color: #fff; font-size: 15px; font-weight: 800; border-radius: 14px; letter-spacing: 1px;
+    display: block; width: 100%; margin-top: 18px; padding: 17px; border: none; cursor: pointer;
+    background: var(--yellow); color: var(--ink); font-size: 17px; font-weight: 800;
+    border-radius: 16px; letter-spacing: 1px;
   }
-  .order-btn:active { transform: scale(.98); }
-  .share-tip { text-align: center; font-size: 12px; color: var(--ink-soft); margin-top: 14px; }
-  .src { text-align: center; font-size: 11px; color: #B4A795; margin-top: 8px; }
-  footer { text-align: center; font-size: 11px; color: #B4A795; margin-top: 36px; line-height: 1.8; }
+  .order-btn:active { transform: scale(.97); }
+  .share-line { text-align: center; font-size: 12px; color: var(--ink-soft); margin-top: 14px; }
+  .replay { text-align: center; margin-top: 10px; }
+  .replay button { border: none; background: none; color: var(--ink-soft); font-size: 13px; cursor: pointer; text-decoration: underline; }
+
+  .src-tag { position: absolute; bottom: max(12px, env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center; font-size: 10px; color: #B4A795; z-index: 10; padding: 0 20px; }
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <div class="mark">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 18V6l10-2v11" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="#fff"/><circle cx="16.5" cy="17" r="2.5" fill="#fff"/></svg>
-    麦乐点唱机 McTrack
+<div class="dots" id="dots"><i class="on"></i><i></i><i></i><i></i></div>
+<button class="back" id="backBtn" aria-label="返回">‹</button>
+
+<!-- Stage 1：自拍 -->
+<section class="stage on" id="st-camera">
+  <div class="kicker">McREACTION</div>
+  <h1>你的今日麦反应</h1>
+  <div class="sub">拍张自拍，看看你的耳朵和嘴巴<br>今天会碰出什么反应</div>
+  <div class="lens" id="lens">
+    <img id="selfieImg" alt="">
+    <div class="face-line" id="faceLine"></div>
+    <div class="scan" id="scanRing"></div>
   </div>
-  <h1>今日麦麦主题曲</h1>
-  <p>拍张自拍，读懂你此刻的情绪<br>让歌和饭发生一场化学反应</p>
-  <div class="chem">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18V6l10-2v11" stroke="#DA291C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="#DA291C"/><circle cx="16.5" cy="17" r="2.5" fill="#DA291C"/></svg>
-    <span>情绪</span>
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10h16M5 10a7 7 0 0 1 14 0M4 14h16a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" stroke="#DA291C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span style="color:#DA291C;font-weight:800">今日最搭</span>
+  <div class="cam-status" id="camStatus"></div>
+  <div class="cam-btns">
+    <button class="cam-btn primary" id="btnShot">拍一张</button>
+    <button class="cam-btn ghost" id="btnAlbum">相册</button>
+  </div>
+  <input type="file" id="fileShot" accept="image/*" capture="user" style="display:none">
+  <input type="file" id="fileAlbum" accept="image/*" style="display:none">
+  <button class="skip" id="skipCam">跳过，直接点情绪 →</button>
+  <div class="src-tag" style="color:rgba(255,255,255,.3)">非官方粉丝作品 · 与金拱门（中国）无关</div>
+</section>
+
+<!-- Stage 2：情绪关键词 -->
+<section class="stage" id="st-keywords">
+  <div class="underlay"></div>
+  <div class="sheet">
+    <div class="grabber"></div>
+    <h2>读到这些情绪</h2>
+    <div class="sub2" id="kwSub">点一个，今天的心情由它代言</div>
+    <div class="kw-grid" id="kwGrid"></div>
+    <div class="reshuffle"><button id="reshuffleBtn">换一批情绪</button></div>
+    <div class="song-mini"><input id="songText" placeholder="在听什么歌？选填，让主题曲带上它"></div>
+  </div>
+</section>
+
+<!-- Stage 3：主题曲 -->
+<section class="stage" id="st-track">
+  <div class="kicker">你的今日主题曲</div>
+  <div class="vinyl-wrap">
+    <div class="vinyl" id="vinyl">
+      <div class="groove g1"></div><div class="groove g2"></div><div class="groove g3"></div>
+      <div class="label"><span class="initial" id="vinylInitial">麦</span><span class="rpm">33⅓ RPM</span></div>
+      <div class="hole"></div>
+    </div>
+  </div>
+  <div class="track-name" id="trackName">《》</div>
+  <div class="track-tags" id="trackTags"></div>
+  <div class="play-hint" id="playHint">点唱片，播放你的主题曲</div>
+  <div class="eq" id="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="src-tag" id="srcTag">演示数据 · 接入麦当劳 MCP 后为实时菜单与券价</div>
+</section>
+
+<!-- 主食贴纸 -->
+<div id="sticker">
+  <div class="sticker-body">
+    <div id="stickerArt"></div>
+    <div class="sticker-name" id="stickerName">—</div>
+    <div class="sticker-cta">点我领券去下单</div>
   </div>
 </div>
 
-<div class="panel">
-  <h2><span class="step">1</span>拍一张，或选一个此刻的情绪</h2>
-  <div class="selfie-row">
-    <div class="selfie-box" id="selfieBox">
-      <span class="plus">+</span>
-      <span class="cap">拍自拍</span>
-      <input type="file" id="selfieInput" accept="image/*" capture="user" style="display:none">
+<!-- Stage 4：领券下单 -->
+<section class="stage" id="st-deal">
+  <div class="underlay" id="dealUnderlay"></div>
+  <div class="sheet">
+    <div class="grabber"></div>
+    <h2>今日最搭已配好</h2>
+    <div class="sub2" id="dealMeal">—</div>
+    <div class="coupon-row" id="couponRow"></div>
+    <div class="price-line">
+      <span class="now" id="dealNow">¥0</span>
+      <span class="was" id="dealWas"></span>
+      <span class="save" id="dealSave"></span>
     </div>
-    <div class="selfie-word" id="selfieWord"><b>自拍是催化剂。</b><br>上传后它会上卡片；懒得拍就直接点下面的情绪关键词。</div>
-  </div>
-  <div class="chips" id="chips" style="margin-top:16px"></div>
-  <div class="hint">在 WorkBuddy 里直接发自拍给我，我来读出你的情绪并自动点唱。</div>
-</div>
-
-<div class="panel">
-  <h2><span class="step">2</span>在听什么（选填）</h2>
-  <input class="song-input" id="songText" placeholder="比如：晴天、爵士、白噪音……">
-</div>
-
-<button class="go" id="goBtn">生成今日最搭</button>
-<button class="shake" id="shakeBtn">懒得选，随机来一首</button>
-
-<div id="card">
-  <div class="top">
-    <img class="selfie-mini" id="cardSelfie" alt="">
-    <div class="no"><span id="cardNo">No.0000</span><span id="cardDate"></span></div>
-    <div class="track" id="cardTrack">《》</div>
-    <div class="meta" id="cardMeta"></div>
-  </div>
-  <div class="body">
-    <div class="rxn">
-      <div class="item">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M9 18V6l10-2v11" stroke="#DA291C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="#DA291C"/><circle cx="16.5" cy="17" r="2.5" fill="#DA291C"/></svg>
-        <div class="cap" id="rxnMood">情绪</div>
-      </div>
-      <div class="op">+</div>
-      <div class="item">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M4 10h16M5 10a7 7 0 0 1 14 0M4 14h16a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" stroke="#DA291C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <div class="cap">麦当劳</div>
-      </div>
-      <div class="op">=</div>
-      <div class="item">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 5.3 5.6.6-4.2 3.9 1.2 5.6L12 14.5 7 17.4l1.2-5.6L4 7.9l5.6-.6z" fill="#FFC72C" stroke="#DA291C" stroke-width="1.4" stroke-linejoin="round"/></svg>
-        <div class="cap" style="color:#DA291C;font-weight:800">今日最搭</div>
-      </div>
-    </div>
-
-    <div class="meal">
-      <div>
-        <div class="name" id="mealName">—</div>
-        <div class="desc" id="mealDesc">—</div>
-      </div>
-      <div class="price">
-        <div class="p" id="mealPrice">¥0</div>
-        <div class="s" id="mealSaved"></div>
-      </div>
-    </div>
-
-    <div class="match">
-      <div class="row"><span id="matchLabel">耳朵和嘴巴的匹配度</span><span id="matchPct">0%</span></div>
-      <div class="bar"><i id="matchBar"></i></div>
-    </div>
-
-    <div class="deal" id="dealBox" style="display:none">
-      <div>
-        <div class="t" id="dealTitle">MCP 最省点法</div>
-        <div class="d" id="dealDesc">—</div>
-      </div>
-    </div>
-
-    <div class="player">
-      <button class="play-btn" id="playBtn" aria-label="播放">
-        <svg id="iconPlay" width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
-        <svg id="iconStop" width="18" height="18" viewBox="0 0 24 24" fill="#fff" style="display:none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-      </button>
-      <div class="play-info">
-        <div class="t" id="playTitle">主题曲片段</div>
-        <div class="d" id="playDesc">Web Audio 实时生成 · 每人一段专属旋律</div>
-      </div>
-      <div class="eq" id="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-    </div>
-
     <button class="order-btn" id="orderBtn">一键下单 · 就点这个</button>
-    <div class="share-tip">截图这张卡片，去群里炸场</div>
-    <div class="src" id="srcTag">演示数据 · 接入麦当劳 MCP 后为主</div>
+    <div class="share-line">截图这张反应报告，去群里炸场</div>
+    <div class="replay"><button id="replayBtn">再反应一次</button></div>
   </div>
-</div>
-
-<footer>
-  麦乐点唱机 McTrack · 非官方粉丝作品，与金拱门（中国）无关<br>
-  点餐能力来自麦当劳 MCP · Token 自备 · 音乐为本地实时合成
-</footer>
+</section>
 
 <script>
 window.MCTRACK_DATA = __MCTRACK_DATA__;
 
 /* ---------- 数据 ---------- */
 const FOODS = {
-  doubleCheese: { name: "双层吉士汉堡", price: 12,   desc: "效率之王 · 双层满足不废话" },
-  mcSpicy:      { name: "麦辣鸡腿汉堡", price: 15,   desc: "回血必备 · 一口辣回魂" },
-  grilled:      { name: "板烧鸡腿堡",   price: 16,   desc: "沉稳担当 · 烤出来的踏实" },
-  filet:        { name: "麦香鱼",       price: 14.5, desc: "温柔一刀 · 鱼肉的轻声细语" },
-  mcChicken:    { name: "麦香鸡",       price: 13,   desc: "干净清爽 · 简单不将就" },
-  bigMac:       { name: "巨无霸",       price: 25,   desc: "大佬出场 · 三层底气" },
-  wings:        { name: "麦辣鸡翅",     price: 14,   desc: "直接上头的辣 · 提神核弹" },
-  nuggets:      { name: "麦乐鸡",       price: 13,   desc: "小块无负担 · 摸鱼零罪恶" },
-  fries:        { name: "中薯条",       price: 12,   desc: "永远的最佳配角" },
-  flurry:       { name: "麦旋风",       price: 13.5, desc: "甜的治愈 · 冰淇淋疗法" },
+  doubleCheese: { name: "双层吉士汉堡", price: 12,   desc: "效率之王" },
+  mcSpicy:      { name: "麦辣鸡腿汉堡", price: 15,   desc: "回血必备" },
+  grilled:      { name: "板烧鸡腿堡",   price: 16,   desc: "沉稳担当" },
+  filet:        { name: "麦香鱼",       price: 14.5, desc: "温柔一刀" },
+  mcChicken:    { name: "麦香鸡",       price: 13,   desc: "干净清爽" },
+  bigMac:       { name: "巨无霸",       price: 25,   desc: "大佬出场" },
+  wings:        { name: "麦辣鸡翅",     price: 14,   desc: "提神核弹" },
+  nuggets:      { name: "麦乐鸡",       price: 13,   desc: "摸鱼零罪恶" },
+  fries:        { name: "中薯条",       price: 12,   desc: "最佳配角" },
+  flurry:       { name: "麦旋风",       price: 13.5, desc: "甜的治愈" },
   coke:         { name: "中可乐",       price: 9.5,  desc: "气泡即正义" },
-  coffee:       { name: "热美式",       price: 9,    desc: "清醒燃料 · 苦得正直" }
+  coffee:       { name: "热美式",       price: 9,    desc: "清醒燃料" }
 };
 
 const MOODS = [
-  { id: "energetic", label: "元气满满", kw: "精神、元气、干劲、早起",   track: "《早高峰进行曲》",   genre: "急行电子",     bpm: 122, root: 45, bright: 1600, swing: .08, hat: .5,  meal: ["doubleCheese","coffee"],   copy: "快、准、狠，和你的步频同拍" },
-  { id: "tired",     label: "累到发虚", kw: "疲惫、加班、虚、撑不住",   track: "《凌晨两点的和弦》", genre: "深夜 Lo-Fi",   bpm: 72,  root: 43, bright: 1200, swing: .16, hat: .3,  meal: ["mcSpicy","coffee"],        copy: "辣是打工人的强心针" },
-  { id: "lazy",      label: "慵懒放空", kw: "慵懒、松弛、周末、瘫",     track: "《阳光泡泡糖》",     genre: "法式摇摆",     bpm: 100, root: 48, bright: 1800, swing: .12, hat: .4,  meal: ["mcChicken","flurry"],      copy: "慢慢地吃，认真地懒" },
-  { id: "fired",     label: "燃起来了", kw: "燃、冲、健身、打卡",       track: "《步频一百七》",     genre: "律动电子",     bpm: 128, root: 50, bright: 2000, swing: .06, hat: .6,  meal: ["grilled"],                 copy: "蛋白质补位，节奏不掉线" },
-  { id: "down",      label: "有点 emo", kw: "低落、emo、难过、丧",       track: "《麦旋风治愈进行曲》", genre: "治愈民谣",   bpm: 68,  root: 45, bright: 1100, swing: .18, hat: .25, meal: ["flurry","nuggets"],        copy: "甜品是合法的情绪止痛药" },
-  { id: "hype",      label: "今天想嗨", kw: "嗨、庆祝、派对、爽",       track: "《气泡炸裂摇滚》",   genre: "车库摇滚",     bpm: 140, root: 52, bright: 2200, swing: .05, hat: .7,  meal: ["wings","coke"],            copy: "辣翅配可乐，快乐开物理外挂" },
-  { id: "crush",     label: "心动时刻", kw: "心动、约会、甜、暧昧",     track: "《爵士慢半拍》",     genre: "慢拍爵士",     bpm: 88,  root: 47, bright: 1500, swing: .2,  hat: .35, meal: ["filet","fries"],           copy: "经典搭配，像你们一样配" },
-  { id: "zoned",     label: "摸鱼ing",  kw: "摸鱼、发呆、无聊、划水",   track: "《白日梦循环》",     genre: "独立流行",     bpm: 92,  root: 43, bright: 1400, swing: .14, hat: .4,  meal: ["nuggets","fries"],         copy: "小块多吃，老板看不出你在加餐" }
+  { id: "energetic", label: "元气满满", sub: "干劲十足", track: "《早高峰进行曲》",    genre: "急行电子",   bpm: 122, root: 45, bright: 1600, swing: .08, hat: .5,  meal: ["doubleCheese","coffee"] },
+  { id: "tired",     label: "累到发虚", sub: "需要回血", track: "《凌晨两点的和弦》",   genre: "深夜 Lo-Fi", bpm: 72,  root: 43, bright: 1200, swing: .16, hat: .3,  meal: ["mcSpicy","coffee"] },
+  { id: "lazy",      label: "慵懒放空", sub: "慢慢悠悠", track: "《阳光泡泡糖》",      genre: "法式摇摆",   bpm: 100, root: 48, bright: 1800, swing: .12, hat: .4,  meal: ["mcChicken","flurry"] },
+  { id: "fired",     label: "燃起来了", sub: "运动打卡", track: "《步频一百七》",      genre: "律动电子",   bpm: 128, root: 50, bright: 2000, swing: .06, hat: .6,  meal: ["grilled"] },
+  { id: "down",      label: "有点 emo", sub: "需要治愈", track: "《麦旋风治愈进行曲》", genre: "治愈民谣",   bpm: 68,  root: 45, bright: 1100, swing: .18, hat: .25, meal: ["flurry","nuggets"] },
+  { id: "hype",      label: "今天想嗨", sub: "庆祝一下", track: "《气泡炸裂摇滚》",     genre: "车库摇滚",   bpm: 140, root: 52, bright: 2200, swing: .05, hat: .7,  meal: ["wings","coke"] },
+  { id: "crush",     label: "心动时刻", sub: "甜甜暧昧", track: "《爵士慢半拍》",      genre: "慢拍爵士",   bpm: 88,  root: 47, bright: 1500, swing: .2,  hat: .35, meal: ["filet","fries"] },
+  { id: "zoned",     label: "摸鱼ing",  sub: "发呆划水", track: "《白日梦循环》",      genre: "独立流行",   bpm: 92,  root: 43, bright: 1400, swing: .14, hat: .4,  meal: ["nuggets","fries"] }
 ];
 
 const CHORD_LIB = {
@@ -278,168 +302,218 @@ const CHORD_LIB = {
   zoned:     [[0,4,7,14],[5,9,12,19],[7,11,14,21],[0,4,7,14]]
 };
 
+/* 贴纸插画（扁平 SVG） */
+const ART = {
+  burger: () => `<svg viewBox="0 0 100 100"><path d="M15 42a35 16 0 0 1 70 0v4H15z" fill="#E8A33D"/><rect x="13" y="46" width="74" height="7" rx="3.5" fill="#4C9A2A"/><rect x="15" y="53" width="70" height="11" rx="3" fill="#7A4A21"/><rect x="15" y="64" width="70" height="6" rx="3" fill="#F4C33D"/><path d="M15 70h70v3a10 10 0 0 1-10 10H25a10 10 0 0 1-10-10z" fill="#E8A33D"/></svg>`,
+  spicy:  () => `<svg viewBox="0 0 100 100"><path d="M15 42a35 16 0 0 1 70 0v4H15z" fill="#E8A33D"/><path d="M15 46h70v7H15z" fill="#DA291C"/><rect x="15" y="53" width="70" height="11" rx="3" fill="#C94F1E"/><rect x="15" y="64" width="70" height="6" rx="3" fill="#F4C33D"/><path d="M15 70h70v3a10 10 0 0 1-10 10H25a10 10 0 0 1-10-10z" fill="#E8A33D"/><path d="M30 30c2-4 6-4 8 0M46 26c2-4 6-4 8 0M62 30c2-4 6-4 8 0" stroke="#DA291C" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`,
+  fries:  () => `<svg viewBox="0 0 100 100"><path d="M35 20h6v30h-6zM46 14h6v34h-6zM57 18h6v30h-6zM28 26h6v24h-6zM66 26h6v24h-6z" fill="#F4C33D"/><path d="M25 46h50l-6 38a6 6 0 0 1-6 5H37a6 6 0 0 1-6-5z" fill="#DA291C"/><path d="M42 58h16l-2 12H44z" fill="#FFC72C"/></svg>`,
+  drink:  () => `<svg viewBox="0 0 100 100"><path d="M30 30h40l-4 56a6 6 0 0 1-6 5H40a6 6 0 0 1-6-5z" fill="#B01E12"/><path d="M33 44h34l-1 14H34z" fill="#F2E3C6" opacity=".35"/><path d="M45 12h6v20h-6z" fill="#eee" transform="rotate(12 48 22)"/><path d="M28 30h44v6H28z" fill="#eee"/></svg>`,
+  coffee: () => `<svg viewBox="0 0 100 100"><path d="M26 38h44v24a16 16 0 0 1-16 16h-12a16 16 0 0 1-16-16z" fill="#fff" stroke="#2B2420" stroke-width="3.5"/><path d="M70 42h6a9 9 0 0 1 0 18h-7" fill="none" stroke="#2B2420" stroke-width="3.5"/><path d="M38 30c2-5-2-7 0-12M50 30c2-5-2-7 0-12" stroke="#B4A795" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M26 46h44v6H26z" fill="#6E4A2B"/></svg>`,
+  icecream: () => `<svg viewBox="0 0 100 100"><path d="M50 55L36 92h28z" fill="#E8A33D"/><path d="M38 88h24M42 78h16M46 68h8" stroke="#C9853B" stroke-width="2.5"/><circle cx="50" cy="42" r="20" fill="#F4E9D8"/><circle cx="38" cy="50" r="10" fill="#F4E9D8"/><circle cx="62" cy="50" r="10" fill="#F4E9D8"/><circle cx="44" cy="36" r="4" fill="#DA291C"/><circle cx="57" cy="44" r="4" fill="#7A4A21"/></svg>`,
+  wings:  () => `<svg viewBox="0 0 100 100"><path d="M28 30c14-8 34-4 42 10s4 34-10 42-34 4-42-10-4-34 10-42z" fill="#C94F1E"/><path d="M36 40c8-4 20-2 25 6M33 52c10-5 26-2 32 8" stroke="#8F3413" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M30 26c2-4 6-4 8 0M48 20c2-4 6-4 8 0" stroke="#DA291C" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`,
+  nuggets: () => `<svg viewBox="0 0 100 100"><path d="M22 34a14 14 0 0 1 28 0v6H22z" fill="#E8A33D"/><rect x="18" y="40" width="36" height="6" rx="3" fill="#4C9A2A"/><rect x="20" y="46" width="32" height="9" rx="3" fill="#7A4A21"/><rect x="20" y="55" width="32" height="5" rx="2.5" fill="#F4C33D"/><path d="M20 60h32v2a8 8 0 0 1-8 8H28a8 8 0 0 1-8-8z" fill="#E8A33D"/><rect x="58" y="52" width="26" height="20" rx="4" fill="#DA291C"/><path d="M63 52v20" stroke="#FFC72C" stroke-width="3"/><circle cx="71" cy="47" r="8" fill="#F4C33D"/><circle cx="81" cy="44" r="7" fill="#F4C33D"/></svg>`
+};
+const MEAL_ART = { doubleCheese:"burger", mcSpicy:"spicy", grilled:"burger", filet:"burger", mcChicken:"burger", bigMac:"burger", wings:"wings", nuggets:"nuggets", fries:"fries", flurry:"icecream", coke:"drink", coffee:"coffee" };
+
 /* ---------- 状态 ---------- */
 const $ = id => document.getElementById(id);
-let moodId = null, selfieData = null, audio = null, playing = false, eqTimer = null;
+const D = window.MCTRACK_DATA || null;
+let stage = "camera", mood = null, audio = null, playing = false, schedTimer = null, eqTimer = null, selfieData = null, stickerShown = false;
 
-/* ---------- 情绪芯片 ---------- */
-const chipsEl = $("chips");
-MOODS.forEach((m, i) => {
-  const b = document.createElement("button");
-  b.className = "chip";
-  b.textContent = m.label;
-  b.dataset.mood = m.id;
-  b.onclick = () => { setMood(m.id); };
-  chipsEl.appendChild(b);
-});
-function setMood(id) {
-  moodId = id;
-  document.querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c.dataset.mood === id));
-}
-
-/* ---------- 自拍 ---------- */
-$("selfieBox").onclick = () => $("selfieInput").click();
-$("selfieInput").onchange = e => {
-  const f = e.target.files[0];
-  if (!f) return;
-  const r = new FileReader();
-  r.onload = () => {
-    selfieData = r.result;
-    $("selfieBox").innerHTML = '<img src="' + selfieData + '">';
-    $("selfieWord").innerHTML = "<b>催化剂已就位。</b><br>情绪识别交给 WorkBuddy，卡片上见。";
-  };
-  r.readAsDataURL(f);
-};
-
-/* ---------- 工具 ---------- */
-function hashStr(s) {
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
-  return h;
-}
-function todayStr() {
-  const d = new Date();
-  return d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0");
-}
+function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h; }
+function todayStr() { const d = new Date(); return d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0"); }
 function midi2freq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
 
-/* ---------- 生成卡片 ---------- */
-function pickMood() {
-  const song = $("songText").value.trim();
-  if (song) {
-    const hit = hashStr(song) % MOODS.length;
-    return MOODS[hit].id;
-  }
-  return moodId || MOODS[hashStr(todayStr()) % MOODS.length].id;
+/* ---------- 舞台机 ---------- */
+const ORDER = ["camera", "keywords", "track", "deal"];
+function goTo(name) {
+  stage = name;
+  ORDER.forEach(s => $("st-" + s).classList.toggle("on", s === name || (name === "deal" && s === "track")));
+  if (name !== "track" && name !== "deal") hideSticker();
+  const idx = ORDER.indexOf(name);
+  document.querySelectorAll("#dots i").forEach((d, i) => d.classList.toggle("on", i <= Math.min(idx, 2)));
+  $("backBtn").style.display = (name === "keywords" || name === "track") ? "flex" : "none";
+}
+$("backBtn").onclick = () => { stopAudio(); goTo(stage === "track" ? "keywords" : "camera"); };
+
+/* ---------- Stage 1：自拍 ---------- */
+$("btnShot").onclick = () => $("fileShot").click();
+$("btnAlbum").onclick = () => $("fileAlbum").click();
+$("skipCam").onclick = () => { suggestFromBrightness(null); goTo("keywords"); };
+$("fileShot").onchange = e => handleFile(e.target.files[0]);
+$("fileAlbum").onchange = e => handleFile(e.target.files[0]);
+
+function handleFile(f) {
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => startScan(r.result, false);
+  r.readAsDataURL(f);
 }
 
-function generate(forcedMood) {
-  stopAudio();
-  const D = window.MCTRACK_DATA || null;
-  const id = forcedMood || (D && D.moodId) || pickMood();
-  const m = MOODS.find(x => x.id === id) || MOODS[0];
-  setMood(m.id);
-  const song = (D && D.songText) ? D.songText : $("songText").value.trim();
+function startScan(dataUrl, injected) {
+  selfieData = dataUrl;
+  $("selfieImg").src = dataUrl;
+  $("selfieImg").style.display = "block";
+  $("scanRing").style.display = "block";
+  $("camStatus").textContent = "自拍检测中…";
+  const img = $("selfieImg");
+  const done = (moodGuess, faceOk) => {
+    $("scanRing").style.display = "none";
+    $("faceLine").style.borderColor = "rgba(255,199,44,.8)";
+    $("camStatus").textContent = faceOk ? "自拍检测通过 · 情绪读取完成" : "没认出脸？算你低调 · 情绪已瞎猜";
+    setTimeout(() => { suggestFromBrightness(moodGuess); goTo("keywords"); }, 900);
+  };
+  if (injected) { done(D && D.moodId, true); return; }
+  if ("FaceDetector" in window) {
+    new FaceDetector({ fastMode: true }).detect(img)
+      .then(faces => readBrightness(img, b => done(guessFromBrightness(b), faces.length > 0)))
+      .catch(() => readBrightness(img, b => done(guessFromBrightness(b), true)));
+  } else {
+    readBrightness(img, b => done(guessFromBrightness(b), true));
+  }
+}
 
-  /* 主题曲名 */
-  const trackName = song ? "《" + song + " × 麦麦》" : m.track;
-  const noNum = String(hashStr(todayStr() + m.id) % 9000 + 1000);
-  $("cardNo").textContent = "No." + noNum;
-  const now = new Date();
-  $("cardDate").textContent = now.getMonth()+1 + "月" + now.getDate() + "日";
-  $("cardTrack").textContent = trackName;
+/* 本地粗读：亮度猜情绪 */
+function readBrightness(img, cb) {
+  try {
+    const c = document.createElement("canvas");
+    c.width = c.height = 32;
+    const x = c.getContext("2d");
+    x.drawImage(img, 0, 0, 32, 32);
+    const d = x.getImageData(0, 0, 32, 32).data;
+    let l = 0;
+    for (let i = 0; i < d.length; i += 4) l += (d[i] + d[i+1] + d[i+2]) / 3;
+    cb(l / (d.length / 4) / 255);
+  } catch (e) { cb(0.5); }
+}
+function guessFromBrightness(b) {
+  if (b > 0.62) return "energetic";
+  if (b < 0.3) return "tired";
+  if (b < 0.42) return "down";
+  return ["lazy", "zoned", "crush"][Math.floor(b * 10) % 3];
+}
+function suggestFromBrightness(preset) {
+  buildKeywords(preset || (D && D.moodId) || "zoned");
+}
 
-  /* meta 标签 */
-  const meta = $("cardMeta");
-  meta.innerHTML = "";
-  [[m.genre, false], [m.bpm + " BPM", false], [m.label, true]].forEach(([t, solid]) => {
-    const s = document.createElement("span");
-    s.className = "tag" + (solid ? " solid" : "");
-    s.textContent = t;
-    meta.appendChild(s);
+/* ---------- Stage 2：关键词 ---------- */
+function buildKeywords(guessId) {
+  const g = $("kwGrid");
+  g.innerHTML = "";
+  const list = [...MOODS].sort((a, b) => (a.id === guessId ? -1 : b.id === guessId ? 1 : 0));
+  list.forEach((m, i) => {
+    const b = document.createElement("button");
+    b.className = "kw";
+    b.innerHTML = m.label + '<span class="mini">' + m.sub + " · " + m.genre + "</span>" + (i === 0 ? '<span class="guess">猜你想点</span>' : "");
+    b.onclick = () => {
+      document.querySelectorAll(".kw").forEach(k => k.classList.remove("pick"));
+      b.classList.add("pick");
+      initAudioGesture();
+      setTimeout(() => pickMood(m.id), 380);
+    };
+    g.appendChild(b);
   });
+  $("kwSub").textContent = (guessId && MOODS.some(m => m.id === guessId))
+    ? "从照片里读到的，点一个确认"
+    : "点一个，今天的心情由它代言";
+}
+$("reshuffleBtn").onclick = () => buildKeywords(MOODS[Math.floor(Math.random() * MOODS.length)].id);
 
-  /* 主餐 */
-  let mealName, mealDesc, mealPrice, savedTxt = "", dealHtml = null, realMenu = false;
+function pickMood(id) {
+  mood = MOODS.find(m => m.id === id) || MOODS[0];
+  const song = ($("songText").value || (D && D.songText) || "").trim();
+  renderTrack(song);
+  goTo("track");
+}
+
+/* ---------- Stage 3：主题曲 ---------- */
+let mealState = null;
+function renderTrack(song) {
+  const m = mood;
+  $("trackName").textContent = song ? "《" + song + " × 麦麦》" : m.track;
+  $("vinylInitial").textContent = m.label.slice(0, 1);
+  const tags = $("trackTags");
+  tags.innerHTML = "";
+  [m.genre, m.bpm + " BPM", m.label].forEach((t, i) => {
+    const s = document.createElement("span");
+    if (i === 2) s.className = "hot";
+    s.textContent = t;
+    tags.appendChild(s);
+  });
+  $("playHint").textContent = "点唱片，播放你的主题曲";
+  $("srcTag").textContent = (D && D.realMenu) ? "菜单/券价来自麦当劳 MCP · " + (D.generatedAt || "") : "演示数据 · 接入麦当劳 MCP 后为实时菜单与券价";
+  prepareDeal(song);
+}
+
+function prepareDeal(song) {
+  const m = mood;
+  let names, price, saved = 0, coupons = 0, realMenu = false;
   if (D && D.meals && D.meals.length) {
-    mealName = D.meals.map(x => x.name).join(" + ");
-    mealDesc = D.meals[0].desc || m.copy;
-    mealPrice = D.meals.reduce((s, x) => s + (x.price || 0), 0);
+    names = D.meals.map(x => x.name).join(" + ");
+    price = D.finalPrice != null ? D.finalPrice : D.meals.reduce((s, x) => s + (x.price || 0), 0);
+    saved = D.saved || 0;
+    coupons = D.couponCount || 0;
     realMenu = !!D.realMenu;
-    if (D.finalPrice != null) {
-      mealPrice = D.finalPrice;
-      if (D.saved) savedTxt = "已省 ¥" + Number(D.saved).toFixed(1);
-    }
-    if (D.couponCount != null) dealHtml = ["MCP 最省点法", "已自动领取 " + D.couponCount + " 张券" + (D.saved ? " · 本顿立省 ¥" + Number(D.saved).toFixed(1) : "")];
   } else {
     const items = m.meal.map(k => FOODS[k]);
-    mealName = items.map(x => x.name).join(" + ");
-    mealDesc = m.copy;
-    mealPrice = items.reduce((s, x) => s + x.price, 0);
+    names = items.map(x => x.name).join(" + ");
+    price = items.reduce((s, x) => s + x.price, 0);
   }
-  $("mealName").textContent = mealName;
-  $("mealDesc").textContent = mealDesc;
-  $("mealPrice").textContent = "¥" + Number(mealPrice).toFixed(1);
-  $("mealSaved").textContent = savedTxt;
-  $("rxnMood").textContent = m.label;
-
-  /* 匹配度：同一天同情绪永远同数字 */
   const pct = 86 + hashStr(todayStr() + m.id + (song || "")) % 14;
-  $("matchPct").textContent = pct + "%";
-  requestAnimationFrame(() => { $("matchBar").style.width = pct + "%"; });
-
-  /* 优惠条 */
-  if (dealHtml) {
-    $("dealBox").style.display = "flex";
-    $("dealTitle").textContent = dealHtml[0];
-    $("dealDesc").textContent = dealHtml[1];
-  } else {
-    $("dealBox").style.display = "none";
-  }
-
-  /* 自拍上卡 */
-  const selfieSrc = selfieData || (D && D.selfie) || null;
-  if (selfieSrc) {
-    $("cardSelfie").src = selfieSrc;
-    $("cardSelfie").style.display = "block";
-  } else {
-    $("cardSelfie").style.display = "none";
-  }
-
-  /* 来源标注 */
-  $("srcTag").textContent = realMenu
-    ? "菜单/券价来自麦当劳 MCP 实时数据 · " + (D.generatedAt || "")
-    : "演示数据 · 接入麦当劳 MCP 后为实时菜单与券价";
-
-  /* 播放器文案 */
-  $("playTitle").textContent = trackName + " · 片段";
-  $("playDesc").textContent = m.genre + " · " + m.bpm + " BPM · Web Audio 实时合成";
-
-  $("card").style.display = "block";
-  $("card").scrollIntoView({ behavior: "smooth", block: "start" });
-
-  /* 保存当前曲目供播放器用 */
-  currentTrack = m;
+  mealState = { names, price, saved, coupons, realMenu, pct, artKey: m.meal[0] };
 }
 
-$("goBtn").onclick = () => generate();
-$("shakeBtn").onclick = () => {
-  const pool = MOODS.filter(x => x.id !== moodId);
-  generate(pool[Math.floor(Math.random() * pool.length)].id);
+$("vinyl").onclick = () => { playing ? stopAudio() : startAudio(); };
+
+/* 贴纸 */
+function showSticker() {
+  if (stickerShown || !mealState) return;
+  stickerShown = true;
+  $("stickerArt").innerHTML = (ART[MEAL_ART[mealState.artKey]] || ART.burger)();
+  $("stickerName").textContent = mealState.names.split(" + ")[0];
+  $("sticker").classList.add("pop");
+  $("playHint").textContent = "主食贴纸到手 · 点它领券";
+}
+function hideSticker() { stickerShown = false; $("sticker").classList.remove("pop"); }
+$("sticker").onclick = () => {
+  $("dealMeal").textContent = mealState.names + " · 匹配度 " + mealState.pct + "%";
+  const row = $("couponRow");
+  row.innerHTML = "";
+  if (mealState.realMenu && mealState.coupons > 0) {
+    const labels = ["麦麦省券", "满减券", "套餐折扣券"];
+    for (let i = 0; i < Math.min(mealState.coupons, 3); i++) {
+      const c = document.createElement("div");
+      c.className = "coupon";
+      c.textContent = labels[i % 3] + " · 已领";
+      row.appendChild(c);
+    }
+  } else {
+    const c = document.createElement("div");
+    c.className = "coupon";
+    c.textContent = "接入 MCP 后自动领取麦麦省券";
+    row.appendChild(c);
+  }
+  $("dealNow").textContent = "¥" + Number(mealState.price).toFixed(1);
+  $("dealWas").textContent = mealState.saved ? "¥" + Number(mealState.price + mealState.saved).toFixed(1) : "";
+  $("dealSave").textContent = mealState.saved ? "已省 ¥" + Number(mealState.saved).toFixed(1) : "";
+  goTo("deal");
 };
+$("dealUnderlay").onclick = () => goTo("track");
+$("replayBtn").onclick = () => { stopAudio(); hideSticker(); goTo("camera"); };
 $("orderBtn").onclick = () => {
   alert("在 WorkBuddy 里对我说「就点这个」，我调麦当劳 MCP 帮你一键下单。");
 };
 
-/* ---------- Web Audio 主题曲引擎 ---------- */
-let currentTrack = null;
+/* ---------- Web Audio 引擎 ---------- */
+function initAudioGesture() {
+  if (!audio) audio = buildAudio();
+  if (audio.ctx.state === "suspended") audio.ctx.resume();
+}
 function buildAudio() {
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
   const master = ctx.createGain(); master.gain.value = .5;
   const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1400;
   master.connect(lp); lp.connect(ctx.destination);
-
-  /* 黑胶噪声 */
   const nb = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
   const nd = nb.getChannelData(0);
   for (let i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1) * .25;
@@ -447,18 +521,13 @@ function buildAudio() {
   const vg = ctx.createGain(); vg.gain.value = .012;
   const vhp = ctx.createBiquadFilter(); vhp.type = "highpass"; vhp.frequency.value = 2500;
   vinyl.connect(vhp); vhp.connect(vg); vg.connect(master); vinyl.start();
-
   return { ctx, master, lp };
 }
-
 function scheduleNote(a, time, m, step, bar) {
   const chords = CHORD_LIB[m.id];
   const chord = chords[bar % chords.length];
   const stepDur = 60 / m.bpm / 4;
-  const swingOff = (step % 2 === 1) ? m.swing * stepDur : 0;
-  const t = time + swingOff;
-
-  /* 底鼓 */
+  const t = time + (step % 2 === 1 ? m.swing * stepDur : 0);
   if (step === 0 || (m.id === "hype" && step === 10)) {
     const o = a.ctx.createOscillator(), g = a.ctx.createGain();
     o.type = "sine";
@@ -466,10 +535,8 @@ function scheduleNote(a, time, m, step, bar) {
     o.frequency.exponentialRampToValueAtTime(45, t + .12);
     g.gain.setValueAtTime(.9, t);
     g.gain.exponentialRampToValueAtTime(.001, t + .18);
-    o.connect(g); g.connect(a.master);
-    o.start(t); o.stop(t + .2);
+    o.connect(g); g.connect(a.master); o.start(t); o.stop(t + .2);
   }
-  /* 镲 */
   if (Math.random() < m.hat && step % 2 === 1) {
     const s = a.ctx.createBufferSource();
     const hb = a.ctx.createBuffer(1, a.ctx.sampleRate * .06, a.ctx.sampleRate);
@@ -478,22 +545,17 @@ function scheduleNote(a, time, m, step, bar) {
     s.buffer = hb;
     const hp = a.ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 8000;
     const g = a.ctx.createGain(); g.gain.value = .18;
-    s.connect(hp); hp.connect(g); g.connect(a.master);
-    s.start(t);
+    s.connect(hp); hp.connect(g); g.connect(a.master); s.start(t);
   }
-  /* 贝斯：和弦根音八分音 */
   if (step % 4 === 0 || step % 8 === 6) {
     const o = a.ctx.createOscillator(), g = a.ctx.createGain();
     o.type = "triangle";
-    const oct = (step % 8 === 6) ? 12 : 0;
-    o.frequency.value = midi2freq(m.root + chord[0] - 12 + oct);
+    o.frequency.value = midi2freq(m.root + chord[0] - 12 + (step % 8 === 6 ? 12 : 0));
     g.gain.setValueAtTime(.0001, t);
     g.gain.linearRampToValueAtTime(.4, t + .02);
     g.gain.exponentialRampToValueAtTime(.001, t + stepDur * 3);
-    o.connect(g); g.connect(a.master);
-    o.start(t); o.stop(t + stepDur * 4);
+    o.connect(g); g.connect(a.master); o.start(t); o.stop(t + stepDur * 4);
   }
-  /* 和弦垫：每小节第 0、8 步 */
   if (step === 0 || step === 8) {
     chord.forEach(semi => {
       [-6, 6].forEach(det => {
@@ -504,55 +566,49 @@ function scheduleNote(a, time, m, step, bar) {
         g.gain.setValueAtTime(.0001, t);
         g.gain.linearRampToValueAtTime(.05, t + .05);
         g.gain.exponentialRampToValueAtTime(.001, t + stepDur * 7);
-        o.connect(g); g.connect(a.master);
-        o.start(t); o.stop(t + stepDur * 8);
+        o.connect(g); g.connect(a.master); o.start(t); o.stop(t + stepDur * 8);
       });
     });
   }
 }
-
-let schedTimer = null, nextTime = 0, step = 0, bar = 0;
+let nextTime = 0, curStep = 0, curBar = 0;
 function startAudio() {
-  if (!currentTrack) return;
-  if (!audio) audio = buildAudio();
-  if (audio.ctx.state === "suspended") audio.ctx.resume();
-  audio.lp.frequency.value = currentTrack.bright;
+  if (!mood) return;
+  initAudioGesture();
+  audio.lp.frequency.value = mood.bright;
   playing = true;
-  step = 0; bar = 0;
+  curStep = 0; curBar = 0;
   nextTime = audio.ctx.currentTime + .06;
   schedTimer = setInterval(() => {
     while (nextTime < audio.ctx.currentTime + .12) {
-      scheduleNote(audio, nextTime, currentTrack, step, bar);
-      nextTime += 60 / currentTrack.bpm / 4;
-      step = (step + 1) % 16;
-      if (step === 0) bar++;
+      scheduleNote(audio, nextTime, mood, curStep, curBar);
+      nextTime += 60 / mood.bpm / 4;
+      curStep = (curStep + 1) % 16;
+      if (curStep === 0) curBar++;
     }
   }, 25);
-  $("iconPlay").style.display = "none";
-  $("iconStop").style.display = "block";
+  $("vinyl").classList.add("spinning");
+  $("playHint").textContent = "正在播放 · 你的耳朵和嘴巴正在反应";
   eqTimer = setInterval(() => {
-    document.querySelectorAll("#eq i").forEach(b => {
-      b.style.height = (playing ? 15 + Math.random() * 85 : 20) + "%";
-    });
+    document.querySelectorAll("#eq i").forEach(b => b.style.height = (playing ? 15 + Math.random() * 85 : 18) + "%");
   }, 120);
+  setTimeout(showSticker, 1800);
 }
 function stopAudio() {
   if (schedTimer) clearInterval(schedTimer);
   if (eqTimer) clearInterval(eqTimer);
   schedTimer = eqTimer = null;
   playing = false;
-  const pb = $("playBtn");
-  if (pb) { $("iconPlay").style.display = "block"; $("iconStop").style.display = "none"; }
-  document.querySelectorAll("#eq i").forEach(b => b.style.height = "20%");
+  const v = $("vinyl");
+  if (v) v.classList.remove("spinning");
+  document.querySelectorAll("#eq i").forEach(b => b.style.height = "18%");
 }
-$("playBtn").onclick = () => { playing ? stopAudio() : startAudio(); };
 
-/* ---------- WorkBuddy 注入：自动播放 ---------- */
+/* ---------- 注入模式 ---------- */
 (function () {
-  const D = window.MCTRACK_DATA;
   if (D && D.moodId) {
-    if (D.songText) $("songText").value = D.songText;
-    generate(D.moodId);
+    if (D.selfie) startScan(D.selfie, true);
+    else suggestFromBrightness(D.moodId);
   }
 })();
 </script>
