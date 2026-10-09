@@ -171,6 +171,12 @@
     transform: translateY(160px) scale(.3) rotate(-30deg); opacity: 0; display: none; cursor: pointer;
   }
   #sticker.pop { display: block; animation: stickerPop .7s var(--spring) forwards; }
+  /* 弹入完成后接管姿态；2.6s 后缩到右下角，别挡判词 */
+  #sticker.idle { display: block; opacity: 1; transform: translateY(0) scale(1) rotate(-7deg); }
+  #sticker.idle.mini {
+    right: 2px; bottom: 14px; transform: translateY(0) scale(.78) rotate(-8deg);
+    transition: right .55s var(--sheet), bottom .55s var(--sheet), transform .55s var(--sheet);
+  }
   @keyframes stickerPop {
     0%   { transform: translateY(160px) scale(.3) rotate(-30deg); opacity: 0; }
     55%  { opacity: 1; }
@@ -199,7 +205,8 @@
   @keyframes pulse { 50% { opacity: .35; } }
 
   /* ===== 底部烟花（纯 CSS，贴纸到手时庆祝）===== */
-  .fw-layer { position: fixed; inset: 0; pointer-events: none; z-index: 70; overflow: hidden; }
+  /* absolute 而非 fixed：约束在 430px 机身内，桌面宽屏不放飞 */
+  .fw-layer { position: absolute; inset: 0; pointer-events: none; z-index: 70; overflow: hidden; }
   .fw-burst {
     position: absolute; bottom: -12px; left: 50%; width: 0; height: 0;
     animation: fwRise .55s cubic-bezier(.18,.72,.3,1) forwards;
@@ -759,7 +766,16 @@ function showSticker() {
   stickerShown = true;
   $("stickerArt").innerHTML = photoHTML(mealState.main, "photo-a") + (mealState.second ? photoHTML(mealState.second, "photo-b") : "");
   $("stickerName").textContent = mealState.main.name + (mealState.second ? " × " + mealState.second.name : "");
-  $("sticker").classList.add("pop");
+  const st = $("sticker");
+  st.classList.remove("idle", "mini");
+  st.classList.add("pop");
+  /* 弹入动画结束后换 idle 姿态接管，2.6s 后缩到右下角让出判词 */
+  st.onanimationend = e => {
+    if (e.target !== st || e.animationName !== "stickerPop") return;
+    st.classList.remove("pop");
+    st.classList.add("idle");
+    setTimeout(() => { if (stickerShown) st.classList.add("mini"); }, 2600);
+  };
   launchFireworks();
   buzz([12, 60, 12]);
   $("playHint").textContent = "主食贴纸到手 · 点它领券";
@@ -792,7 +808,12 @@ function launchFireworks() {
   setTimeout(spawn, 180);
   setTimeout(spawn, 380);
 }
-function hideSticker() { stickerShown = false; $("sticker").classList.remove("pop"); }
+function hideSticker() {
+  stickerShown = false;
+  const st = $("sticker");
+  st.onanimationend = null;
+  st.classList.remove("pop", "idle", "mini");
+}
 $("sticker").onclick = () => {
   buzz(12);
   $("dealMeal").textContent = mealState.names + " · 匹配度 " + mealState.pct + "%";
