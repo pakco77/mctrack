@@ -21,21 +21,25 @@
   html, body { height: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
     background: #000; color: var(--ink);
     max-width: 430px; margin: 0 auto;
     overflow: hidden; position: relative;
+    user-select: none; -webkit-user-select: none;
   }
   .stage {
     position: absolute; inset: 0;
     display: flex; flex-direction: column;
     opacity: 0; pointer-events: none;
-    transition: opacity .35s ease;
+    transform: translateY(12px) scale(.985);
+    transition: opacity .26s ease, transform .26s var(--sheet);
   }
-  .stage.on { opacity: 1; pointer-events: auto; }
+  .stage.on { opacity: 1; pointer-events: auto; transform: none; }
   .back {
     position: absolute; top: max(14px, env(safe-area-inset-top)); left: 14px; z-index: 50;
     width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
-    background: rgba(120,120,128,.16); backdrop-filter: blur(8px);
+    background: rgba(120,120,128,.16);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
     color: var(--ink); font-size: 18px; display: none; align-items: center; justify-content: center;
   }
   .dots { position: absolute; top: max(24px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; gap: 7px; z-index: 50; }
@@ -77,7 +81,7 @@
   .sheet {
     position: relative; background: var(--cream); border-radius: 26px 26px 0 0;
     padding: 12px 24px max(30px, env(safe-area-inset-bottom));
-    transform: translateY(105%); transition: transform .5s var(--sheet);
+    transform: translateY(105%); transition: transform .42s var(--sheet);
     max-height: 86%; overflow-y: auto;
   }
   #st-keywords.on .sheet { transform: translateY(0); }
@@ -92,6 +96,15 @@
     transition: transform .15s ease, background .2s, color .2s;
   }
   .kw:active { transform: scale(.96); }
+
+  /* ===== iOS 按压反馈：所有可点元素统一 scale + 压暗 ===== */
+  .cam-btn, .back, .lang-pills button, .order-btn, .skip, .reshuffle button, .replay button, .vinyl {
+    transition: transform .14s var(--spring), filter .14s ease, opacity .2s ease;
+  }
+  .cam-btn:active, .back:active, .lang-pills button:active, .skip:active, .reshuffle button:active, .replay button:active, .vinyl:active {
+    transform: scale(.94); filter: brightness(.9);
+  }
+  .order-btn:active { transform: scale(.96); filter: brightness(.95); }
   .kw.pick { background: var(--red); color: #fff; }
   .kw .mini { display: block; font-size: 11px; font-weight: 500; opacity: .6; margin-top: 4px; }
   .kw .guess { position: absolute; top: -9px; right: 12px; background: var(--yellow); color: var(--ink); font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
@@ -152,34 +165,55 @@
   .eq { display: flex; gap: 4px; align-items: flex-end; height: 30px; margin-top: 12px; }
   .eq i { width: 5px; background: var(--red); border-radius: 3px; height: 18%; }
 
-  /* ===== 主食贴纸（模切轮廓白边）===== */
+  /* ===== 主食贴纸（模切轮廓白边 · 大号）===== */
   #sticker {
-    position: absolute; right: 10px; bottom: 108px; z-index: 40; width: 250px;
-    transform: scale(0) rotate(-30deg); display: none; cursor: pointer;
+    position: absolute; right: 10px; bottom: 108px; z-index: 40; width: 288px;
+    transform: translateY(160px) scale(.3) rotate(-30deg); opacity: 0; display: none; cursor: pointer;
   }
-  #sticker.pop { display: block; animation: stickerPop .65s var(--spring) forwards; }
-  @keyframes stickerPop { to { transform: scale(1) rotate(-7deg); } }
+  #sticker.pop { display: block; animation: stickerPop .7s var(--spring) forwards; }
+  @keyframes stickerPop {
+    0%   { transform: translateY(160px) scale(.3) rotate(-30deg); opacity: 0; }
+    55%  { opacity: 1; }
+    100% { transform: translateY(0) scale(1) rotate(-7deg); opacity: 1; }
+  }
   #sticker .sticker-body {
     background: #fff; border-radius: 24px; padding: 16px 14px 12px;
-    border: 3px solid #fff; box-shadow: 0 14px 34px rgba(0,0,0,.25); text-align: center;
+    border: 3px solid #fff; box-shadow: 0 16px 36px rgba(0,0,0,.16); text-align: center;
   }
   #stickerArt { display: flex; align-items: flex-end; justify-content: center; }
   .photo-a { transform: rotate(-4deg); z-index: 2; }
-  .photo-b { margin-left: -30px; transform: rotate(5deg); z-index: 3; }
+  .photo-b { margin-left: -34px; transform: rotate(5deg); z-index: 3; }
   .photo-frame {
-    background: #fff; padding: 9px;
+    background: #fff; padding: 11px;
     border-radius: 44% 56% 52% 48% / 50% 46% 54% 50%;
-    box-shadow: 0 4px 14px rgba(0,0,0,.18), 0 0 0 2px #fff;
+    box-shadow: 0 6px 16px rgba(0,0,0,.14), 0 0 0 5px #fff;
   }
-  .photo-a .photo-frame { width: 150px; }
-  .photo-b .photo-frame { width: 112px; }
+  .photo-a .photo-frame { width: 190px; }
+  .photo-b .photo-frame { width: 138px; }
   .photo-frame img, .photo-frame svg {
     width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #fff;
     border-radius: 44% 56% 52% 48% / 50% 46% 54% 50%;
   }
-  #sticker .sticker-name { font-size: 13px; font-weight: 800; margin-top: 10px; }
+  #sticker .sticker-name { font-size: 14px; font-weight: 800; margin-top: 10px; }
   #sticker .sticker-cta { font-size: 10px; color: var(--red); font-weight: 700; margin-top: 3px; animation: pulse 1.2s ease infinite; }
   @keyframes pulse { 50% { opacity: .35; } }
+
+  /* ===== 底部烟花（纯 CSS，贴纸到手时庆祝）===== */
+  .fw-layer { position: fixed; inset: 0; pointer-events: none; z-index: 70; overflow: hidden; }
+  .fw-burst {
+    position: absolute; bottom: -12px; left: 50%; width: 0; height: 0;
+    animation: fwRise .55s cubic-bezier(.18,.72,.3,1) forwards;
+  }
+  @keyframes fwRise { to { transform: translateY(calc(-1 * var(--peak, 46vh))); } }
+  .fw-burst i {
+    position: absolute; width: 6px; height: 6px; margin: -3px; border-radius: 50%;
+    opacity: 0; animation: fwSpark .85s ease-out forwards;
+  }
+  @keyframes fwSpark {
+    0%   { opacity: 1; transform: translate(0, 0) scale(1.2); }
+    70%  { opacity: .9; }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.25); }
+  }
 
   /* ===== 领券抽屉 ===== */
   #st-deal { justify-content: flex-end; z-index: 60; }
@@ -187,6 +221,10 @@
   #st-deal.on .underlay { opacity: 1; }
   #st-deal .sheet { transform: translateY(105%); }
   #st-deal.on .sheet { transform: translateY(0); }
+  .deal-food { display: flex; align-items: flex-end; justify-content: center; margin-top: 18px; }
+  .deal-food .photo-a .photo-frame { width: 168px; }
+  .deal-food .photo-b .photo-frame { width: 122px; }
+  .deal-food .photo-b { margin-left: -32px; }
   .coupon-row { display: flex; gap: 10px; margin-top: 18px; overflow-x: auto; padding-bottom: 4px; }
   .coupon {
     flex-shrink: 0; background: #FFF4D6; border: 1.5px dashed #E8B93B; border-radius: 12px;
@@ -201,7 +239,6 @@
     background: var(--yellow); color: var(--ink); font-size: 17px; font-weight: 800;
     border-radius: 16px; letter-spacing: 1px;
   }
-  .order-btn:active { transform: scale(.97); }
   .share-line { text-align: center; font-size: 12px; color: var(--ink-soft); margin-top: 14px; }
   .replay { text-align: center; margin-top: 10px; }
   .replay button { border: none; background: none; color: var(--ink-soft); font-size: 13px; cursor: pointer; text-decoration: underline; }
@@ -213,6 +250,7 @@
 
 <div class="dots" id="dots"><i class="on"></i><i></i><i></i><i></i></div>
 <button class="back" id="backBtn" aria-label="返回">‹</button>
+<div class="fw-layer" id="fwLayer"></div>
 
 <!-- Stage 1：自拍 -->
 <section class="stage on" id="st-camera">
@@ -283,6 +321,7 @@
     <div class="grabber"></div>
     <h2>今日最搭已配好</h2>
     <div class="sub2" id="dealMeal">—</div>
+    <div class="deal-food" id="dealFood"></div>
     <div class="coupon-row" id="couponRow"></div>
     <div class="price-line">
       <span class="now" id="dealNow">¥0</span>
@@ -437,6 +476,8 @@ let stage = "camera", mood = null, audio = null, playing = false, schedTimer = n
 function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h; }
 function todayStr() { const d = new Date(); return d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0"); }
 function midi2freq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+/* 触感反馈：支持的设备上点按给一点震动，不支持就静默跳过 */
+function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
 
 /* ---------- 舞台机 ---------- */
 const ORDER = ["camera", "keywords", "track", "deal"];
@@ -448,11 +489,11 @@ function goTo(name) {
   document.querySelectorAll("#dots i").forEach((d, i) => d.classList.toggle("on", i <= Math.min(idx, 2)));
   $("backBtn").style.display = (name === "keywords" || name === "track") ? "flex" : "none";
 }
-$("backBtn").onclick = () => { stopAudio(); goTo(stage === "track" ? "keywords" : "camera"); };
+$("backBtn").onclick = () => { buzz(8); stopAudio(); goTo(stage === "track" ? "keywords" : "camera"); };
 
 /* ---------- Stage 1：自拍 ---------- */
-$("btnShot").onclick = () => $("fileShot").click();
-$("btnAlbum").onclick = () => $("fileAlbum").click();
+$("btnShot").onclick = () => { buzz(8); $("fileShot").click(); };
+$("btnAlbum").onclick = () => { buzz(8); $("fileAlbum").click(); };
 $("skipCam").onclick = () => { suggestFromBrightness(null); goTo("keywords"); };
 $("fileShot").onchange = e => handleFile(e.target.files[0]);
 $("fileAlbum").onchange = e => handleFile(e.target.files[0]);
@@ -626,10 +667,11 @@ function buildKeywords(guessId) {
     b.className = "kw";
     b.innerHTML = m.label + '<span class="mini">' + m.sub + " · " + m.genre + "</span>" + (i === 0 ? '<span class="guess">猜你想点</span>' : "");
     b.onclick = () => {
+      buzz(10);
       document.querySelectorAll(".kw").forEach(k => k.classList.remove("pick"));
       b.classList.add("pick");
       initAudioGesture();
-      setTimeout(() => pickMood(m.id), 380);
+      setTimeout(() => pickMood(m.id), 300);
     };
     g.appendChild(b);
   });
@@ -699,7 +741,7 @@ function prepareDeal(song) {
   mealState = { main, second, names, price, saved, coupons, realMenu, pct };
 }
 
-$("vinyl").onclick = () => { playing ? stopAudio() : startAudio(); };
+$("vinyl").onclick = () => { buzz(10); playing ? stopAudio() : startAudio(); };
 
 /* 贴纸 */
 function photoHTML(item, cls) {
@@ -718,11 +760,43 @@ function showSticker() {
   $("stickerArt").innerHTML = photoHTML(mealState.main, "photo-a") + (mealState.second ? photoHTML(mealState.second, "photo-b") : "");
   $("stickerName").textContent = mealState.main.name + (mealState.second ? " × " + mealState.second.name : "");
   $("sticker").classList.add("pop");
+  launchFireworks();
+  buzz([12, 60, 12]);
   $("playHint").textContent = "主食贴纸到手 · 点它领券";
+}
+/* 纯 CSS 烟花：从底部升空后炸开，零图片零依赖 */
+function launchFireworks() {
+  const layer = $("fwLayer");
+  if (!layer) return;
+  const colors = ["#DA291C", "#FFC72C", "#FF7A59", "#FFE08A", "#FFFFFF"];
+  const spawn = () => {
+    const burst = document.createElement("div");
+    burst.className = "fw-burst";
+    burst.style.left = (14 + Math.random() * 68) + "%";
+    burst.style.setProperty("--peak", (28 + Math.random() * 34) + "vh");
+    const n = 12 + Math.floor(Math.random() * 6);
+    for (let i = 0; i < n; i++) {
+      const s = document.createElement("i");
+      const ang = (Math.PI * 2 * i) / n + Math.random() * 0.5;
+      const dist = 36 + Math.random() * 46;
+      s.style.setProperty("--dx", (Math.cos(ang) * dist).toFixed(1) + "px");
+      s.style.setProperty("--dy", (Math.sin(ang) * dist).toFixed(1) + "px");
+      s.style.background = colors[i % colors.length];
+      s.style.animationDelay = (0.52 + Math.random() * 0.08) + "s";
+      burst.appendChild(s);
+    }
+    layer.appendChild(burst);
+    setTimeout(() => burst.remove(), 2000);
+  };
+  spawn();
+  setTimeout(spawn, 180);
+  setTimeout(spawn, 380);
 }
 function hideSticker() { stickerShown = false; $("sticker").classList.remove("pop"); }
 $("sticker").onclick = () => {
+  buzz(12);
   $("dealMeal").textContent = mealState.names + " · 匹配度 " + mealState.pct + "%";
+  $("dealFood").innerHTML = photoHTML(mealState.main, "photo-a") + (mealState.second ? photoHTML(mealState.second, "photo-b") : "");
   const row = $("couponRow");
   row.innerHTML = "";
   if (mealState.realMenu && mealState.coupons > 0) {
@@ -747,6 +821,7 @@ $("sticker").onclick = () => {
 $("dealUnderlay").onclick = () => goTo("track");
 $("replayBtn").onclick = () => { stopAudio(); hideSticker(); goTo("camera"); };
 $("orderBtn").onclick = () => {
+  buzz([15, 50, 15]);
   alert("在 WorkBuddy 里对我说「就点这个」，我调麦当劳 MCP 帮你一键下单。");
 };
 
