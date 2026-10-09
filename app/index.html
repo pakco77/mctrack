@@ -469,21 +469,63 @@ function startScan(dataUrl, injected) {
   $("selfieImg").src = dataUrl;
   $("selfieImg").style.display = "block";
   $("scanRing").style.display = "block";
-  $("camStatus").textContent = "自拍检测中…";
+  $("camStatus").textContent = "表情识别中…";
   const img = $("selfieImg");
   const done = (moodGuess, faceOk) => {
     $("scanRing").style.display = "none";
     $("faceLine").style.borderColor = "rgba(255,199,44,.8)";
-    $("camStatus").textContent = faceOk ? "自拍检测通过 · 情绪读取完成" : "没认出脸？算你低调 · 情绪已瞎猜";
+    $("camStatus").textContent = faceOk ? "表情识别通过 · 情绪读取完成" : "没认出脸？算你低调 · 情绪已瞎猜";
     setTimeout(() => { suggestFromBrightness(moodGuess); goTo("keywords"); }, 900);
   };
   if (injected) { done(D && D.moodId, true); return; }
-  if ("FaceDetector" in window) {
-    new FaceDetector({ fastMode: true }).detect(img)
-      .then(faces => analyzeImage(img, moodId => done(moodId, faces.length > 0)))
-      .catch(() => analyzeImage(img, moodId => done(moodId, true)));
-  } else {
-    analyzeImage(img, moodId => done(moodId, true));
+  loadFaceApi().catch(() => {});
+  const faceDetect = ("FaceDetector" in window)
+    ? new FaceDetector({ fastMode: true }).detect(img).then(f => f.length > 0).catch(() => true)
+    : Promise.resolve(true);
+  const minShow = new Promise(r => setTimeout(r, 1400));
+  Promise.all([recognizeExpression(img), faceDetect, minShow]).then(([exprMood, faceOk]) => {
+    if (exprMood) { done(exprMood, faceOk); return; }
+    analyzeImage(img, moodId => done(moodId, faceOk));
+  });
+}
+
+/* 表情识别（face-api.js，纯浏览器本地，MIT）：懒加载预训练模型（7 种表情）。
+   模型加载失败/没检出脸/平静脸/置信度不足 → 返回 null，降级到 analyzeImage。 */
+const FACEAPI_URL = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
+const FACEAPI_WEIGHTS = "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights";
+let faceApiReady = null;
+function loadFaceApi() {
+  if (faceApiReady) return faceApiReady;
+  faceApiReady = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = FACEAPI_URL;
+    s.onload = async () => {
+      try {
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(FACEAPI_WEIGHTS),
+          faceapi.nets.faceExpressionNet.loadFromUri(FACEAPI_WEIGHTS)
+        ]);
+        resolve(true);
+      } catch (e) { reject(e); }
+    };
+    s.onerror = () => reject(new Error("cdn fail"));
+    document.head.appendChild(s);
+    setTimeout(() => reject(new Error("load timeout")), 12000);
+  });
+  faceApiReady.catch(() => { faceApiReady = null; });
+  return faceApiReady;
+}
+const EXPR_TO_MOOD = { happy: "hype", surprised: "fired", angry: "fired", sad: "down", fearful: "tired", disgusted: "zoned" };
+async function recognizeExpression(img) {
+  try {
+    await loadFaceApi();
+    const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 })).withFaceExpressions();
+    if (!det) return null;
+    const top = Object.entries(det.expressions).sort((a, b) => b[1] - a[1])[0];
+    if (top[0] === "neutral" || top[1] < 0.55) return null;
+    return EXPR_TO_MOOD[top[0]] || null;
+  } catch (e) {
+    return null;
   }
 }
 
@@ -546,7 +588,7 @@ function buildKeywords(guessId) {
     g.appendChild(b);
   });
   $("kwSub").textContent = (guessId && MOODS.some(m => m.id === guessId))
-    ? "照片读出来的（本地粗读，图一乐），点一个确认"
+    ? "表情读出来的（本地识别，图一乐），点一个确认"
     : "点一个，今天的心情由它代言";
 }
 $("reshuffleBtn").onclick = () => buildKeywords(MOODS[Math.floor(Math.random() * MOODS.length)].id);
