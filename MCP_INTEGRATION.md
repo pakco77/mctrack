@@ -13,48 +13,56 @@
 ## 实际使用的 Tool 与调用流程
 
 ```
-用户输入（自拍/情绪/歌曲名）
+用户说一件今天发生的事（"甲方让我改了第八版方案"）
     │
     ▼
-now-time-info                获取当前时间，未给情绪时推断场景
+WorkBuddy 理解原话          归类事件 → 犒劳指数（定份量）+ 写一句判词
     │
     ▼
-query-meals                  查询当前可售菜单，确定今日主餐候选
+query-nearby-stores          定位门店
     │
     ▼
-query-meal-detail            查询餐品详情（套餐组成、可换配项）
+query-meals                  在售菜单里按关键词匹配批准餐品（名称/图片/现价）
+    │
+    ▼
+list-nutrition-foods         查热量，批准书上如实标注
     │
     ▼
 auto-bind-coupons            一键领取麦麦省全部可领券
     │
     ▼
-query-my-coupons             确认券到账（指定门店时用 query-store-coupons 校验可用性）
+query-my-coupons             确认券到账（指定门店时用 query-store-coupons 校验）
     │
     ▼
-calculate-price              传入商品列表+最优券，计算应付价与节省金额
+calculate-price              传入商品列表 + 最优券，得券后价与节省金额
     │
     ▼
-生成 H5 点唱页（注入真实菜单/券/价数据，产出分享卡片）
+生成「麦麦犒劳批准书」H5     注入事由/判词/餐品/热量/券后价，打开即盖章
+    │
+    ├─ query-lottery-info → draw-lottery（可选）   有抽奖次数且用户同意时"加赏"一次
     │
     ▼
-create-order（可选）         用户明确说「就点这个」才调用；调用前复述门店、餐品、金额并等确认
+create-order                 用户说「就吃这个」才调用；先复述门店、餐品、金额并等确认
 ```
 
 ## 业务价值
 
-| 工具 | 在 McTrack 里的价值 |
+| 工具 | 在麦麦批准里的价值 |
 |---|---|
-| query-meals / query-meal-detail | 「今日主餐」来自真实在售菜单而非臆造，情绪匹配落到可点的餐品上 |
-| auto-bind-coupons / query-my-coupons | 把「领券」从用户自己翻 app 变成点唱附带动作，卡片直接显示省了多少 |
-| calculate-price | 最省点法可量化：本顿应付价、立省金额直接上分享卡片 |
-| create-order | 从「好玩」到「真香」的闭环：看完卡片一句话下单 |
+| query-meals | 批准的是真实在售、能点到的餐品，不是臆造 |
+| list-nutrition-foods | 热量写在批准书上，份量跟犒劳指数挂钩，犒劳但不过量 |
+| auto-bind-coupons / query-my-coupons | 去掉"花钱心疼"这层负罪感：券自动领好，不用自己翻 app |
+| calculate-price | 券后价上批准书，"批准金额 ¥27.5"一眼可见 |
+| query-lottery-info / draw-lottery | 真实积分抽奖做"加赏"，惊喜是真的 |
+| create-order | 从"被批准"到"吃到嘴"一句话闭环，返回支付链接 |
 
 ## 错误处理
 
-- **401**：Token 失效/未配置 → 提示用户重新激活 Token，H5 降级为示例数据
+- **401**：Token 失效/未配置 → 提示用户重新激活 Token，H5 降级为菜单快照
 - **429**：触发限流 → 降低调用频率重试
-- **超时/不可用**：不中断体验，H5 使用内置示例数据集并标注「演示数据」
+- **超时/不可用**：不中断体验，H5 使用内置快照并标「门店价」
+- **菜单图加载卡住**：2.5 秒未出图自动换成插画，不留空白
 
 ## 配置示例
 
-见 `mcp-config.example.json`（仅环境变量占位符，无真实 Token）。
+见 `mcp-config.example.json`（仅占位符，无真实 Token）。

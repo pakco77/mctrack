@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>麦反应 McReaction · 你的耳朵和嘴巴发生了反应</title>
+<title>麦麦批准 · 今天这顿，麦当劳批了</title>
 <style>
   :root {
     --red: #DA291C;
     --red-dark: #B01E12;
     --yellow: #FFC72C;
     --cream: #F5F5F7;
+    --paper: #FFFDF8;
     --ink: #1D1D1F;
     --ink-soft: #6E6259;
     --line: #E8E0D2;
@@ -18,15 +19,19 @@
     --sheet: cubic-bezier(.32, .72, 0, 1);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; }
+  /* html 也要 hidden：否则 body 的 overflow 会转交给视口，藏在屏幕下方的抽屉撑出滚动区，
+     输入框聚焦时整页被滚走露出黑边。body 用 clip（不可被程序滚动），hidden 兜底老浏览器 */
+  html { height: 100%; overflow: hidden; }
   body {
+    height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     background: #000; color: var(--ink);
     max-width: 430px; margin: 0 auto;
-    overflow: hidden; position: relative;
+    overflow: hidden; overflow: clip; position: relative;
     user-select: none; -webkit-user-select: none;
   }
+  button { font-family: inherit; }
   .stage {
     position: absolute; inset: 0;
     display: flex; flex-direction: column;
@@ -46,165 +51,105 @@
   .dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(120,120,128,.3); transition: all .3s; }
   .dots i.on { background: var(--red); width: 20px; border-radius: 4px; }
 
-  /* ===== Stage 1 相机 ===== */
-  #st-camera { background: #000; color: #fff; align-items: center; justify-content: center; padding: 24px; }
-  #st-camera .kicker { font-size: 13px; letter-spacing: 4px; color: rgba(255,255,255,.55); font-weight: 600; }
-  #st-camera h1 { font-size: 34px; font-weight: 800; margin-top: 10px; letter-spacing: 1px; }
-  #st-camera .sub { font-size: 14px; color: rgba(255,255,255,.6); margin-top: 8px; line-height: 1.7; text-align: center; }
-  .lens {
-    width: 230px; height: 230px; border-radius: 50%; margin: 36px 0 28px;
-    border: 3px solid rgba(255,255,255,.25); position: relative; overflow: hidden;
-    background: #111; flex-shrink: 0;
-  }
-  .lens img { width: 100%; height: 100%; object-fit: cover; display: none; }
-  .lens .scan {
-    position: absolute; inset: -3px; border-radius: 50%; display: none;
-    border: 3px solid var(--yellow); border-top-color: transparent; border-bottom-color: transparent;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .lens .face-line { position: absolute; inset: 18%; border: 2px dashed rgba(255,199,44,0); border-radius: 50%; transition: border-color .3s; }
-  .cam-status { font-size: 13px; color: var(--yellow); min-height: 20px; font-weight: 600; }
-  .cam-btns { display: flex; gap: 14px; margin-top: 20px; }
-  .cam-btn {
-    padding: 15px 26px; border-radius: 999px; border: none; cursor: pointer;
-    font-size: 16px; font-weight: 700;
-  }
-  .cam-btn.primary { background: #fff; color: #000; }
-  .cam-btn.ghost { background: rgba(255,255,255,.14); color: #fff; }
-  .skip { margin-top: 24px; color: rgba(255,255,255,.45); font-size: 13px; border: none; background: none; cursor: pointer; }
-
-  /* ===== 情绪抽屉 ===== */
-  #st-keywords { justify-content: flex-end; }
-  #st-keywords .underlay { position: absolute; inset: 0; background: rgba(0,0,0,.4); opacity: 0; transition: opacity .3s; }
-  #st-keywords.on .underlay { opacity: 1; }
-  .sheet {
-    position: relative; background: var(--cream); border-radius: 26px 26px 0 0;
-    padding: 12px 24px max(30px, env(safe-area-inset-bottom));
-    transform: translateY(105%); transition: transform .42s var(--sheet);
-    max-height: 86%; overflow-y: auto;
-  }
-  #st-keywords.on .sheet { transform: translateY(0); }
-  .grabber { width: 38px; height: 5px; border-radius: 3px; background: rgba(0,0,0,.15); margin: 4px auto 18px; }
-  .sheet h2 { font-size: 24px; font-weight: 800; }
-  .sheet .sub2 { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
-  .kw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
-  .kw {
-    border: none; border-radius: 18px; padding: 20px 10px; font-size: 17px; font-weight: 700;
-    background: #fff; color: var(--ink); cursor: pointer; position: relative;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06);
-    transition: transform .15s ease, background .2s, color .2s;
-  }
-  .kw:active { transform: scale(.96); }
-
   /* ===== iOS 按压反馈：所有可点元素统一 scale + 压暗 ===== */
-  .cam-btn, .back, .lang-pills button, .order-btn, .skip, .reshuffle button, .replay button, .vinyl {
-    transition: transform .14s var(--spring), filter .14s ease, opacity .2s ease;
+  .ev, .back, .order-btn, .replay button, .say button {
+    transition: transform .14s var(--spring), filter .14s ease, opacity .2s ease, background .2s, color .2s;
   }
-  .cam-btn:active, .back:active, .lang-pills button:active, .skip:active, .reshuffle button:active, .replay button:active, .vinyl:active {
-    transform: scale(.94); filter: brightness(.9);
-  }
+  .ev:active, .back:active, .replay button:active, .say button:active { transform: scale(.94); filter: brightness(.9); }
   .order-btn:active { transform: scale(.96); filter: brightness(.95); }
-  .kw.pick { background: var(--red); color: #fff; }
-  .kw .mini { display: block; font-size: 11px; font-weight: 500; opacity: .6; margin-top: 4px; }
-  .kw .guess { position: absolute; top: -9px; right: 12px; background: var(--yellow); color: var(--ink); font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 999px; }
-  .reshuffle { margin-top: 16px; text-align: center; }
-  .reshuffle button { border: none; background: none; color: var(--ink-soft); font-size: 13px; cursor: pointer; text-decoration: underline; }
-  .song-mini { margin-top: 14px; }
-  .song-mini input {
-    width: 100%; border: none; background: #fff; border-radius: 14px; padding: 13px 16px;
-    font-size: 15px; outline: none; box-shadow: 0 1px 3px rgba(0,0,0,.06);
-  }
 
-  /* ===== 主题曲页 ===== */
-  #st-track { background: var(--cream); align-items: center; padding: 66px 24px 24px; }
-  #st-track .kicker { font-size: 12px; letter-spacing: 3px; color: var(--ink-soft); font-weight: 700; }
-  .vinyl-wrap { margin: 30px 0 8px; transform: scale(.2); opacity: 0; }
-  #st-track.on .vinyl-wrap { animation: springIn .7s var(--spring) .15s forwards; }
-  @keyframes springIn { to { transform: scale(1); opacity: 1; } }
-  .vinyl {
-    width: 240px; height: 240px; border-radius: 50%; background: #141414; position: relative;
-    box-shadow: 0 18px 40px rgba(0,0,0,.22); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
+  /* ===== Stage 1 今天发生了什么 ===== */
+  #st-ask { background: var(--cream); padding: 64px 22px max(20px, env(safe-area-inset-bottom)); overflow-y: auto; }
+  #st-ask .kicker { font-size: 12px; letter-spacing: 3px; color: var(--ink-soft); font-weight: 700; }
+  #st-ask h1 { font-size: 30px; font-weight: 800; margin-top: 8px; }
+  #st-ask .sub { font-size: 14px; color: var(--ink-soft); margin-top: 6px; }
+  .ev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
+  .ev {
+    border: none; border-radius: 18px; padding: 15px 14px; background: #fff; color: var(--ink);
+    text-align: left; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.06);
   }
-  .vinyl .groove { position: absolute; border-radius: 50%; border: 1.5px solid #2c2c2c; }
-  .vinyl .g1 { inset: 12%; } .vinyl .g2 { inset: 20%; } .vinyl .g3 { inset: 28%; }
-  .vinyl .label {
-    width: 34%; height: 34%; border-radius: 50%; background: var(--yellow);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-weight: 800; color: var(--ink); position: relative; z-index: 2; text-align: center;
+  .ev .emo { font-size: 26px; display: block; line-height: 1; }
+  .ev b { display: block; font-size: 16px; margin-top: 9px; }
+  .ev small { display: block; font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
+  .ev.pick { background: var(--red); color: #fff; }
+  .ev.pick small { color: rgba(255,255,255,.75); }
+  .say { display: flex; gap: 8px; margin-top: 14px; }
+  .say input {
+    flex: 1; min-width: 0; border: none; background: #fff; border-radius: 14px; padding: 13px 16px;
+    font-size: 16px; font-family: inherit; outline: none; box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    user-select: text; -webkit-user-select: text; /* iOS：父级禁选会导致输入框打不了字 */
   }
-  .vinyl .label .initial { font-size: 34px; line-height: 1; }
-  .vinyl .label .rpm { font-size: 9px; font-weight: 600; opacity: .6; margin-top: 3px; }
-  .vinyl .hole { width: 10px; height: 10px; border-radius: 50%; background: var(--cream); position: absolute; z-index: 3; }
-  .spinning { animation: spin 2.6s linear infinite; }
-  .track-name { font-size: 24px; font-weight: 800; margin-top: 16px; text-align: center; line-height: 1.4; }
-  .track-tags { display: flex; gap: 8px; margin-top: 10px; justify-content: center; flex-wrap: wrap; }
-  .track-tags span { font-size: 11px; font-weight: 700; background: #fff; color: var(--ink-soft); padding: 5px 11px; border-radius: 999px; }
-  .track-tags span.hot { background: var(--red); color: #fff; }
-  .lang-pills { display: flex; gap: 8px; margin-top: 12px; justify-content: center; }
-  .lang-pills button {
-    border: none; border-radius: 999px; padding: 7px 16px; font-size: 12px; font-weight: 700;
-    background: #E8E2D6; color: var(--ink-soft); cursor: pointer; transition: all .2s;
-  }
-  .lang-pills button.on { background: var(--ink); color: #fff; }
-  .rarity {
-    display: inline-block; font-size: 10px; font-weight: 800; border-radius: 999px;
-    padding: 4px 10px; margin-left: 8px; vertical-align: 3px;
-  }
-  .rarity.ssr { background: #FFC72C; color: #4A2C00; }
-  .rarity.sr  { background: #DA291C; color: #fff; }
-  .rarity.r   { background: #185FA5; color: #fff; }
-  .rarity.n   { background: #1D9E75; color: #fff; }
-  .verdict {
-    margin-top: 14px; font-size: 14px; font-weight: 600; color: var(--ink);
-    background: #fff; border-radius: 14px; padding: 12px 18px; max-width: 320px; text-align: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06);
-  }
-  .play-hint { margin-top: 14px; font-size: 13px; color: var(--ink-soft); font-weight: 600; }
-  .eq { display: flex; gap: 4px; align-items: flex-end; height: 30px; margin-top: 12px; }
-  .eq i { width: 5px; background: var(--red); border-radius: 3px; height: 18%; }
+  .say button { border: none; border-radius: 14px; padding: 0 18px; background: var(--ink); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .foot-note { text-align: center; font-size: 10px; color: #B4A795; margin-top: 22px; }
 
-  /* ===== 主食贴纸（模切轮廓白边 · 大号）===== */
-  #sticker {
-    position: absolute; right: 10px; bottom: 108px; z-index: 40; width: 288px;
-    transform: translateY(160px) scale(.3) rotate(-30deg); opacity: 0; display: none; cursor: pointer;
+  /* ===== Stage 2 批准书 ===== */
+  #st-approve { background: var(--cream); align-items: center; padding: 60px 18px max(18px, env(safe-area-inset-bottom)); overflow-y: auto; }
+  .cert-wrap { width: 100%; max-width: 380px; transform: translateY(40px); opacity: 0; flex-shrink: 0; }
+  #st-approve.on .cert-wrap { animation: certIn .5s var(--sheet) .05s forwards; }
+  @keyframes certIn { to { transform: none; opacity: 1; } }
+  .cert {
+    position: relative; background: var(--paper); border-radius: 8px;
+    padding: 24px 24px 16px; box-shadow: 0 14px 36px rgba(0,0,0,.12);
   }
-  #sticker.pop { display: block; animation: stickerPop .7s var(--spring) forwards; }
-  /* 弹入完成后接管姿态；2.6s 后缩到右下角，别挡判词 */
-  #sticker.idle { display: block; opacity: 1; transform: translateY(0) scale(1) rotate(-7deg); }
-  #sticker.idle.mini {
-    right: 2px; bottom: 14px; transform: translateY(0) scale(.78) rotate(-8deg);
-    transition: right .55s var(--sheet), bottom .55s var(--sheet), transform .55s var(--sheet);
+  .cert::before { content: ""; position: absolute; inset: 8px; border: 1.5px solid rgba(218,41,28,.3); border-radius: 4px; pointer-events: none; }
+  .cert.shake { animation: certShake .28s ease; }
+  @keyframes certShake { 30% { transform: translateY(3px) rotate(-.4deg); } 60% { transform: translateY(-1px) rotate(.2deg); } }
+  .cert-head { text-align: center; }
+  .cert-head .t { font-size: 22px; font-weight: 900; letter-spacing: 4px; color: var(--red); }
+  .cert-head .no { font-size: 10px; color: var(--ink-soft); margin-top: 4px; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+  .cert dl { margin-top: 8px; }
+  .cert-row { display: flex; gap: 10px; font-size: 13px; line-height: 1.5; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+  .cert-row dt { color: var(--ink-soft); flex-shrink: 0; width: 60px; }
+  .cert-row dd { font-weight: 700; flex: 1; word-break: break-all; }
+  .cert-row .stars { color: var(--red); letter-spacing: 2px; }
+  .cert-verdict {
+    margin-top: 14px; padding: 12px 14px; background: #fff; border-radius: 12px;
+    font-size: 15px; font-weight: 700; text-align: center; box-shadow: inset 0 0 0 1px #F0E6D4;
   }
-  @keyframes stickerPop {
-    0%   { transform: translateY(160px) scale(.3) rotate(-30deg); opacity: 0; }
-    55%  { opacity: 1; }
-    100% { transform: translateY(0) scale(1) rotate(-7deg); opacity: 1; }
+  .cert-food { display: flex; align-items: flex-end; justify-content: center; margin-top: 16px; min-height: 140px; }
+  .cert-food .photo-a .photo-frame { width: 150px; }
+  .cert-food .photo-b .photo-frame { width: 108px; }
+  .cert-food .photo-b { margin-left: -26px; }
+  /* 食物照片像贴纸一样"啪"地贴上批准书 */
+  .cert-food > div { opacity: 0; transform: scale(.4) rotate(-24deg); }
+  #st-approve.on .cert-food > div { animation: foodStick .5s var(--spring) .45s forwards; }
+  #st-approve.on .cert-food .photo-b { animation-delay: .6s; }
+  @keyframes foodStick { to { opacity: 1; transform: rotate(var(--r)); } }
+  .cert-meal { text-align: center; font-size: 15px; font-weight: 800; margin-top: 12px; }
+  .cert-meta { text-align: center; font-size: 11px; color: var(--ink-soft); margin-top: 4px; }
+  .cert-sign { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-soft); margin-top: 16px; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .cert-src { text-align: center; font-size: 9px; color: #B4A795; margin-top: 10px; letter-spacing: .5px; }
+  .stamp {
+    position: absolute; right: 22px; bottom: 26px; width: 92px; height: 92px; border-radius: 50%;
+    border: 3px solid var(--red); box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 5px var(--red);
+    color: var(--red); display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; transform: rotate(-14deg) scale(2.6); mix-blend-mode: multiply; pointer-events: none;
   }
-  #sticker .sticker-body {
-    background: #fff; border-radius: 24px; padding: 16px 14px 12px;
-    border: 3px solid #fff; box-shadow: 0 16px 36px rgba(0,0,0,.16); text-align: center;
+  .stamp b { font-size: 21px; font-weight: 900; letter-spacing: 2px; line-height: 1.05; text-align: center; }
+  .stamp small { font-size: 8px; font-weight: 700; margin-top: 3px; }
+  .stamp.hit { animation: stampHit .3s cubic-bezier(.5, 0, .75, 0) forwards; }
+  @keyframes stampHit {
+    0%   { opacity: 0; transform: rotate(-14deg) scale(2.6); }
+    60%  { opacity: .95; }
+    100% { opacity: .88; transform: rotate(-14deg) scale(1); }
   }
-  #stickerArt { display: flex; align-items: flex-end; justify-content: center; }
-  .photo-a { transform: rotate(-4deg); z-index: 2; }
-  .photo-b { margin-left: -34px; transform: rotate(5deg); z-index: 3; }
+  .approve-cta { width: 100%; max-width: 380px; flex-shrink: 0; opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .approve-cta.on { opacity: 1; pointer-events: auto; }
+
+  /* ===== 白边模切照片（批准书 + 领券抽屉共用）===== */
+  .photo-a { --r: -4deg; transform: rotate(var(--r)); z-index: 2; }
+  .photo-b { --r: 5deg; transform: rotate(var(--r)); z-index: 3; }
   .photo-frame {
-    background: #fff; padding: 11px;
+    background: #fff; padding: 10px;
     border-radius: 44% 56% 52% 48% / 50% 46% 54% 50%;
     box-shadow: 0 6px 16px rgba(0,0,0,.14), 0 0 0 5px #fff;
   }
-  .photo-a .photo-frame { width: 190px; }
-  .photo-b .photo-frame { width: 138px; }
   .photo-frame img, .photo-frame svg {
     width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #fff;
     border-radius: 44% 56% 52% 48% / 50% 46% 54% 50%;
   }
-  #sticker .sticker-name { font-size: 14px; font-weight: 800; margin-top: 10px; }
-  #sticker .sticker-cta { font-size: 10px; color: var(--red); font-weight: 700; margin-top: 3px; animation: pulse 1.2s ease infinite; }
-  @keyframes pulse { 50% { opacity: .35; } }
 
-  /* ===== 底部烟花（纯 CSS，贴纸到手时庆祝）===== */
+  /* ===== 底部烟花（纯 CSS，盖章时庆祝）===== */
   /* absolute 而非 fixed：约束在 430px 机身内，桌面宽屏不放飞 */
   .fw-layer { position: absolute; inset: 0; pointer-events: none; z-index: 70; overflow: hidden; }
   .fw-burst {
@@ -226,12 +171,20 @@
   #st-deal { justify-content: flex-end; z-index: 60; }
   #st-deal .underlay { position: absolute; inset: 0; background: rgba(0,0,0,.45); opacity: 0; transition: opacity .3s; }
   #st-deal.on .underlay { opacity: 1; }
-  #st-deal .sheet { transform: translateY(105%); }
+  .sheet {
+    position: relative; background: var(--cream); border-radius: 26px 26px 0 0;
+    padding: 12px 24px max(30px, env(safe-area-inset-bottom));
+    transform: translateY(105%); transition: transform .42s var(--sheet);
+    max-height: 86%; overflow-y: auto;
+  }
   #st-deal.on .sheet { transform: translateY(0); }
+  .grabber { width: 38px; height: 5px; border-radius: 3px; background: rgba(0,0,0,.15); margin: 4px auto 18px; }
+  .sheet h2 { font-size: 24px; font-weight: 800; }
+  .sheet .sub2 { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
   .deal-food { display: flex; align-items: flex-end; justify-content: center; margin-top: 18px; }
-  .deal-food .photo-a .photo-frame { width: 168px; }
-  .deal-food .photo-b .photo-frame { width: 122px; }
-  .deal-food .photo-b { margin-left: -32px; }
+  .deal-food .photo-a .photo-frame { width: 150px; }
+  .deal-food .photo-b .photo-frame { width: 110px; }
+  .deal-food .photo-b { margin-left: -28px; }
   .coupon-row { display: flex; gap: 10px; margin-top: 18px; overflow-x: auto; padding-bottom: 4px; }
   .coupon {
     flex-shrink: 0; background: #FFF4D6; border: 1.5px dashed #E8B93B; border-radius: 12px;
@@ -247,86 +200,64 @@
     border-radius: 16px; letter-spacing: 1px;
   }
   .share-line { text-align: center; font-size: 12px; color: var(--ink-soft); margin-top: 14px; }
+  .star-link { display: block; text-align: center; font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 10px; text-decoration: none; }
   .replay { text-align: center; margin-top: 10px; }
-  .replay button { border: none; background: none; color: var(--ink-soft); font-size: 13px; cursor: pointer; text-decoration: underline; }
-
-  .src-tag { position: absolute; bottom: max(12px, env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center; font-size: 10px; color: #B4A795; z-index: 10; padding: 0 20px; }
+  .replay button { border: none; background: none; color: var(--ink-soft); font-size: 13px; cursor: pointer; text-decoration: underline; padding: 6px; }
 </style>
 </head>
 <body>
 
-<div class="dots" id="dots"><i class="on"></i><i></i><i></i><i></i></div>
+<div class="dots" id="dots"><i class="on"></i><i></i><i></i></div>
 <button class="back" id="backBtn" aria-label="返回">‹</button>
 <div class="fw-layer" id="fwLayer"></div>
 
-<!-- Stage 1：自拍 -->
-<section class="stage on" id="st-camera">
-  <div class="kicker">McREACTION</div>
-  <h1>你的今日麦反应</h1>
-  <div class="sub">拍张自拍，看看你的耳朵和嘴巴<br>今天会碰出什么反应</div>
-  <div class="lens" id="lens">
-    <img id="selfieImg" alt="">
-    <div class="face-line" id="faceLine"></div>
-    <div class="scan" id="scanRing"></div>
+<!-- Stage 1：今天发生了什么 -->
+<section class="stage on" id="st-ask">
+  <div class="kicker">麦麦批准 · McAPPROVED</div>
+  <h1>今天发生了什么？</h1>
+  <div class="sub">说一件事，麦麦给你批一顿</div>
+  <div class="ev-grid" id="evGrid"></div>
+  <div class="say">
+    <input id="sayText" maxlength="40" placeholder="或者一句话说说今天" enterkeyhint="done" aria-label="一句话说说今天">
+    <button id="sayBtn">批一下</button>
   </div>
-  <div class="cam-status" id="camStatus"></div>
-  <div class="cam-btns">
-    <button class="cam-btn primary" id="btnShot">拍一张</button>
-    <button class="cam-btn ghost" id="btnAlbum">相册</button>
-  </div>
-  <input type="file" id="fileShot" accept="image/*" capture="user" style="display:none">
-  <input type="file" id="fileAlbum" accept="image/*" style="display:none">
-  <button class="skip" id="skipCam">跳过，直接点情绪 →</button>
-  <div class="src-tag" style="color:rgba(255,255,255,.3)">非官方粉丝作品 · 与金拱门（中国）无关</div>
+  <div class="foot-note">非官方粉丝作品 · 与金拱门（中国）无关</div>
 </section>
 
-<!-- Stage 2：情绪关键词 -->
-<section class="stage" id="st-keywords">
-  <div class="underlay"></div>
-  <div class="sheet">
-    <div class="grabber"></div>
-    <h2>读到这些情绪</h2>
-    <div class="sub2" id="kwSub">点一个，今天的心情由它代言</div>
-    <div class="kw-grid" id="kwGrid"></div>
-    <div class="reshuffle"><button id="reshuffleBtn">换一批情绪</button></div>
-    <div class="song-mini"><input id="songText" placeholder="在听什么歌？选填，让主题曲带上它"></div>
-  </div>
-</section>
-
-<!-- Stage 3：主题曲 -->
-<section class="stage" id="st-track">
-  <div class="kicker">你的今日主题曲</div>
-  <div class="vinyl-wrap">
-    <div class="vinyl" id="vinyl">
-      <div class="groove g1"></div><div class="groove g2"></div><div class="groove g3"></div>
-      <div class="label"><span class="initial" id="vinylInitial">麦</span><span class="rpm">33⅓ RPM</span></div>
-      <div class="hole"></div>
+<!-- Stage 2：批准书 -->
+<section class="stage" id="st-approve">
+  <div class="cert-wrap">
+    <div class="cert" id="cert">
+      <div class="cert-head">
+        <div class="t">麦麦犒劳批准书</div>
+        <div class="no" id="certNo"></div>
+      </div>
+      <dl>
+        <div class="cert-row"><dt>申请人</dt><dd>今天的你</dd></div>
+        <div class="cert-row"><dt>申请事由</dt><dd id="certReason"></dd></div>
+        <div class="cert-row"><dt>犒劳指数</dt><dd class="stars" id="certStars"></dd></div>
+      </dl>
+      <div class="cert-verdict" id="certVerdict"></div>
+      <div class="cert-food" id="certFood"></div>
+      <div class="cert-meal" id="certMeal"></div>
+      <div class="cert-meta" id="certMeta"></div>
+      <div class="cert-sign"><span>审批：麦麦批准处</span></div>
+      <div class="cert-src">麦麦批准 McApproved · github.com/pakco77/mctrack</div>
+      <div class="stamp" id="stamp"><b>麦麦<br>批准</b><small id="stampDate"></small></div>
     </div>
   </div>
-  <div class="track-name" id="trackName">《》</div>
-  <div class="track-tags" id="trackTags"></div>
-  <div class="lang-pills" id="langPills"></div>
-  <div class="verdict" id="verdict" style="display:none"></div>
-  <div class="play-hint" id="playHint">点唱片，播放你的主题曲</div>
-  <div class="eq" id="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <div class="src-tag" id="srcTag">演示数据 · 接入麦当劳 MCP 后为实时菜单与券价</div>
+  <div class="approve-cta" id="approveCta">
+    <button class="order-btn" id="goDeal">领券去吃 →</button>
+    <div class="replay"><button id="againBtn">换个理由</button></div>
+  </div>
 </section>
 
-<!-- 主食贴纸 -->
-<div id="sticker">
-  <div class="sticker-body">
-    <div id="stickerArt"></div>
-    <div class="sticker-name" id="stickerName">—</div>
-    <div class="sticker-cta">点我领券去下单</div>
-  </div>
-</div>
-
-<!-- Stage 4：领券下单 -->
+<!-- Stage 3：领券下单 -->
 <section class="stage" id="st-deal">
   <div class="underlay" id="dealUnderlay"></div>
   <div class="sheet">
     <div class="grabber"></div>
-    <h2>今日最搭已配好</h2>
+    <h2>批准已生效</h2>
     <div class="sub2" id="dealMeal">—</div>
     <div class="deal-food" id="dealFood"></div>
     <div class="coupon-row" id="couponRow"></div>
@@ -335,134 +266,72 @@
       <span class="was" id="dealWas"></span>
       <span class="save" id="dealSave"></span>
     </div>
-    <button class="order-btn" id="orderBtn">一键下单 · 就点这个</button>
-    <div class="share-line">截图这张反应报告，去群里炸场</div>
-    <div class="replay"><button id="replayBtn">再反应一次</button></div>
+    <button class="order-btn" id="orderBtn">一键下单 · 就吃这个</button>
+    <div class="share-line">截图批准书发群：今天这顿，是麦当劳批的</div>
+    <a class="star-link" href="https://github.com/pakco77/mctrack" target="_blank" rel="noopener">⭐ 好玩的话，去 GitHub 点个 Star</a>
+    <div class="replay"><button id="replayBtn">换个理由再批一次</button></div>
   </div>
 </section>
 
+<!-- Skill 注入点：替换为 JSON；未注入（直接打开 / GitHub Pages）时解析失败 → 走内置快照 -->
+<script type="application/json" id="mc-data">__MCTRACK_DATA__</script>
 <script>
-window.MCTRACK_DATA = __MCTRACK_DATA__;
-
-/* ---------- 数据 ---------- */
-/* 真实菜单快照：来自麦当劳 MCP query-meals（东莞门店 1421187，2026-10-09），图片为官方 menu-img.mcd.cn CDN。
-   接 MCP 实时数据时由 Skill 注入覆盖；此处为离线兜底快照。 */
+/* @pure-begin 纯数据与纯函数（verify.py 会单独抽出来跑断言） */
+/* 真实菜单快照：麦当劳 MCP query-meals（东莞门店 1421187，2026-10-09），图片为官方 menu-img.mcd.cn CDN。
+   kcal：MCP list-nutrition-foods（2026-10-10），饮品按中杯、薯条按中份。 */
 const FOOD_DB = [
-  { k: "bigmac",     name: "巨无霸",       price: 26.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1100_320.png" },
-  { k: "doubleCheese", name: "双层吉士汉堡", price: 23,   img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1120_320.png" },
-  { k: "grilled",    name: "板烧鸡腿堡",   price: 23.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20241008/product/MS_1406_320.png" },
-  { k: "mcSpicy",    name: "麦辣鸡腿汉堡", price: 22.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_1440_320.png" },
-  { k: "mcChicken",  name: "麦香鸡",       price: 16.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_1450_320.png" },
-  { k: "filet",      name: "麦香鱼",       price: 22,   img: "https://menu-img.mcd.cn/pcm/prod/menu/20260101/product/MS_1600_320.png" },
-  { k: "fries",      name: "薯条",         price: 14,   img: "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_G4810_320_1745552987716.png" },
-  { k: "nuggets",    name: "麦乐鸡",       price: 14.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260529/product/MS_G1401_320.png" },
-  { k: "wings",      name: "麦辣鸡翅",     price: 14.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_G1700_320.png" },
-  { k: "vWings",     name: "薄皮焦香V翅",  price: 15.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20241202/product/MS_520445_320.png" },
-  { k: "hashbrown",  name: "心形薯饼5块",  price: 15,   img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900016082_320.png" },
-  { k: "corn",       name: "玉米杯",       price: 13,   img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G4437_320.png" },
-  { k: "flurry",     name: "经典麦旋风",   price: 15,   img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008754_320.png" },
-  { k: "sundae",     name: "新地",         price: 12.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008745_320.png" },
-  { k: "cone",       name: "圆筒冰淇淋",   price: 5,    img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_515837_320.png" },
-  { k: "coke",       name: "可乐",         price: 9.5,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008751_320.png" },
-  { k: "sprite",     name: "雪碧",         price: 9.5,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G3010_320.png" },
-  { k: "lemonTea",   name: "阳光柠檬红茶", price: 9.5,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G515280_320.png" },
-  { k: "coffee",     name: "鲜萃咖啡",     price: 10,   img: "https://menu-img.mcd.cn/pcm/prod/menu/20250324/product/MS_G520688_320.png" },
-  { k: "orange",     name: "阳光橙麦炫酷", price: 13.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_6352_320.png" },
-  { k: "appleJuice", name: "100% 苹果汁",  price: 11.5, img: "https://menu-img.mcd.cn/pcm/prod/menu/20250430/product/MS_6362_320_1745552987716.png" },
-  { k: "coco",       name: "椰奶雪冰",     price: 9.9,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_521717_320.png" }
+  { k: "bigmac",       name: "巨无霸",       price: 26.5, kcal: 513, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1100_320.png" },
+  { k: "doubleCheese", name: "双层吉士汉堡", price: 23,   kcal: 429, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1120_320.png" },
+  { k: "grilled",      name: "板烧鸡腿堡",   price: 23.5, kcal: 391, img: "https://menu-img.mcd.cn/pcm/prod/menu/20241008/product/MS_1406_320.png" },
+  { k: "mcSpicy",      name: "麦辣鸡腿汉堡", price: 22.5, kcal: 485, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_1440_320.png" },
+  { k: "mcChicken",    name: "麦香鸡",       price: 16.5, kcal: 369, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_1450_320.png" },
+  { k: "filet",        name: "麦香鱼",       price: 22,   kcal: 325, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260101/product/MS_1600_320.png" },
+  { k: "fries",        name: "薯条",         price: 14,   kcal: 289, img: "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_G4810_320_1745552987716.png" },
+  { k: "nuggets",      name: "麦乐鸡",       price: 14.5, kcal: 213, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260529/product/MS_G1401_320.png" },
+  { k: "wings",        name: "麦辣鸡翅",     price: 14.5, kcal: 224, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_G1700_320.png" },
+  { k: "flurry",       name: "经典麦旋风",   price: 15,   kcal: 266, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008754_320.png" },
+  { k: "sundae",       name: "新地",         price: 12.5, kcal: 282, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008745_320.png" },
+  { k: "cone",         name: "圆筒冰淇淋",   price: 5,    kcal: 93,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_515837_320.png" },
+  { k: "coke",         name: "可乐",         price: 9.5,  kcal: 147, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008751_320.png" },
+  { k: "coffee",       name: "鲜萃咖啡",     price: 10,   kcal: 15,  img: "https://menu-img.mcd.cn/pcm/prod/menu/20250324/product/MS_G520688_320.png" },
+  { k: "appleJuice",   name: "100% 苹果汁",  price: 11.5, kcal: 88,  img: "https://menu-img.mcd.cn/pcm/prod/menu/20250430/product/MS_6362_320_1745552987716.png" }
 ];
 
-/* 情绪 → 关键词匹配：主食+饮品 或 小吃组合。关键词在 FOOD_DB 里按序匹配。 */
-const MOOD_FOOD = {
-  energetic: { type: "main+drink",  main: ["双层吉士"],       drink: ["鲜萃咖啡", "咖啡"] },
-  tired:     { type: "main+drink",  main: ["麦辣鸡腿"],       drink: ["鲜萃咖啡", "咖啡"] },
-  lazy:      { type: "main+snack",  main: ["麦香鸡"],         drink: ["经典麦旋风", "麦旋风"] },
-  fired:     { type: "main+drink",  main: ["板烧鸡腿"],       drink: ["阳光橙", "橙"] },
-  down:      { type: "snack+snack", main: ["麦乐鸡"],         drink: ["经典麦旋风", "麦旋风"] },
-  hype:      { type: "snack+drink", main: ["麦辣鸡翅", "鸡翅"], drink: ["可乐"] },
-  crush:     { type: "main+snack",  main: ["麦香鱼"],         drink: ["薯条"] },
-  zoned:     { type: "snack+snack", main: ["麦乐鸡"],         drink: ["薯条"] }
-};
-function matchFood(kws) {
-  for (const kw of kws) {
-    const hit = FOOD_DB.find(f => f.name.includes(kw));
-    if (hit) return hit;
-  }
-  return null;
-}
-
-const MOODS = [
-  { id: "energetic", label: "元气满满", sub: "干劲十足", track: "《早高峰进行曲》",    genre: "急行电子",   bpm: 122, root: 45, bright: 1600, swing: .08, hat: .5,  meal: ["doubleCheese","coffee"] },
-  { id: "tired",     label: "累到发虚", sub: "需要回血", track: "《凌晨两点的和弦》",   genre: "深夜 Lo-Fi", bpm: 72,  root: 43, bright: 1200, swing: .16, hat: .3,  meal: ["mcSpicy","coffee"] },
-  { id: "lazy",      label: "慵懒放空", sub: "慢慢悠悠", track: "《阳光泡泡糖》",      genre: "法式摇摆",   bpm: 100, root: 48, bright: 1800, swing: .12, hat: .4,  meal: ["mcChicken","flurry"] },
-  { id: "fired",     label: "燃起来了", sub: "运动打卡", track: "《步频一百七》",      genre: "律动电子",   bpm: 128, root: 50, bright: 2000, swing: .06, hat: .6,  meal: ["grilled"] },
-  { id: "down",      label: "有点 emo", sub: "需要治愈", track: "《麦旋风治愈进行曲》", genre: "治愈民谣",   bpm: 68,  root: 45, bright: 1100, swing: .18, hat: .25, meal: ["flurry","nuggets"] },
-  { id: "hype",      label: "今天想嗨", sub: "庆祝一下", track: "《气泡炸裂摇滚》",     genre: "车库摇滚",   bpm: 140, root: 52, bright: 2200, swing: .05, hat: .7,  meal: ["wings","coke"] },
-  { id: "crush",     label: "心动时刻", sub: "甜甜暧昧", track: "《爵士慢半拍》",      genre: "慢拍爵士",   bpm: 88,  root: 47, bright: 1500, swing: .2,  hat: .35, meal: ["filet","fries"] },
-  { id: "zoned",     label: "摸鱼ing",  sub: "发呆划水", track: "《白日梦循环》",      genre: "独立流行",   bpm: 92,  root: 43, bright: 1400, swing: .14, hat: .4,  meal: ["nuggets","fries"] }
+/* 事件表：今天发生的事 → 犒劳指数（1-5 星）定份量 → 批准餐品。
+   份量跟着犒劳指数走（93 → 774 kcal），最低档只批一个甜筒：犒劳讲"刚好"，不是"越惨吃越多"。 */
+const EVENTS = [
+  { id: "ot",      emo: "🌙", label: "加班到深夜",   sub: "工位比床还熟",     level: 4, meal: ["mcSpicy", "fries"],       verdict: "麦门为打工人留灯到凌晨" },
+  { id: "scolded", emo: "💢", label: "被骂了",       sub: "老板、甲方或生活", level: 4, meal: ["doubleCheese", "sundae"], verdict: "芝士加倍，委屈减半" },
+  { id: "done",    emo: "🎉", label: "搞定一件大事", sub: "上线、考完、交付", level: 3, meal: ["wings", "fries"],         verdict: "大事落地，先来点脆的" },
+  { id: "payday",  emo: "💰", label: "发工资了",     sub: "钱包鼓一天",       level: 3, meal: ["bigmac", "coke"],         verdict: "钱包最鼓的一天，嘴也别亏着" },
+  { id: "rain",    emo: "🌧️", label: "下雨降温",     sub: "想吃点热乎的",     level: 2, meal: ["mcChicken", "coffee"],    verdict: "雨是天的事，热乎是你的事" },
+  { id: "emo",     emo: "🥲", label: "有点 emo",     sub: "说不上为什么",     level: 3, meal: ["nuggets", "flurry"],      verdict: "先吃甜的，情绪随后就到" },
+  { id: "workout", emo: "🏃", label: "运动打卡了",   sub: "汗不能白流",       level: 3, meal: ["grilled", "appleJuice"],  verdict: "流的汗，板烧替你记着" },
+  { id: "nothing", emo: "🍦", label: "啥也没干",     sub: "就是想吃",         level: 1, meal: ["cone"],                   verdict: "想吃不需要理由，但只够批一个甜筒" }
 ];
+/* 一句话没命中任何事件：照抄原话上批准书，给一份标准餐 */
+const EVENT_MISC = { id: "misc", label: "说不清，但值得一顿", level: 3, meal: ["filet", "coke"], verdict: "这事儿值一顿，批了" };
 
-const CHORD_LIB = {
-  energetic: [[0,3,7,10],[5,8,12,15],[3,7,10,14],[7,10,14,17]],
-  tired:     [[0,3,7,10],[8,12,15,19],[5,8,12,15],[3,7,10,14]],
-  lazy:      [[0,4,7,11],[5,9,12,16],[7,11,14,17],[0,4,7,11]],
-  fired:     [[0,3,7],[0,3,7],[1,4,8],[0,3,7]],
-  down:      [[0,5,7,12],[3,7,10,15],[10,14,17,22],[0,5,7,12]],
-  hype:      [[0,3,7],[0,3,7],[5,8,12],[6,10,13]],
-  crush:     [[0,4,7,11],[5,9,12,16],[9,12,16,19],[4,8,11,15]],
-  zoned:     [[0,4,7,14],[5,9,12,19],[7,11,14,21],[0,4,7,14]]
-};
-
-/* 麦门金曲库 v3：19 首合并曲池，每天只给用户抽一首（语言是标签不是选项）。
-   今日金曲 = hash(日期+情绪+重抽次数) % 19。
-   艺人白名单规则（与参赛者确认）：刑事/政治问题艺人及其合唱曲一律排除，
-   道德争议艺人保留。仅引用歌名/歌手/年份（事实信息），播放为原创合成伴奏。 */
-const ALL_SONGS = [
-  { t: "麦当劳主题曲", a: "孙燕姿", y: "2002", lang: "国语" },
-  { t: "我就喜欢", a: "王力宏", y: "2003", lang: "国语" },
-  { t: "我喜欢", a: "陶喆", y: "2003", lang: "国语" },
-  { t: "心腹", a: "陈奕迅", y: "2010", lang: "国语" },
-  { t: "我就喜欢薯条", a: "王力宏 × 汪苏泷", y: "2026", lang: "国语" },
-  { t: "McDonald's Is Your Kind of Place", a: "McDonald's USA", y: "1967", lang: "英语" },
-  { t: "You Deserve a Break Today", a: "McDonald's USA", y: "1971", lang: "英语" },
-  { t: "Big Mac Jingle", a: "Two all-beef patties…", y: "1974", lang: "英语" },
-  { t: "You, You're the One", a: "McDonald's USA", y: "1975", lang: "英语" },
-  { t: "Mac Tonight", a: "McDonald's USA", y: "1986", lang: "英语" },
-  { t: "Food, Folks and Fun", a: "McDonald's USA", y: "1988", lang: "英语" },
-  { t: "I'm Lovin' It", a: "Justin Timberlake × Pharrell", y: "2003", lang: "英语" },
-  { t: "听听", a: "陈奕迅", y: "2005", lang: "粤语" },
-  { t: "为午夜喝彩", a: "陈奕迅", y: "", lang: "粤语" },
-  { t: "心腹", a: "陈奕迅", y: "2010", lang: "粤语" },
-  { t: "青空", a: "谢霆锋", y: "2018", lang: "粤语" },
-  { t: "甜蜜在十点五十九分前", a: "张蔓莎", y: "2023", lang: "粤语" },
-  { t: "In Love In The Morning", a: "张蔓莎", y: "2024", lang: "粤语" },
-  { t: "废话", a: "麦浚龙 × 谢安琪", y: "", lang: "粤语" }
+/* 一句话 → 事件：按序关键词命中。顺序即优先级——"加班被骂"算被骂，"面试挂了"算 emo 不算搞定。
+   ponytail: 关键词表，够图一乐；Skill 版由 WorkBuddy 的大模型理解原话后直接注入 eventId。 */
+const EVENT_RULES = [
+  ["scolded", /骂|批评|挨|背锅|委屈|吵架|被怼|返工|甲方/],
+  ["emo",     /挂了|没过|失败|被拒|落榜|分手|失恋/],
+  ["ot",      /加班|通宵|熬夜|ddl|deadline|赶工|凌晨|夜班/i],
+  ["done",    /上线|交付|搞定|完成|考完|答辩|面试|offer|发布|结项|通过/i],
+  ["payday",  /工资|发薪|奖金|年终|到账|涨薪/],
+  ["workout", /跑步|健身|运动|游泳|骑行|打球|公里|撸铁|瑜伽|爬山/],
+  ["rain",    /雨|冷|降温|下雪|台风/],
+  ["emo",     /emo|难过|伤心|想哭|丧|焦虑|烦|孤独|累/i],
+  ["nothing", /没干|无聊|想吃|馋|没事/]
 ];
-let drawSalt = 0;
-function pickTrack(moodId) {
-  const h = hashStr(todayStr() + "|" + moodId + "|" + drawSalt);
-  return ALL_SONGS[h % ALL_SONGS.length];
+function matchEvent(text) {
+  for (const [id, re] of EVENT_RULES) if (re.test(text)) return id;
+  return "misc";
 }
-function rarityOf(y) {
-  if (!y) return { code: "r", label: "R · 千禧回响" };
-  const n = parseInt(y, 10);
-  if (n <= 1975) return { code: "ssr", label: "SSR · 麦门活化石" };
-  if (n <= 2003) return { code: "sr", label: "SR · 黄金年代" };
-  if (n <= 2019) return { code: "r", label: "R · 千禧回响" };
-  return { code: "n", label: "N · 新麦之声" };
-}
-const VERDICTS = {
-  energetic: "今天的你，薯条都追不上",
-  tired: "麦门为打工人留灯到凌晨",
-  lazy: "慢一点，芝士不会跑",
-  fired: "燃烧吧，蘸酱都要双份",
-  down: "先吃甜的，情绪随后就到",
-  hype: "这一口，值得开瓶可乐庆祝",
-  crush: "心动和胃动，第一次同频",
-  zoned: "摸鱼的证据，是那包麦乐鸡"
-};
+/* @pure-end */
 
-/* 贴纸插画（扁平 SVG） */
+/* 贴纸插画（扁平 SVG）：菜单图加载失败时的兜底 */
 const ART = {
   burger: () => `<svg viewBox="0 0 100 100"><path d="M15 42a35 16 0 0 1 70 0v4H15z" fill="#E8A33D"/><rect x="13" y="46" width="74" height="7" rx="3.5" fill="#4C9A2A"/><rect x="15" y="53" width="70" height="11" rx="3" fill="#7A4A21"/><rect x="15" y="64" width="70" height="6" rx="3" fill="#F4C33D"/><path d="M15 70h70v3a10 10 0 0 1-10 10H25a10 10 0 0 1-10-10z" fill="#E8A33D"/></svg>`,
   spicy:  () => `<svg viewBox="0 0 100 100"><path d="M15 42a35 16 0 0 1 70 0v4H15z" fill="#E8A33D"/><path d="M15 46h70v7H15z" fill="#DA291C"/><rect x="15" y="53" width="70" height="11" rx="3" fill="#C94F1E"/><rect x="15" y="64" width="70" height="6" rx="3" fill="#F4C33D"/><path d="M15 70h70v3a10 10 0 0 1-10 10H25a10 10 0 0 1-10-10z" fill="#E8A33D"/><path d="M30 30c2-4 6-4 8 0M46 26c2-4 6-4 8 0M62 30c2-4 6-4 8 0" stroke="#DA291C" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`,
@@ -473,317 +342,141 @@ const ART = {
   wings:  () => `<svg viewBox="0 0 100 100"><path d="M28 30c14-8 34-4 42 10s4 34-10 42-34 4-42-10-4-34 10-42z" fill="#C94F1E"/><path d="M36 40c8-4 20-2 25 6M33 52c10-5 26-2 32 8" stroke="#8F3413" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M30 26c2-4 6-4 8 0M48 20c2-4 6-4 8 0" stroke="#DA291C" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`,
   nuggets: () => `<svg viewBox="0 0 100 100"><path d="M22 34a14 14 0 0 1 28 0v6H22z" fill="#E8A33D"/><rect x="18" y="40" width="36" height="6" rx="3" fill="#4C9A2A"/><rect x="20" y="46" width="32" height="9" rx="3" fill="#7A4A21"/><rect x="20" y="55" width="32" height="5" rx="2.5" fill="#F4C33D"/><path d="M20 60h32v2a8 8 0 0 1-8 8H28a8 8 0 0 1-8-8z" fill="#E8A33D"/><rect x="58" y="52" width="26" height="20" rx="4" fill="#DA291C"/><path d="M63 52v20" stroke="#FFC72C" stroke-width="3"/><circle cx="71" cy="47" r="8" fill="#F4C33D"/><circle cx="81" cy="44" r="7" fill="#F4C33D"/></svg>`
 };
-const MEAL_ART = { doubleCheese:"burger", mcSpicy:"spicy", grilled:"burger", filet:"burger", mcChicken:"burger", bigMac:"burger", wings:"wings", nuggets:"nuggets", fries:"fries", flurry:"icecream", coke:"drink", coffee:"coffee" };
+const MEAL_ART = { bigmac: "burger", doubleCheese: "burger", grilled: "burger", filet: "burger", mcChicken: "burger", mcSpicy: "spicy", wings: "wings", nuggets: "nuggets", fries: "fries", flurry: "icecream", sundae: "icecream", cone: "icecream", coke: "drink", appleJuice: "drink", coffee: "coffee" };
 
 /* ---------- 状态 ---------- */
 const $ = id => document.getElementById(id);
-const D = window.MCTRACK_DATA || null;
-let stage = "camera", mood = null, audio = null, playing = false, schedTimer = null, eqTimer = null, selfieData = null, stickerShown = false;
+const D = (() => { try { return JSON.parse($("mc-data").textContent); } catch (e) { return null; } })();
+let stage = "ask", cur = null, seq = [];
 
 function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h; }
 function todayStr() { const d = new Date(); return d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0"); }
-function midi2freq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
 /* 触感反馈：支持的设备上点按给一点震动，不支持就静默跳过 */
 function buzz(p) { if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+/* 盖章闷响：Web Audio 合成，无音频文件。iOS 不支持震动，靠这一声给反馈。
+   AudioContext 必须在用户点按时创建/唤醒（unlockAudio），否则 Safari 静音。 */
+let actx = null;
+function unlockAudio() {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === "suspended") actx.resume();
+  } catch (e) {}
+}
+function thud() {
+  if (!actx || actx.state !== "running") return;
+  const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+  o.type = "sine";
+  o.frequency.setValueAtTime(140, t);
+  o.frequency.exponentialRampToValueAtTime(40, t + .15);
+  g.gain.setValueAtTime(.8, t);
+  g.gain.exponentialRampToValueAtTime(.001, t + .2);
+  o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + .22);
+}
 
 /* ---------- 舞台机 ---------- */
-const ORDER = ["camera", "keywords", "track", "deal"];
+const ORDER = ["ask", "approve", "deal"];
 function goTo(name) {
   stage = name;
-  ORDER.forEach(s => $("st-" + s).classList.toggle("on", s === name || (name === "deal" && s === "track")));
-  if (name !== "track" && name !== "deal") hideSticker();
+  ORDER.forEach(s => $("st-" + s).classList.toggle("on", s === name || (name === "deal" && s === "approve")));
   const idx = ORDER.indexOf(name);
-  document.querySelectorAll("#dots i").forEach((d, i) => d.classList.toggle("on", i <= Math.min(idx, 2)));
-  $("backBtn").style.display = (name === "keywords" || name === "track") ? "flex" : "none";
+  document.querySelectorAll("#dots i").forEach((d, i) => d.classList.toggle("on", i <= idx));
+  $("backBtn").style.display = name === "approve" ? "flex" : "none";
 }
-$("backBtn").onclick = () => { buzz(8); stopAudio(); goTo(stage === "track" ? "keywords" : "camera"); };
+function toAsk() {
+  seq.forEach(clearTimeout); seq = [];
+  document.querySelectorAll(".ev").forEach(x => x.classList.remove("pick"));
+  goTo("ask");
+}
+$("backBtn").onclick = () => { buzz(8); toAsk(); };
 
-/* ---------- Stage 1：自拍 ---------- */
-$("btnShot").onclick = () => { buzz(8); $("fileShot").click(); };
-$("btnAlbum").onclick = () => { buzz(8); $("fileAlbum").click(); };
-$("skipCam").onclick = () => { suggestFromBrightness(null); goTo("keywords"); };
-$("fileShot").onchange = e => handleFile(e.target.files[0]);
-$("fileAlbum").onchange = e => handleFile(e.target.files[0]);
-
-function handleFile(f) {
-  if (!f) return;
-  const r = new FileReader();
-  r.onload = () => startScan(r.result, false);
-  r.readAsDataURL(f);
-}
-
-function startScan(dataUrl, injected) {
-  selfieData = dataUrl;
-  $("selfieImg").src = dataUrl;
-  $("selfieImg").style.display = "block";
-  $("scanRing").style.display = "block";
-  $("camStatus").textContent = "识别中…";
-  const img = $("selfieImg");
-  const done = (moodGuess, faceOk) => {
-    $("scanRing").style.display = "none";
-    $("faceLine").style.borderColor = "rgba(255,199,44,.8)";
-    $("camStatus").textContent = faceOk ? "识别通过 · 情绪读取完成" : "没认出脸？算你低调 · 情绪已瞎猜";
-    setTimeout(() => { suggestFromBrightness(moodGuess); goTo("keywords"); }, 400);
-  };
-  if (injected) { done(D && D.moodId, true); return; }
-  const faceDetect = ("FaceDetector" in window)
-    ? new FaceDetector({ fastMode: true }).detect(img).then(f => f.length > 0).catch(() => true)
-    : Promise.resolve(true);
-  const minShow = new Promise(r => setTimeout(r, 700));
-  const cap = new Promise(r => setTimeout(() => r("timeout"), 2200));
-  const both = Promise.all([
-    recognizeGesture(img).catch(() => null),
-    recognizeExpression(img).catch(() => null),
-    faceDetect, minShow
-  ]);
-  Promise.race([both, cap]).then(res => {
-    if (res === "timeout") { analyzeImage(img, moodId => done(moodId, true)); return; }
-    const [gestMood, exprMood, faceOk] = res;
-    const picked = gestMood || exprMood;
-    if (picked) { done(picked, faceOk); return; }
-    analyzeImage(img, moodId => done(moodId, faceOk));
-  });
-}
-
-/* 表情识别（face-api.js，纯浏览器本地，MIT）：懒加载预训练模型（7 种表情）。
-   模型加载失败/没检出脸/平静脸/置信度不足 → 返回 null，降级到 analyzeImage。 */
-const FACEAPI_URL = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
-const FACEAPI_WEIGHTS = "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights";
-let faceApiReady = null;
-function loadFaceApi() {
-  if (faceApiReady) return faceApiReady;
-  faceApiReady = new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = FACEAPI_URL;
-    s.onload = async () => {
-      try {
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(FACEAPI_WEIGHTS),
-          faceapi.nets.faceExpressionNet.loadFromUri(FACEAPI_WEIGHTS)
-        ]);
-        resolve(true);
-      } catch (e) { reject(e); }
-    };
-    s.onerror = () => reject(new Error("cdn fail"));
-    document.head.appendChild(s);
-    setTimeout(() => reject(new Error("load timeout")), 12000);
-  });
-  faceApiReady.catch(() => { faceApiReady = null; });
-  return faceApiReady;
-}
-const EXPR_TO_MOOD = { happy: "hype", surprised: "fired", angry: "fired", sad: "down", fearful: "tired", disgusted: "zoned" };
-async function recognizeExpression(img) {
-  try {
-    await loadFaceApi();
-    const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceExpressions();
-    if (!det) return null;
-    const top = Object.entries(det.expressions).sort((a, b) => b[1] - a[1])[0];
-    if (top[0] === "neutral" || top[1] < 0.55) return null;
-    return EXPR_TO_MOOD[top[0]] || null;
-  } catch (e) {
-    return null;
-  }
-}
-
-/* 手势识别（MediaPipe Gesture Recognizer，本地 WASM）：✌️🤟👍👎✋✊☝️ → 8 情绪。
-   手势优先于表情（更具体更好玩）；失败一律返回 null 走降级链。 */
-const GESTURE_ESM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20/+esm";
-const GESTURE_WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20/wasm";
-const GESTURE_MODEL = "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task";
-const GESTURE_TO_MOOD = { Thumb_Up: "energetic", Victory: "hype", ILoveYou: "crush", Open_Palm: "lazy", Closed_Fist: "fired", Thumb_Down: "tired", Pointing_Up: "zoned" };
-let gestureReady = null, gestureRecognizer = null;
-function loadGesture() {
-  if (gestureReady) return gestureReady;
-  gestureReady = (async () => {
-    const mp = await import(GESTURE_ESM);
-    const vision = await mp.FilesetResolver.forVisionTasks(GESTURE_WASM);
-    try {
-      gestureRecognizer = await mp.GestureRecognizer.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: GESTURE_MODEL, delegate: "GPU" },
-        runningMode: "IMAGE", numHands: 1
-      });
-    } catch (e) {
-      gestureRecognizer = await mp.GestureRecognizer.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: GESTURE_MODEL, delegate: "CPU" },
-        runningMode: "IMAGE", numHands: 1
-      });
-    }
-    return true;
-  })();
-  gestureReady.catch(() => { gestureReady = null; });
-  return gestureReady;
-}
-async function recognizeGesture(img) {
-  try {
-    await loadGesture();
-    const r = gestureRecognizer.recognize(img);
-    const g = r.gestures && r.gestures[0] && r.gestures[0][0];
-    if (g && g.categoryName !== "None" && g.score > 0.5) return GESTURE_TO_MOOD[g.categoryName] || null;
-  } catch (e) {}
-  return null;
-}
-
-/* 本地粗读 v2：亮度+饱和度+对比度 → 活力值分档，再用照片内容哈希在档内定情绪。
-   不同照片内容不同 → 哈希不同 → 情绪不同；同一照片结果恒定可复现。 */
-function analyzeImage(img, cb) {
-  try {
-    const c = document.createElement("canvas");
-    c.width = c.height = 64;
-    const x = c.getContext("2d");
-    x.drawImage(img, 0, 0, 64, 64);
-    const d = x.getImageData(0, 0, 64, 64).data;
-    let l = 0, s = 0, sq = 0, hash = 0;
-    const n = d.length / 4;
-    for (let i = 0; i < d.length; i += 4) {
-      const r = d[i], g = d[i+1], b = d[i+2];
-      const lum = (r + g + b) / 3;
-      l += lum;
-      sq += lum * lum;
-      const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
-      s += mx ? (mx - mn) / mx : 0;
-      hash = ((hash * 31) + r + g * 3 + b * 7) >>> 0;
-    }
-    const L = l / n / 255, S = s / n;
-    const C = Math.sqrt(Math.max(0, sq / n - (l / n) * (l / n))) / 255;
-    const clamp = v => Math.max(0, Math.min(1, v));
-    const vibe = clamp(L * 0.55 + S * 0.30 + clamp(C * 2.2) * 0.15);
-    const bands = [
-      ["tired", "down"],
-      ["zoned", "lazy"],
-      ["lazy", "crush"],
-      ["energetic", "hype", "fired"]
-    ];
-    const bi = vibe < 0.3 ? 0 : vibe < 0.48 ? 1 : vibe < 0.62 ? 2 : 3;
-    const pool = bands[bi];
-    cb(pool[hash % pool.length]);
-  } catch (e) {
-    cb("zoned");
-  }
-}
-function suggestFromBrightness(preset) {
-  buildKeywords(preset || (D && D.moodId) || "zoned");
-}
-
-/* ---------- Stage 2：关键词 ---------- */
-function buildKeywords(guessId) {
-  const g = $("kwGrid");
+/* ---------- Stage 1：今天发生了什么 ---------- */
+function buildEvents() {
+  const g = $("evGrid");
   g.innerHTML = "";
-  const list = [...MOODS].sort((a, b) => (a.id === guessId ? -1 : b.id === guessId ? 1 : 0));
-  list.forEach((m, i) => {
+  EVENTS.forEach(ev => {
     const b = document.createElement("button");
-    b.className = "kw";
-    b.innerHTML = m.label + '<span class="mini">' + m.sub + " · " + m.genre + "</span>" + (i === 0 ? '<span class="guess">猜你想点</span>' : "");
+    b.className = "ev";
+    b.innerHTML = '<span class="emo">' + ev.emo + "</span><b>" + ev.label + "</b><small>" + ev.sub + "</small>";
     b.onclick = () => {
       buzz(10);
-      document.querySelectorAll(".kw").forEach(k => k.classList.remove("pick"));
+      unlockAudio();
+      document.querySelectorAll(".ev").forEach(x => x.classList.remove("pick"));
       b.classList.add("pick");
-      initAudioGesture();
-      setTimeout(() => pickMood(m.id), 300);
+      setTimeout(() => approve(ev, ev.label), 260);
     };
     g.appendChild(b);
   });
-  $("kwSub").textContent = (guessId && MOODS.some(m => m.id === guessId))
-    ? "表情读出来的（本地识别，图一乐），点一个确认"
-    : "点一个，今天的心情由它代言";
 }
-$("reshuffleBtn").onclick = () => buildKeywords(MOODS[Math.floor(Math.random() * MOODS.length)].id);
-
-function pickMood(id) {
-  mood = MOODS.find(m => m.id === id) || MOODS[0];
-  const song = ($("songText").value || (D && D.songText) || "").trim();
-  renderTrack(song);
-  goTo("track");
+function submitSay() {
+  const t = $("sayText").value.trim();
+  if (!t) { $("sayText").focus(); return; }
+  buzz(10);
+  unlockAudio();
+  $("sayText").blur();
+  window.scrollTo(0, 0); /* iOS 收起键盘后页面偶尔不复位 */
+  const id = matchEvent(t);
+  approve(EVENTS.find(e => e.id === id) || EVENT_MISC, "「" + t + "」");
 }
+$("sayBtn").onclick = submitSay;
+$("sayText").onkeydown = e => { if (e.key === "Enter") submitSay(); };
 
-/* ---------- Stage 3：主题曲 ---------- */
-let mealState = null;
-let curSong = "", curTrackTitle = "";
-function renderTrack(song) {
-  const m = mood;
-  curSong = song || "";
-  const tr = pickTrack(m.id);
-  curTrackTitle = tr.t;
-  const rar = rarityOf(tr.y);
-  $("trackName").innerHTML = (curSong ? "《" + curSong + " × 麦麦》" : "《" + tr.t + "》") + '<span class="rarity ' + rar.code + '">' + rar.label + "</span>";
-  $("vinylInitial").textContent = (tr.t[0] || "麦").toUpperCase();
-  const tags = $("trackTags");
-  tags.innerHTML = "";
-  const meta = document.createElement("span");
-  meta.textContent = tr.a + (tr.y ? " · " + tr.y : "") + " · " + tr.lang;
-  tags.appendChild(meta);
-  const vd = $("verdict");
-  vd.style.display = "block";
-  vd.textContent = "「" + (VERDICTS[m.id] || "今天也是麦门的一天") + "」";
-  const box = $("langPills");
-  box.innerHTML = "";
-  const re = document.createElement("button");
-  re.textContent = "换一首";
-  re.className = "on";
-  re.onclick = () => { drawSalt++; renderTrack(curSong); };
-  box.appendChild(re);
-  $("srcTag").style.display = "none";
-  $("playHint").textContent = "点唱片播放";
-  prepareDeal(curSong);
-}
-
-function prepareDeal(song) {
-  const m = mood;
-  let names, price, saved = 0, coupons = 0, realMenu = false, main, second;
-  if (D && D.meals && D.meals.length) {
-    names = D.meals.map(x => x.name).join(" + ");
-    price = D.finalPrice != null ? D.finalPrice : D.meals.reduce((s, x) => s + (x.price || 0), 0);
-    saved = D.saved || 0;
-    coupons = D.couponCount || 0;
-    realMenu = !!D.realMenu;
-    main = { name: D.meals[0].name, price: D.meals[0].price || 0, img: D.meals[0].img || "", k: "burger" };
-    second = D.meals[1] ? { name: D.meals[1].name, price: D.meals[1].price || 0, img: D.meals[1].img || "", k: "drink" } : null;
-  } else {
-    const cfg = MOOD_FOOD[m.id];
-    main = matchFood(cfg.main) || FOOD_DB.find(f => f.k === "nuggets");
-    second = matchFood(cfg.drink) || FOOD_DB.find(f => f.k === "coke");
-    names = main.name + " + " + (second ? second.name : "");
-    price = main.price + (second ? second.price : 0);
-  }
-  const pct = 86 + hashStr(todayStr() + m.id + (song || "") + curTrackTitle + drawSalt) % 14;
-  mealState = { main, second, names, price, saved, coupons, realMenu, pct };
-}
-
-$("vinyl").onclick = () => { buzz(10); playing ? stopAudio() : startAudio(); };
-
-/* 贴纸 */
+/* ---------- Stage 2：批准书 ---------- */
 function photoHTML(item, cls) {
   const inner = item.img
-    ? '<img src="' + item.img + '" alt="' + item.name + '" loading="lazy" onerror="window.__svgFallback(this,\'' + (item.k || "burger") + '\')">'
-    : (ART[MEAL_ART[item.k]] || ART.burger)();
-  return '<div class="' + cls + '"><div class="photo-frame">' + inner + '</div></div>';
+    ? '<img src="' + item.img + '" alt="' + item.name + '" data-k="' + (item.k || "burger") + '" onerror="window.__svgFallback(this)">'
+    : artOf(item.k);
+  return '<div class="' + cls + '"><div class="photo-frame">' + inner + "</div></div>";
 }
-window.__svgFallback = function(imgEl, k) {
+function artOf(k) { return (ART[MEAL_ART[k] || k] || ART.burger)(); }
+window.__svgFallback = function (imgEl) {
   const f = imgEl.parentNode;
-  if (f) f.innerHTML = (ART[MEAL_ART[k]] || ART.burger)();
+  if (f) f.innerHTML = artOf(imgEl.dataset.k);
 };
-function showSticker() {
-  if (stickerShown || !mealState) return;
-  stickerShown = true;
-  $("stickerArt").innerHTML = photoHTML(mealState.main, "photo-a") + (mealState.second ? photoHTML(mealState.second, "photo-b") : "");
-  $("stickerName").textContent = mealState.main.name + (mealState.second ? " × " + mealState.second.name : "");
-  const st = $("sticker");
-  st.classList.remove("idle", "mini");
-  st.classList.add("pop");
-  /* 弹入动画结束后换 idle 姿态接管，2.6s 后缩到右下角让出判词 */
-  st.onanimationend = e => {
-    if (e.target !== st || e.animationName !== "stickerPop") return;
-    st.classList.remove("pop");
-    st.classList.add("idle");
-    setTimeout(() => { if (stickerShown) st.classList.add("mini"); }, 2600);
-  };
-  launchFireworks();
-  buzz([12, 60, 12]);
-  $("playHint").textContent = "主食贴纸到手 · 点它领券";
+/* 菜单图 CDN 偶尔会"卡住"（既不成功也不报错，onerror 不触发），2.5s 没出图就换插画，别留空白圆框 */
+function fillFood(box, html) {
+  box.innerHTML = html;
+  const imgs = [...box.querySelectorAll("img")];
+  setTimeout(() => imgs.forEach(i => { if (i.isConnected && !i.naturalWidth) window.__svgFallback(i); }), 2500);
 }
+
+function approve(ev, reason) {
+  seq.forEach(clearTimeout); seq = [];
+  /* 餐品：Skill 注入的实时菜单与券后价优先（仅限注入的那个事件），否则用菜单快照 */
+  const inj = !!(D && D.eventId === ev.id && D.meals && D.meals.length);
+  const items = inj ? D.meals.slice(0, 2) : ev.meal.map(k => FOOD_DB.find(f => f.k === k));
+  const base = items.reduce((s, x) => s + (x.price || 0), 0);
+  cur = {
+    items,
+    names: items.map(x => x.name).join(" + "),
+    price: inj && D.finalPrice != null ? D.finalPrice : base,
+    kcal: items.every(x => x.kcal != null) ? items.reduce((s, x) => s + x.kcal, 0) : null,
+    saved: inj ? D.saved || 0 : 0,
+    coupons: inj ? D.couponCount || 0 : 0,
+    realMenu: inj && !!D.realMenu
+  };
+  const d = new Date(), dateStr = d.getFullYear() + "." + (d.getMonth() + 1) + "." + d.getDate();
+  $("certNo").textContent = "No." + todayStr() + "-" + (hashStr(ev.id + reason) % 9000 + 1000);
+  $("certReason").textContent = reason;
+  $("certStars").textContent = "★".repeat(ev.level) + "☆".repeat(5 - ev.level);
+  $("certVerdict").textContent = "「" + ((inj && D.verdict) || ev.verdict) + "」";
+  fillFood($("certFood"), photoHTML(items[0], "photo-a") + (items[1] ? photoHTML(items[1], "photo-b") : ""));
+  $("certMeal").textContent = "批准：" + cur.names;
+  $("certMeta").textContent = (cur.kcal != null ? "约 " + cur.kcal + " kcal · " : "") + (cur.realMenu ? "券后 ¥" : "门店价 ¥") + Number(cur.price).toFixed(1);
+  $("stampDate").textContent = dateStr;
+  $("stamp").classList.remove("hit");
+  $("cert").classList.remove("shake");
+  $("approveCta").classList.remove("on");
+  goTo("approve");
+  /* 时序：批准书滑入 → 食物贴上（.45s/.6s）→ 1.1s 落章 → 1.4s 砸中：震屏+闷响+烟花 → 1.7s 出按钮 */
+  seq.push(setTimeout(() => $("stamp").classList.add("hit"), 1100));
+  seq.push(setTimeout(() => { $("cert").classList.add("shake"); thud(); buzz([12, 60, 12]); launchFireworks(); }, 1400));
+  seq.push(setTimeout(() => $("approveCta").classList.add("on"), 1700));
+}
+$("againBtn").onclick = () => { buzz(8); toAsk(); };
+
 /* 纯 CSS 烟花：从底部升空后炸开，零图片零依赖 */
 function launchFireworks() {
   const layer = $("fwLayer");
-  if (!layer) return;
   const colors = ["#DA291C", "#FFC72C", "#FF7A59", "#FFE08A", "#FFFFFF"];
   const spawn = () => {
     const burst = document.createElement("div");
@@ -808,24 +501,21 @@ function launchFireworks() {
   setTimeout(spawn, 180);
   setTimeout(spawn, 380);
 }
-function hideSticker() {
-  stickerShown = false;
-  const st = $("sticker");
-  st.onanimationend = null;
-  st.classList.remove("pop", "idle", "mini");
-}
-$("sticker").onclick = () => {
+
+/* ---------- Stage 3：领券下单 ---------- */
+$("goDeal").onclick = () => {
   buzz(12);
-  $("dealMeal").textContent = mealState.names + " · 匹配度 " + mealState.pct + "%";
-  $("dealFood").innerHTML = photoHTML(mealState.main, "photo-a") + (mealState.second ? photoHTML(mealState.second, "photo-b") : "");
+  $("dealMeal").textContent = cur.names + (cur.kcal != null ? " · 约 " + cur.kcal + " kcal" : "");
+  fillFood($("dealFood"), $("certFood").innerHTML); /* 复用批准书上已出图/已换插画的结果，不重新请求 */
   const row = $("couponRow");
   row.innerHTML = "";
-  if (mealState.realMenu && mealState.coupons > 0) {
-    const labels = ["麦麦省券", "满减券", "套餐折扣券"];
-    for (let i = 0; i < Math.min(mealState.coupons, 3); i++) {
+  if (cur.realMenu && cur.coupons > 0) {
+    /* 券名用 Skill 注入的真实名字；没给就统称麦麦省券，不编造券种 */
+    const names = (D && D.couponNames) || [];
+    for (let i = 0; i < Math.min(cur.coupons, 3); i++) {
       const c = document.createElement("div");
       c.className = "coupon";
-      c.textContent = labels[i % 3] + " · 已领";
+      c.textContent = (names[i] || "麦麦省券") + " · 已领";
       row.appendChild(c);
     }
   } else {
@@ -834,127 +524,24 @@ $("sticker").onclick = () => {
     c.textContent = "接入 MCP 后自动领取麦麦省券";
     row.appendChild(c);
   }
-  $("dealNow").textContent = "¥" + Number(mealState.price).toFixed(1);
-  $("dealWas").textContent = mealState.saved ? "¥" + Number(mealState.price + mealState.saved).toFixed(1) : "";
-  $("dealSave").textContent = mealState.saved ? "已省 ¥" + Number(mealState.saved).toFixed(1) : "";
+  $("dealNow").textContent = "¥" + Number(cur.price).toFixed(1);
+  $("dealWas").textContent = cur.saved ? "¥" + Number(cur.price + cur.saved).toFixed(1) : "";
+  $("dealSave").textContent = cur.saved ? "已省 ¥" + Number(cur.saved).toFixed(1) : "";
   goTo("deal");
 };
-$("dealUnderlay").onclick = () => goTo("track");
-$("replayBtn").onclick = () => { stopAudio(); hideSticker(); goTo("camera"); };
+$("dealUnderlay").onclick = () => goTo("approve");
+$("replayBtn").onclick = () => { $("sayText").value = ""; toAsk(); };
 $("orderBtn").onclick = () => {
   buzz([15, 50, 15]);
-  alert("在 WorkBuddy 里对我说「就点这个」，我调麦当劳 MCP 帮你一键下单。");
+  alert("在 WorkBuddy 里对我说「就吃这个」，我调麦当劳 MCP 帮你领券下单。");
 };
 
-/* ---------- Web Audio 引擎 ---------- */
-function initAudioGesture() {
-  if (!audio) audio = buildAudio();
-  if (audio.ctx.state === "suspended") audio.ctx.resume();
+/* ---------- 启动：Skill 注入了 eventId 就直接盖章 ---------- */
+buildEvents();
+if (D && D.eventId) {
+  const ev = EVENTS.find(e => e.id === D.eventId) || EVENT_MISC;
+  approve(ev, D.reason || ev.label);
 }
-function buildAudio() {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const master = ctx.createGain(); master.gain.value = .5;
-  const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1400;
-  master.connect(lp); lp.connect(ctx.destination);
-  const nb = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
-  const nd = nb.getChannelData(0);
-  for (let i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1) * .25;
-  const vinyl = ctx.createBufferSource(); vinyl.buffer = nb; vinyl.loop = true;
-  const vg = ctx.createGain(); vg.gain.value = .012;
-  const vhp = ctx.createBiquadFilter(); vhp.type = "highpass"; vhp.frequency.value = 2500;
-  vinyl.connect(vhp); vhp.connect(vg); vg.connect(master); vinyl.start();
-  return { ctx, master, lp };
-}
-function scheduleNote(a, time, m, step, bar) {
-  const chords = CHORD_LIB[m.id];
-  const chord = chords[bar % chords.length];
-  const stepDur = 60 / m.bpm / 4;
-  const t = time + (step % 2 === 1 ? m.swing * stepDur : 0);
-  if (step === 0 || (m.id === "hype" && step === 10)) {
-    const o = a.ctx.createOscillator(), g = a.ctx.createGain();
-    o.type = "sine";
-    o.frequency.setValueAtTime(150, t);
-    o.frequency.exponentialRampToValueAtTime(45, t + .12);
-    g.gain.setValueAtTime(.9, t);
-    g.gain.exponentialRampToValueAtTime(.001, t + .18);
-    o.connect(g); g.connect(a.master); o.start(t); o.stop(t + .2);
-  }
-  if (Math.random() < m.hat && step % 2 === 1) {
-    const s = a.ctx.createBufferSource();
-    const hb = a.ctx.createBuffer(1, a.ctx.sampleRate * .06, a.ctx.sampleRate);
-    const hd = hb.getChannelData(0);
-    for (let i = 0; i < hd.length; i++) hd[i] = (Math.random() * 2 - 1) * (1 - i / hd.length);
-    s.buffer = hb;
-    const hp = a.ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 8000;
-    const g = a.ctx.createGain(); g.gain.value = .18;
-    s.connect(hp); hp.connect(g); g.connect(a.master); s.start(t);
-  }
-  if (step % 4 === 0 || step % 8 === 6) {
-    const o = a.ctx.createOscillator(), g = a.ctx.createGain();
-    o.type = "triangle";
-    o.frequency.value = midi2freq(m.root + chord[0] - 12 + (step % 8 === 6 ? 12 : 0));
-    g.gain.setValueAtTime(.0001, t);
-    g.gain.linearRampToValueAtTime(.4, t + .02);
-    g.gain.exponentialRampToValueAtTime(.001, t + stepDur * 3);
-    o.connect(g); g.connect(a.master); o.start(t); o.stop(t + stepDur * 4);
-  }
-  if (step === 0 || step === 8) {
-    chord.forEach(semi => {
-      [-6, 6].forEach(det => {
-        const o = a.ctx.createOscillator(), g = a.ctx.createGain();
-        o.type = "sawtooth";
-        o.frequency.value = midi2freq(m.root + 12 + semi);
-        o.detune.value = det;
-        g.gain.setValueAtTime(.0001, t);
-        g.gain.linearRampToValueAtTime(.05, t + .05);
-        g.gain.exponentialRampToValueAtTime(.001, t + stepDur * 7);
-        o.connect(g); g.connect(a.master); o.start(t); o.stop(t + stepDur * 8);
-      });
-    });
-  }
-}
-let nextTime = 0, curStep = 0, curBar = 0;
-function startAudio() {
-  if (!mood) return;
-  initAudioGesture();
-  audio.lp.frequency.value = mood.bright;
-  playing = true;
-  curStep = 0; curBar = 0;
-  nextTime = audio.ctx.currentTime + .06;
-  schedTimer = setInterval(() => {
-    while (nextTime < audio.ctx.currentTime + .12) {
-      scheduleNote(audio, nextTime, mood, curStep, curBar);
-      nextTime += 60 / mood.bpm / 4;
-      curStep = (curStep + 1) % 16;
-      if (curStep === 0) curBar++;
-    }
-  }, 25);
-  $("vinyl").classList.add("spinning");
-  $("playHint").textContent = "正在播放 · 你的耳朵和嘴巴正在反应";
-  eqTimer = setInterval(() => {
-    document.querySelectorAll("#eq i").forEach(b => b.style.height = (playing ? 15 + Math.random() * 85 : 18) + "%");
-  }, 120);
-  setTimeout(showSticker, 1800);
-}
-function stopAudio() {
-  if (schedTimer) clearInterval(schedTimer);
-  if (eqTimer) clearInterval(eqTimer);
-  schedTimer = eqTimer = null;
-  playing = false;
-  const v = $("vinyl");
-  if (v) v.classList.remove("spinning");
-  document.querySelectorAll("#eq i").forEach(b => b.style.height = "18%");
-}
-
-/* ---------- 注入模式 ---------- */
-(function () {
-  loadFaceApi().catch(() => {});
-  loadGesture().catch(() => {});
-  if (D && D.moodId) {
-    if (D.selfie) startScan(D.selfie, true);
-    else suggestFromBrightness(D.moodId);
-  }
-})();
 </script>
 </body>
 </html>
