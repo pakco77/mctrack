@@ -1,9 +1,9 @@
 # workbuddy.md — WorkBuddy 开发对话上下文导出
 
-> 本文件为使用腾讯 WorkBuddy 开发「麦乐点唱机 McTrack」过程中的对话上下文节选，用于 WorkBuddy 联动活动核验。
+> 本文件为开发本项目过程中的对话上下文节选，用于 WorkBuddy 联动活动核验。项目在腾讯 WorkBuddy 中起步（v0.1 起：选题、报名、MCP 接入、早期版本「麦乐点唱机 McTrack / 麦反应」），之后由 WorkBuddy 与 Claude Code（及 Kimi）协同迭代，v3.0 重新定位为「麦麦批准 McApproved」。每段发言人按实际使用的工具标注。
 
-**时间**：2026-10-09 14:45 — 15:50（Asia/Shanghai）
-**环境**：macOS · WorkBuddy Agent 模式 · 麦当劳 MCP（mcd-mcp）
+**时间**：2026-10-09 14:45 起（Asia/Shanghai）
+**环境**：macOS · WorkBuddy Agent 模式 + Claude Code · 麦当劳 MCP（mcd-mcp）
 
 ---
 
