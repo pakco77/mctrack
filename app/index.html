@@ -469,22 +469,30 @@ function startScan(dataUrl, injected) {
   $("selfieImg").src = dataUrl;
   $("selfieImg").style.display = "block";
   $("scanRing").style.display = "block";
-  $("camStatus").textContent = "表情识别中…";
+  $("camStatus").textContent = "识别中…";
   const img = $("selfieImg");
   const done = (moodGuess, faceOk) => {
     $("scanRing").style.display = "none";
     $("faceLine").style.borderColor = "rgba(255,199,44,.8)";
-    $("camStatus").textContent = faceOk ? "表情识别通过 · 情绪读取完成" : "没认出脸？算你低调 · 情绪已瞎猜";
-    setTimeout(() => { suggestFromBrightness(moodGuess); goTo("keywords"); }, 900);
+    $("camStatus").textContent = faceOk ? "识别通过 · 情绪读取完成" : "没认出脸？算你低调 · 情绪已瞎猜";
+    setTimeout(() => { suggestFromBrightness(moodGuess); goTo("keywords"); }, 400);
   };
   if (injected) { done(D && D.moodId, true); return; }
-  loadFaceApi().catch(() => {});
   const faceDetect = ("FaceDetector" in window)
     ? new FaceDetector({ fastMode: true }).detect(img).then(f => f.length > 0).catch(() => true)
     : Promise.resolve(true);
-  const minShow = new Promise(r => setTimeout(r, 1400));
-  Promise.all([recognizeExpression(img), faceDetect, minShow]).then(([exprMood, faceOk]) => {
-    if (exprMood) { done(exprMood, faceOk); return; }
+  const minShow = new Promise(r => setTimeout(r, 700));
+  const cap = new Promise(r => setTimeout(() => r("timeout"), 2200));
+  const both = Promise.all([
+    recognizeGesture(img).catch(() => null),
+    recognizeExpression(img).catch(() => null),
+    faceDetect, minShow
+  ]);
+  Promise.race([both, cap]).then(res => {
+    if (res === "timeout") { analyzeImage(img, moodId => done(moodId, true)); return; }
+    const [gestMood, exprMood, faceOk] = res;
+    const picked = gestMood || exprMood;
+    if (picked) { done(picked, faceOk); return; }
     analyzeImage(img, moodId => done(moodId, faceOk));
   });
 }
@@ -519,7 +527,7 @@ const EXPR_TO_MOOD = { happy: "hype", surprised: "fired", angry: "fired", sad: "
 async function recognizeExpression(img) {
   try {
     await loadFaceApi();
-    const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 })).withFaceExpressions();
+    const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })).withFaceExpressions();
     if (!det) return null;
     const top = Object.entries(det.expressions).sort((a, b) => b[1] - a[1])[0];
     if (top[0] === "neutral" || top[1] < 0.55) return null;
@@ -527,6 +535,44 @@ async function recognizeExpression(img) {
   } catch (e) {
     return null;
   }
+}
+
+/* 手势识别（MediaPipe Gesture Recognizer，本地 WASM）：✌️🤟👍👎✋✊☝️ → 8 情绪。
+   手势优先于表情（更具体更好玩）；失败一律返回 null 走降级链。 */
+const GESTURE_ESM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20/+esm";
+const GESTURE_WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20/wasm";
+const GESTURE_MODEL = "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task";
+const GESTURE_TO_MOOD = { Thumb_Up: "energetic", Victory: "hype", ILoveYou: "crush", Open_Palm: "lazy", Closed_Fist: "fired", Thumb_Down: "tired", Pointing_Up: "zoned" };
+let gestureReady = null, gestureRecognizer = null;
+function loadGesture() {
+  if (gestureReady) return gestureReady;
+  gestureReady = (async () => {
+    const mp = await import(GESTURE_ESM);
+    const vision = await mp.FilesetResolver.forVisionTasks(GESTURE_WASM);
+    try {
+      gestureRecognizer = await mp.GestureRecognizer.createFromOptions(vision, {
+        baseOptions: { modelAssetPath: GESTURE_MODEL, delegate: "GPU" },
+        runningMode: "IMAGE", numHands: 1
+      });
+    } catch (e) {
+      gestureRecognizer = await mp.GestureRecognizer.createFromOptions(vision, {
+        baseOptions: { modelAssetPath: GESTURE_MODEL, delegate: "CPU" },
+        runningMode: "IMAGE", numHands: 1
+      });
+    }
+    return true;
+  })();
+  gestureReady.catch(() => { gestureReady = null; });
+  return gestureReady;
+}
+async function recognizeGesture(img) {
+  try {
+    await loadGesture();
+    const r = gestureRecognizer.recognize(img);
+    const g = r.gestures && r.gestures[0] && r.gestures[0][0];
+    if (g && g.categoryName !== "None" && g.score > 0.5) return GESTURE_TO_MOOD[g.categoryName] || null;
+  } catch (e) {}
+  return null;
 }
 
 /* 本地粗读 v2：亮度+饱和度+对比度 → 活力值分档，再用照片内容哈希在档内定情绪。
@@ -806,6 +852,8 @@ function stopAudio() {
 
 /* ---------- 注入模式 ---------- */
 (function () {
+  loadFaceApi().catch(() => {});
+  loadGesture().catch(() => {});
   if (D && D.moodId) {
     if (D.selfie) startScan(D.selfie, true);
     else suggestFromBrightness(D.moodId);
