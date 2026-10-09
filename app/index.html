@@ -480,31 +480,49 @@ function startScan(dataUrl, injected) {
   if (injected) { done(D && D.moodId, true); return; }
   if ("FaceDetector" in window) {
     new FaceDetector({ fastMode: true }).detect(img)
-      .then(faces => readBrightness(img, b => done(guessFromBrightness(b), faces.length > 0)))
-      .catch(() => readBrightness(img, b => done(guessFromBrightness(b), true)));
+      .then(faces => analyzeImage(img, moodId => done(moodId, faces.length > 0)))
+      .catch(() => analyzeImage(img, moodId => done(moodId, true)));
   } else {
-    readBrightness(img, b => done(guessFromBrightness(b), true));
+    analyzeImage(img, moodId => done(moodId, true));
   }
 }
 
-/* 本地粗读：亮度猜情绪 */
-function readBrightness(img, cb) {
+/* 本地粗读 v2：亮度+饱和度+对比度 → 活力值分档，再用照片内容哈希在档内定情绪。
+   不同照片内容不同 → 哈希不同 → 情绪不同；同一照片结果恒定可复现。 */
+function analyzeImage(img, cb) {
   try {
     const c = document.createElement("canvas");
-    c.width = c.height = 32;
+    c.width = c.height = 64;
     const x = c.getContext("2d");
-    x.drawImage(img, 0, 0, 32, 32);
-    const d = x.getImageData(0, 0, 32, 32).data;
-    let l = 0;
-    for (let i = 0; i < d.length; i += 4) l += (d[i] + d[i+1] + d[i+2]) / 3;
-    cb(l / (d.length / 4) / 255);
-  } catch (e) { cb(0.5); }
-}
-function guessFromBrightness(b) {
-  if (b > 0.62) return "energetic";
-  if (b < 0.3) return "tired";
-  if (b < 0.42) return "down";
-  return ["lazy", "zoned", "crush"][Math.floor(b * 10) % 3];
+    x.drawImage(img, 0, 0, 64, 64);
+    const d = x.getImageData(0, 0, 64, 64).data;
+    let l = 0, s = 0, sq = 0, hash = 0;
+    const n = d.length / 4;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i+1], b = d[i+2];
+      const lum = (r + g + b) / 3;
+      l += lum;
+      sq += lum * lum;
+      const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+      s += mx ? (mx - mn) / mx : 0;
+      hash = ((hash * 31) + r + g * 3 + b * 7) >>> 0;
+    }
+    const L = l / n / 255, S = s / n;
+    const C = Math.sqrt(Math.max(0, sq / n - (l / n) * (l / n))) / 255;
+    const clamp = v => Math.max(0, Math.min(1, v));
+    const vibe = clamp(L * 0.55 + S * 0.30 + clamp(C * 2.2) * 0.15);
+    const bands = [
+      ["tired", "down"],
+      ["zoned", "lazy"],
+      ["lazy", "crush"],
+      ["energetic", "hype", "fired"]
+    ];
+    const bi = vibe < 0.3 ? 0 : vibe < 0.48 ? 1 : vibe < 0.62 ? 2 : 3;
+    const pool = bands[bi];
+    cb(pool[hash % pool.length]);
+  } catch (e) {
+    cb("zoned");
+  }
 }
 function suggestFromBrightness(preset) {
   buildKeywords(preset || (D && D.moodId) || "zoned");
@@ -528,7 +546,7 @@ function buildKeywords(guessId) {
     g.appendChild(b);
   });
   $("kwSub").textContent = (guessId && MOODS.some(m => m.id === guessId))
-    ? "从照片里读到的，点一个确认"
+    ? "照片读出来的（本地粗读，图一乐），点一个确认"
     : "点一个，今天的心情由它代言";
 }
 $("reshuffleBtn").onclick = () => buildKeywords(MOODS[Math.floor(Math.random() * MOODS.length)].id);
