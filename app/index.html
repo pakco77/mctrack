@@ -152,29 +152,32 @@
   .eq { display: flex; gap: 4px; align-items: flex-end; height: 30px; margin-top: 12px; }
   .eq i { width: 5px; background: var(--red); border-radius: 3px; height: 18%; }
 
-  /* ===== 主食贴纸 ===== */
+  /* ===== 主食贴纸（模切轮廓白边）===== */
   #sticker {
-    position: absolute; right: 14px; bottom: 120px; z-index: 40; width: 220px;
+    position: absolute; right: 10px; bottom: 108px; z-index: 40; width: 250px;
     transform: scale(0) rotate(-30deg); display: none; cursor: pointer;
   }
   #sticker.pop { display: block; animation: stickerPop .65s var(--spring) forwards; }
   @keyframes stickerPop { to { transform: scale(1) rotate(-7deg); } }
   #sticker .sticker-body {
-    background: #fff; border-radius: 22px; padding: 14px 14px 12px;
+    background: #fff; border-radius: 24px; padding: 16px 14px 12px;
     border: 3px solid #fff; box-shadow: 0 14px 34px rgba(0,0,0,.25); text-align: center;
   }
   #stickerArt { display: flex; align-items: flex-end; justify-content: center; }
-  .photo-a { transform: rotate(-3deg); z-index: 2; }
-  .photo-b { margin-left: -24px; transform: rotate(4deg); z-index: 3; }
+  .photo-a { transform: rotate(-4deg); z-index: 2; }
+  .photo-b { margin-left: -30px; transform: rotate(5deg); z-index: 3; }
   .photo-frame {
-    background: #fff; border-radius: 12px; padding: 6px 6px 2px;
-    box-shadow: 0 3px 10px rgba(0,0,0,.16); width: 106px; border: 1px solid var(--line);
+    background: #fff; padding: 9px;
+    border-radius: 44% 56% 52% 48% / 50% 46% 54% 50%;
+    box-shadow: 0 4px 14px rgba(0,0,0,.18), 0 0 0 2px #fff;
   }
-  .photo-b .photo-frame { width: 84px; }
-  .photo-frame img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; display: block; background: var(--cream); }
-  .photo-frame svg { width: 100%; height: auto; display: block; }
-  .photo-name { font-size: 10px; font-weight: 700; margin-top: 5px; text-align: center; }
-  #sticker .sticker-name { font-size: 13px; font-weight: 800; margin-top: 8px; }
+  .photo-a .photo-frame { width: 150px; }
+  .photo-b .photo-frame { width: 112px; }
+  .photo-frame img, .photo-frame svg {
+    width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #fff;
+    border-radius: 44% 56% 52% 48% / 50% 46% 54% 50%;
+  }
+  #sticker .sticker-name { font-size: 13px; font-weight: 800; margin-top: 10px; }
   #sticker .sticker-cta { font-size: 10px; color: var(--red); font-weight: 700; margin-top: 3px; animation: pulse 1.2s ease infinite; }
   @keyframes pulse { 50% { opacity: .35; } }
 
@@ -550,28 +553,21 @@ function renderTrack(song) {
   $("vinylInitial").textContent = (tr.t[0] || "麦").toUpperCase();
   const tags = $("trackTags");
   tags.innerHTML = "";
-  [tr.a + (tr.y ? " · " + tr.y : ""), tr.lang, m.label].forEach((t, i) => {
-    const s = document.createElement("span");
-    if (i === 2) s.className = "hot";
-    s.textContent = t;
-    tags.appendChild(s);
-  });
+  const meta = document.createElement("span");
+  meta.textContent = tr.a + (tr.y ? " · " + tr.y : "") + " · " + tr.lang;
+  tags.appendChild(meta);
   const vd = $("verdict");
   vd.style.display = "block";
   vd.textContent = "「" + (VERDICTS[m.id] || "今天也是麦门的一天") + "」";
   const box = $("langPills");
   box.innerHTML = "";
-  const tip = document.createElement("span");
-  tip.style.cssText = "font-size:11px;color:var(--ink-soft);align-self:center;margin-right:2px";
-  tip.textContent = "今天只推一首";
-  box.appendChild(tip);
   const re = document.createElement("button");
   re.textContent = "换一首";
   re.className = "on";
   re.onclick = () => { drawSalt++; renderTrack(curSong); };
   box.appendChild(re);
-  $("playHint").textContent = "点唱片，播放你的主题曲（氛围伴奏为原创合成，向经典致敬）";
-  $("srcTag").textContent = (D && D.realMenu) ? "菜单/券价来自麦当劳 MCP · " + (D.generatedAt || "") : "菜单为 MCP 东莞门店快照（2026-10-09）· 接 MCP 后实时更新";
+  $("srcTag").style.display = "none";
+  $("playHint").textContent = "点唱片播放";
   prepareDeal(curSong);
 }
 
@@ -604,7 +600,7 @@ function photoHTML(item, cls) {
   const inner = item.img
     ? '<img src="' + item.img + '" alt="' + item.name + '" loading="lazy" onerror="window.__svgFallback(this,\'' + (item.k || "burger") + '\')">'
     : (ART[MEAL_ART[item.k]] || ART.burger)();
-  return '<div class="' + cls + '"><div class="photo-frame">' + inner + '</div><div class="photo-name">' + item.name + '</div></div>';
+  return '<div class="' + cls + '"><div class="photo-frame">' + inner + '</div></div>';
 }
 window.__svgFallback = function(imgEl, k) {
   const f = imgEl.parentNode;
