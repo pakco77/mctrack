@@ -55,63 +55,119 @@
   .dots i.on { background: var(--yellow); width: 20px; border-radius: 4px; }
 
   /* ===== iOS 按压反馈 ===== */
-  .chip, .back, .submit, .order-btn, .cta-row button, .replay button {
-    transition: transform .14s var(--spring), filter .14s ease, opacity .2s ease, background .2s, color .2s, border-color .2s;
+  .back, .submit, .order-btn, .cta-row button, .replay button {
+    transition: transform .14s var(--spring), filter .14s ease, opacity .2s ease, background .2s, color .2s;
   }
-  .chip:active, .back:active, .cta-row button:active, .replay button:active { transform: scale(.94); }
+  .back:active, .cta-row button:active, .replay button:active { transform: scale(.94); }
   .submit:active, .order-btn:active { transform: scale(.97); filter: brightness(.95); }
 
   /* ===== Stage 1 犒劳申请单 ===== */
   #st-ask { color: #fff; overflow-y: auto; padding-top: max(40px, env(safe-area-inset-top)); }
-  .ask-top { padding: 0 26px 18px; }
+  .ask-top { padding: 0 26px 16px; }
   .ask-kicker { font-size: 12px; letter-spacing: 3px; color: var(--yellow); font-weight: 800; }
-  .ask-date { font-size: 13px; font-weight: 600; opacity: .8; margin-top: 14px; }
-  .ask-time { font-size: 54px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-top: 4px; font-variant-numeric: tabular-nums; }
-  .ask-greet { font-size: 19px; font-weight: 700; margin-top: 10px; line-height: 1.45; }
+  .ask-date { font-size: 13px; font-weight: 600; opacity: .8; margin-top: 12px; }
+  .ask-time { font-size: 50px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .ask-greet { font-size: 19px; font-weight: 700; margin-top: 8px; line-height: 1.45; }
   .form {
     flex: 1; background: var(--paper); color: var(--ink);
-    border-radius: 24px 24px 0 0; padding: 18px 22px max(16px, env(safe-area-inset-bottom));
+    border-radius: 24px 24px 0 0; padding: 16px 20px max(14px, env(safe-area-inset-bottom));
     box-shadow: 0 -12px 30px rgba(0,0,0,.18);
   }
   #st-ask.on .form { animation: formUp .55s var(--sheet) .05s both; }
   @keyframes formUp { from { transform: translateY(70px); opacity: 0; } }
-  .form-head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 11px; border-bottom: 1.5px dashed rgba(218,41,28,.35); }
-  .form-head b { font-size: 18px; color: var(--red); letter-spacing: 3px; font-weight: 900; }
-  .form-head span { font-size: 10px; color: var(--ink-soft); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
-  .form-label { font-size: 12px; font-weight: 800; color: var(--ink-soft); margin: 14px 0 9px; letter-spacing: 1px; }
+  /* 表头：左边单据信息，右边"贴这里"虚线槽 */
+  .form-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1.5px dashed rgba(218,41,28,.35); }
+  .fh b { display: block; font-size: 19px; color: var(--red); letter-spacing: 3px; font-weight: 900; }
+  .fh span { display: block; font-size: 10px; color: var(--ink-soft); letter-spacing: 1px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .fh em { display: block; font-style: normal; font-size: 12px; font-weight: 700; margin-top: 10px; }
+  .slot {
+    position: relative; flex-shrink: 0; width: 120px; height: 88px; border-radius: 16px;
+    border: 2px dashed rgba(218,41,28,.4); display: flex; align-items: center; justify-content: center;
+    transition: background .25s, border-color .25s;
+  }
+  .slot-ph { font-size: 11px; font-weight: 800; color: rgba(218,41,28,.65); text-align: center; line-height: 1.5; }
+  .slot.filled { border-color: rgba(218,41,28,.15); background: rgba(255,199,44,.22); }
+  /* 飞行中的贴纸要盖过下方贴纸本 */
+  .slot-stk { position: relative; z-index: 5; display: inline-flex; transform: rotate(-6deg); }
+  .slot-stk .stk-emo { font-size: 38px; }
+  .slot-stk.landed { animation: land .38s var(--spring); }
+  @keyframes land { 0% { transform: scale(1.3) rotate(-6deg); } 45% { transform: scale(.9, 1.1) rotate(-6deg); } 100% { transform: rotate(-6deg); } }
+  .slot-stars { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: var(--paper); padding: 0 5px; font-size: 10px; font-style: normal; font-weight: 700; color: var(--red); letter-spacing: 1px; white-space: nowrap; }
+  .form-label { font-size: 12px; font-weight: 800; color: var(--ink-soft); margin: 14px 0 8px; letter-spacing: 1px; }
   .form-label small { font-weight: 600; margin-left: 6px; opacity: .7; letter-spacing: 0; }
   .form-label small.warn { color: var(--red); opacity: 1; }
-  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
-  .chip {
-    border: 1.5px solid var(--line); background: #fff; border-radius: 999px;
-    padding: 7px 12px; font-size: 14px; font-weight: 700; color: var(--ink);
+
+  /* 白边贴纸：emoji + 标签作为一个整体，四向白色实心投影沿轮廓描出模切白边 */
+  .stk-body {
+    display: inline-flex; flex-direction: column; align-items: center;
+    filter: drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(0 3px 4px rgba(0,0,0,.22));
   }
-  .chip.on { background: var(--red); border-color: var(--red); color: #fff; box-shadow: 0 4px 10px rgba(218,41,28,.28); }
+  .stk-emo { font-size: 34px; line-height: 1.1; }
+  .stk-tag { margin-top: -5px; font-size: 11.5px; font-weight: 900; padding: 3px 7px; border-radius: 7px; white-space: nowrap; letter-spacing: .5px; }
+  .t-red .stk-tag { background: var(--red); color: #fff; }
+  .t-ink .stk-tag { background: var(--ink); color: var(--yellow); }
+  /* 贴纸本：黄底波点，白边才看得见 */
+  .sheet-panel {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 0; padding: 12px 4px 10px; border-radius: 18px;
+    background: radial-gradient(rgba(218,41,28,.12) 1.2px, transparent 1.7px) 0 0 / 14px 14px, #FFE6A0;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,.08);
+  }
+  .ev-stk {
+    background: none; border: none; padding: 4px 0; display: flex; justify-content: center;
+    transform: translateY(var(--dy)) rotate(var(--rot)); transition: transform .25s var(--spring), opacity .2s;
+  }
+  .ev-stk:active { transform: translateY(var(--dy)) rotate(var(--rot)) scale(.88); }
+  /* 被撕下贴到申请单上：原位只剩浅浅的印子 */
+  .ev-stk.peeled { opacity: .3; transform: translateY(var(--dy)) rotate(var(--rot)) scale(.86); }
+  .write-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+  .write-row span { flex-shrink: 0; }
   .form-input {
-    display: block; width: 100%; margin-top: 10px; border: none; border-bottom: 1.5px solid var(--line);
-    background: transparent; padding: 9px 2px; font-size: 16px; font-family: inherit; color: var(--ink);
+    flex: 1; min-width: 0; border: none; border-bottom: 1.5px solid var(--line);
+    background: transparent; padding: 8px 2px; font-size: 16px; font-family: inherit; color: var(--ink);
     outline: none; border-radius: 0;
     user-select: text; -webkit-user-select: text; /* iOS：父级禁选会导致输入框打不了字 */
   }
   .form-input:focus { border-bottom-color: var(--red); }
+
+  /* 想吃点：圆形徽章贴纸，选中歪头弹一下并冒一句话 */
+  .taste-row { display: flex; justify-content: space-between; padding-top: 26px; }
+  .taste { position: relative; background: none; border: none; display: flex; flex-direction: column; align-items: center; width: 50px; }
+  .taste:active .taste-badge { transform: scale(.9); }
+  .taste-badge {
+    width: 44px; height: 44px; border-radius: 50%; background: #FFE6A0; font-size: 23px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 3px #fff, 0 4px 8px rgba(0,0,0,.16);
+    transition: transform .3s var(--spring), background .2s;
+  }
+  .taste small { font-size: 11px; font-weight: 800; color: var(--ink-soft); margin-top: 7px; white-space: nowrap; }
+  .taste.on .taste-badge { background: var(--red); transform: scale(1.14) rotate(-10deg); }
+  .taste.on small { color: var(--red); }
+  .bubble {
+    position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%) scale(.3); opacity: 0;
+    white-space: nowrap; background: var(--ink); color: #fff; font-size: 11px; font-style: normal; font-weight: 800;
+    padding: 4px 8px; border-radius: 8px; pointer-events: none; transition: transform .3s var(--spring), opacity .2s;
+  }
+  .bubble::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -4px; border: 4px solid transparent; border-top-color: var(--ink); }
+  .taste.on .bubble { opacity: 1; transform: translateX(-50%) scale(1); }
+
   .submit {
-    display: block; width: 100%; margin-top: 20px; padding: 16px; border: none; border-radius: 16px;
+    display: block; width: 100%; margin-top: 18px; padding: 16px; border: none; border-radius: 16px;
     background: var(--red); color: #fff; font-size: 17px; font-weight: 800; letter-spacing: 3px;
     box-shadow: 0 8px 18px rgba(218,41,28,.32);
   }
   /* 小屏：提交按钮吸底，主操作永远看得见；开屏区压缩 */
-  .submit { position: sticky; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 2; }
+  .submit { position: sticky; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 6; }
   @media (max-height: 700px) {
     .ask-date { margin-top: 8px; }
-    .ask-time { font-size: 42px; }
+    .ask-time { font-size: 40px; }
     .ask-greet { font-size: 17px; margin-top: 6px; }
-    .ask-top { padding-bottom: 14px; }
-    .form-label { margin: 10px 0 8px; }
-    .submit { margin-top: 14px; }
+    .ask-top { padding-bottom: 12px; }
+    .form-label { margin: 10px 0 6px; }
+    .submit { margin-top: 12px; }
   }
   .shake-x { animation: shakeX .36s ease; }
   @keyframes shakeX { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
-  .foot-note { text-align: center; font-size: 10px; color: #B4A795; margin-top: 14px; }
+  .foot-note { text-align: center; font-size: 10px; color: #B4A795; margin-top: 12px; }
 
   /* ===== Stage 2 批准书 ===== */
   #st-approve { align-items: center; padding: 56px 16px max(16px, env(safe-area-inset-bottom)); overflow-x: hidden; overflow-y: auto; }
@@ -147,15 +203,15 @@
   .cert-row dt { color: var(--ink-soft); flex-shrink: 0; width: 60px; }
   .cert-row dd { font-weight: 700; flex: 1; word-break: break-all; }
   .cert-row .stars { color: var(--red); letter-spacing: 2px; }
-  .cert-verdict { margin-top: 12px; padding: 9px 14px 11px; background: #fff; border-radius: 12px; box-shadow: inset 0 0 0 1px #F0E3CB; text-align: center; }
+  .cert-verdict { margin-top: 10px; padding: 9px 14px 11px; background: #fff; border-radius: 12px; box-shadow: inset 0 0 0 1px #F0E3CB; text-align: center; }
   .cert-verdict small { display: block; font-size: 10px; color: var(--ink-soft); letter-spacing: 2px; font-weight: 700; }
   .cert-verdict p { font-size: 15px; font-weight: 800; margin-top: 3px; min-height: 23px; }
   .cert-verdict p.pending { color: var(--ink-soft); font-weight: 600; animation: pulse 1s ease infinite; }
   @keyframes pulse { 50% { opacity: .35; } }
-  .cert-food { display: flex; align-items: flex-end; justify-content: center; margin-top: 10px; min-height: 172px; }
-  .cert-food .photo-a { width: 236px; }
-  .cert-food .photo-b { width: 164px; margin-left: -96px; }
-  .cert-food .photo-a:only-child { width: 260px; }
+  .cert-food { display: flex; align-items: flex-end; justify-content: center; margin-top: 8px; min-height: 160px; }
+  .cert-food .photo-a { width: 220px; }
+  .cert-food .photo-b { width: 156px; margin-left: -90px; }
+  .cert-food .photo-a:only-child { width: 244px; }
   .mystery {
     width: 132px; height: 132px; border-radius: 50%; border: 2px dashed rgba(218,41,28,.45);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -171,10 +227,24 @@
   /* 揭晓金光：同样是 5 层 filter，和常态逐层插值过渡 */
   .cert-food.reveal .stk img, .cert-food.reveal .stk svg { animation: glow 1.4s ease-out; }
   @keyframes glow { 0%, 30% { filter: var(--stk) drop-shadow(0 0 24px rgba(255,199,44,1)); } }
-  .cert-meal-label { text-align: center; font-size: 11px; color: var(--red); font-weight: 800; letter-spacing: 3px; margin-top: 12px; }
+  .cert-meal-label { text-align: center; font-size: 11px; color: var(--red); font-weight: 800; letter-spacing: 2px; margin-top: 8px; }
   .cert-meal { text-align: center; font-size: 17px; font-weight: 900; margin-top: 2px; }
   .cert-meal.muted { font-size: 14px; font-weight: 600; color: var(--ink-soft); }
-  .cert-meta { text-align: center; font-size: 11px; color: var(--ink-soft); margin-top: 3px; min-height: 16px; }
+  .cert-meta { text-align: center; font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+  .cert-meta:empty { display: none; }
+  /* 事由行直接贴申请单上那张贴纸（联动） */
+  .cert-row dd .stk-body { flex-direction: row; transform: rotate(-3deg); transform-origin: left center; }
+  .cert-row dd .stk-emo { font-size: 20px; }
+  .cert-row dd .stk-tag { margin: 0 0 0 -3px; font-size: 12px; white-space: normal; text-align: left; max-width: 180px; }
+  .cert-row.reason-row { align-items: center; }
+  /* 价格：门店价划线，优惠价放大标红 */
+  .cert-price { display: flex; justify-content: center; align-items: baseline; gap: 8px; margin-top: 4px; min-height: 26px; }
+  .cert-price s { font-size: 12px; color: var(--ink-soft); }
+  .cert-price b { font-size: 22px; font-weight: 900; color: var(--red); }
+  .cert-price b small { font-size: 12px; margin-right: 2px; }
+  .cert-price em { font-style: normal; font-size: 11px; font-weight: 800; color: #fff; background: var(--green); padding: 2px 7px; border-radius: 999px; }
+  .cert-price .plain { font-size: 15px; font-weight: 800; color: var(--ink); }
+  .cert-price .hint { font-size: 11px; font-weight: 700; color: var(--red); background: rgba(218,41,28,.08); padding: 3px 8px; border-radius: 999px; }
   .cert-sign { font-size: 11px; color: var(--ink-soft); margin-top: 12px; padding-top: 9px; border-top: 1px dashed var(--line); }
   .cert-src { text-align: center; font-size: 9px; color: #B4A795; margin-top: 8px; letter-spacing: .5px; }
   .stamp {
@@ -260,7 +330,9 @@
     padding: 10px 14px; font-size: 12px; font-weight: 700; color: #7A5B0B;
   }
   .price-line { display: flex; align-items: baseline; gap: 10px; margin-top: 18px; }
+  .price-line .lbl { font-size: 13px; font-weight: 800; color: var(--red); }
   .price-line .now { font-size: 34px; font-weight: 800; color: var(--red); }
+  .price-line .now.plain { color: var(--ink); }
   .price-line .was { font-size: 14px; color: var(--ink-soft); text-decoration: line-through; }
   .price-line .save { font-size: 12px; font-weight: 800; color: var(--green); }
   .order-btn {
@@ -289,14 +361,15 @@
     <div class="ask-greet" id="askGreet"></div>
   </div>
   <div class="form">
-    <div class="form-head"><b>犒劳申请单</b><span id="formNo"></span></div>
-    <div id="reasonZone">
-      <div class="form-label">申请事由<small id="reasonHint">选一个，或自己写</small></div>
-      <div class="chips" id="evChips"></div>
-      <input class="form-input" id="sayText" maxlength="40" placeholder="自己写：今天……" enterkeyhint="done" aria-label="自己写申请事由">
+    <div class="form-head">
+      <div class="fh"><b>犒劳申请单</b><span id="formNo"></span><em>申请人：今天的你</em></div>
+      <div class="slot" id="slot"></div>
     </div>
+    <div class="form-label">今天发生了什么？<small id="reasonHint">挑一张贴上去</small></div>
+    <div class="sheet-panel" id="evSheet"></div>
+    <div class="write-row"><span>✏️ 或者自己写</span><input class="form-input" id="sayText" maxlength="40" placeholder="今天……" enterkeyhint="done" aria-label="自己写申请事由"></div>
     <div class="form-label">想吃点</div>
-    <div class="chips" id="tasteChips"></div>
+    <div class="taste-row" id="tasteBadges"></div>
     <button class="submit" id="submitBtn">提交申请</button>
     <div class="foot-note">非官方粉丝作品 · 与金拱门（中国）无关</div>
   </div>
@@ -313,7 +386,7 @@
         <div class="cert-gold">★ 金章特批 · 今日限定 ★</div>
       </div>
       <dl>
-        <div class="cert-row"><dt>申请事由</dt><dd id="certReason"></dd></div>
+        <div class="cert-row reason-row"><dt>申请事由</dt><dd id="certReason"></dd></div>
         <div class="cert-row"><dt>犒劳指数</dt><dd class="stars" id="certStars"></dd></div>
         <div class="cert-row" id="tasteRow"><dt>口味偏好</dt><dd id="certTaste"></dd></div>
       </dl>
@@ -322,6 +395,7 @@
       <div class="cert-meal-label" id="certMealLabel"></div>
       <div class="cert-meal" id="certMeal"></div>
       <div class="cert-meta" id="certMeta"></div>
+      <div class="cert-price" id="certPrice"></div>
       <div class="cert-sign">审批：麦麦批准处</div>
       <div class="cert-src">麦麦批准 McApproved · github.com/pakco77/mctrack</div>
       <div class="stamp" id="stamp"><b id="stampText"></b><small id="stampDate"></small></div>
@@ -343,6 +417,7 @@
     <div class="deal-food" id="dealFood"></div>
     <div class="coupon-row" id="couponRow"></div>
     <div class="price-line">
+      <span class="lbl" id="dealLbl"></span>
       <span class="now" id="dealNow">¥0</span>
       <span class="was" id="dealWas"></span>
       <span class="save" id="dealSave"></span>
@@ -382,14 +457,14 @@ const FOOD_DB = [
 /* 事件表：今天发生的事 → 犒劳指数（1-4 星）定份量；meal 是口味选"都行"时的首选。
    判词只说人不说菜，换口味/换一个都不穿帮。 */
 const EVENTS = [
-  { id: "ot",      emo: "🌙", label: "加班到深夜",   level: 4, meal: ["mcSpicy", "fries"],       verdict: "麦门为打工人留灯到凌晨" },
-  { id: "scolded", emo: "💢", label: "被骂了",       level: 4, meal: ["doubleCheese", "sundae"], verdict: "他骂他的，你吃你的" },
-  { id: "done",    emo: "🎉", label: "搞定一件大事", level: 3, meal: ["wings", "fries"],         verdict: "大事落地，这顿算庆功" },
-  { id: "payday",  emo: "💰", label: "发工资了",     level: 3, meal: ["bigmac", "coke"],         verdict: "钱包最鼓的一天，嘴也别亏着" },
-  { id: "rain",    emo: "🌧️", label: "下雨降温",     level: 2, meal: ["mcChicken", "coffee"],    verdict: "雨是天的事，热乎是你的事" },
-  { id: "emo",     emo: "🥲", label: "有点 emo",     level: 3, meal: ["nuggets", "flurry"],      verdict: "先吃一口，情绪随后就到" },
-  { id: "workout", emo: "🏃", label: "运动打卡了",   level: 3, meal: ["grilled", "appleJuice"],  verdict: "汗不白流，这顿记你账上" },
-  { id: "nothing", emo: "🛋️", label: "啥也没干",     level: 1, meal: ["cone"],                   verdict: "想吃不需要理由，但只够批一份小的" }
+  { id: "ot",      emo: "🌙", tag: "加班到深夜", label: "加班到深夜",   level: 4, meal: ["mcSpicy", "fries"],       verdict: "麦门为打工人留灯到凌晨" },
+  { id: "scolded", emo: "💢", tag: "被骂了",     label: "被骂了",       level: 4, meal: ["doubleCheese", "sundae"], verdict: "他骂他的，你吃你的" },
+  { id: "done",    emo: "🎉", tag: "搞定大事",   label: "搞定一件大事", level: 3, meal: ["wings", "fries"],         verdict: "大事落地，这顿算庆功" },
+  { id: "payday",  emo: "💰", tag: "发工资了",   label: "发工资了",     level: 3, meal: ["bigmac", "coke"],         verdict: "钱包最鼓的一天，嘴也别亏着" },
+  { id: "rain",    emo: "☔", tag: "下雨降温",   label: "下雨降温",     level: 2, meal: ["mcChicken", "coffee"],    verdict: "雨是天的事，热乎是你的事" },
+  { id: "emo",     emo: "🥲", tag: "有点emo",    label: "有点 emo",     level: 3, meal: ["nuggets", "flurry"],      verdict: "先吃一口，情绪随后就到" },
+  { id: "workout", emo: "💪", tag: "运动打卡",   label: "运动打卡了",   level: 3, meal: ["grilled", "appleJuice"],  verdict: "汗不白流，这顿记你账上" },
+  { id: "nothing", emo: "🦥", tag: "啥也没干",   label: "啥也没干",     level: 1, meal: ["cone"],                   verdict: "想吃不需要理由，但只够批一份小的" }
 ];
 /* 一句话没命中任何事件：照抄原话上批准书，给一份标准餐 */
 const EVENT_MISC = { id: "misc", label: "说不清，但值得一顿", level: 3, meal: ["filet", "coke"], verdict: "这事儿值一顿，批了" };
@@ -397,12 +472,12 @@ const EVENT_MISC = { id: "misc", label: "说不清，但值得一顿", level: 3,
 /* 口味 × 犒劳指数 → 候选餐。犒劳指数定份量，口味定吃什么；第一个是首选，"换一个"按序轮换。
    每个口味都满足：1 星最大份 < 4 星最小份（verify.py 断言）。 */
 const TASTES = [
-  { id: "any",     emo: "🎲", label: "都行" },
-  { id: "burger",  emo: "🍔", label: "汉堡" },
-  { id: "chicken", emo: "🍗", label: "炸鸡" },
-  { id: "spicy",   emo: "🌶️", label: "辣的" },
-  { id: "sweet",   emo: "🍦", label: "甜的" },
-  { id: "light",   emo: "🥗", label: "清淡点" }
+  { id: "any",     emo: "🎲", label: "都行",   quip: "交给麦麦" },
+  { id: "burger",  emo: "🍔", label: "汉堡",   quip: "汉堡是正义" },
+  { id: "chicken", emo: "🍗", label: "炸鸡",   quip: "炸鸡治百病" },
+  { id: "spicy",   emo: "🌶️", label: "辣的",   quip: "辣到忘记烦恼" },
+  { id: "sweet",   emo: "🍦", label: "甜的",   quip: "甜的先上" },
+  { id: "light",   emo: "🥗", label: "清淡点", quip: "清淡也要吃饱" }
 ];
 const COMBOS = {
   burger:  { 1: [["mcChicken"], ["fries"]], 2: [["mcChicken", "coffee"], ["filet", "coffee"]], 3: [["doubleCheese", "coke"], ["bigmac", "coffee"], ["mcChicken", "fries"]], 4: [["bigmac", "fries"], ["doubleCheese", "fries"]] },
@@ -507,46 +582,111 @@ function toAsk() { seq.forEach(clearTimeout); seq = []; goTo("ask"); }
 $("backBtn").onclick = () => { buzz(8); toAsk(); };
 
 /* ---------- Stage 1：犒劳申请单 ---------- */
-function chip(label, on, onClick) {
-  const b = document.createElement("button");
-  b.className = "chip" + (on ? " on" : "");
-  b.textContent = label;
-  b.onclick = () => { buzz(8); onClick(b); };
-  return b;
+let pickTone = "t-red";
+/* 贴纸 = emoji + 标签，用 textContent 拼，自己写的内容不会被当成 HTML */
+function makeSticker(emo, tag, toneCls) {
+  const body = document.createElement("span"), e = document.createElement("span"), t = document.createElement("span");
+  body.className = "stk-body " + toneCls;
+  e.className = "stk-emo"; e.textContent = emo;
+  t.className = "stk-tag"; t.textContent = tag;
+  body.append(e, t);
+  return body;
 }
+/* 手贴感：每张贴纸固定的歪斜角度和上下错位 */
+const TILTS = [[-7, 2], [5, -2], [-3, 3], [8, 0], [4, 2], [-6, -1], [7, 3], [-4, 0]];
 function buildAsk() {
   const now = new Date(), g = greet(now);
   $("askDate").textContent = "周" + "日一二三四五六"[now.getDay()] + " · " + (now.getMonth() + 1) + "月" + now.getDate() + "日";
   $("askTime").textContent = g.time;
   $("askGreet").textContent = g.line;
   $("formNo").textContent = "No." + todayStr();
-  const evBox = $("evChips"), tBox = $("tasteChips");
-  EVENTS.forEach(ev => evBox.appendChild(chip(ev.emo + " " + ev.label, false, b => {
-    const on = !b.classList.contains("on");
-    evBox.querySelectorAll(".chip").forEach(x => x.classList.remove("on"));
-    b.classList.toggle("on", on);
-    pickEv = on ? ev : null;
-    if (on) $("sayText").value = "";
-  })));
-  TASTES.forEach(t => tBox.appendChild(chip(t.emo + " " + t.label, t.id === pickTaste, b => {
-    tBox.querySelectorAll(".chip").forEach(x => x.classList.remove("on"));
-    b.classList.add("on");
-    pickTaste = t.id;
-  })));
+  resetSlot();
+  EVENTS.forEach((ev, i) => {
+    const b = document.createElement("button"), toneCls = i % 2 ? "t-ink" : "t-red";
+    b.className = "ev-stk";
+    b.style.setProperty("--rot", TILTS[i][0] + "deg");
+    b.style.setProperty("--dy", TILTS[i][1] + "px");
+    b.setAttribute("aria-label", ev.label);
+    b.appendChild(makeSticker(ev.emo, ev.tag, toneCls));
+    b.onclick = () => pickEvent(ev, b, toneCls);
+    $("evSheet").appendChild(b);
+  });
+  TASTES.forEach(t => {
+    const b = document.createElement("button");
+    b.className = "taste" + (t.id === pickTaste ? " on" : "");
+    b.setAttribute("aria-label", "想吃" + t.label);
+    b.innerHTML = '<span class="taste-badge">' + t.emo + "</span><small>" + t.label + '</small><em class="bubble">' + t.quip + "</em>";
+    b.onclick = () => {
+      buzz(8);
+      unlockAudio();
+      tone(660, { type: "triangle", dur: .14, vol: .16, to: 990 });
+      $("tasteBadges").querySelectorAll(".taste").forEach(x => x.classList.toggle("on", x === b));
+      pickTaste = t.id;
+    };
+    $("tasteBadges").appendChild(b);
+  });
 }
-/* 自己写和选卡片二选一：开始打字就取消卡片 */
+function resetSlot() {
+  $("slot").classList.remove("filled");
+  $("slot").innerHTML = '<span class="slot-ph">把今天<br>贴在这里</span>';
+}
+/* 往虚线槽里放一张贴纸；level 有值时在槽下方亮出犒劳指数 */
+function fillSlot(body, level) {
+  const slot = $("slot"), wrap = document.createElement("span");
+  wrap.className = "slot-stk";
+  wrap.appendChild(body);
+  slot.innerHTML = "";
+  slot.classList.add("filled");
+  slot.appendChild(wrap);
+  if (level) {
+    const st = document.createElement("i");
+    st.className = "slot-stars";
+    st.textContent = "犒劳指数 " + "★".repeat(level) + "☆".repeat(5 - level);
+    slot.appendChild(st);
+  }
+  $("reasonHint").textContent = "挑一张贴上去";
+  $("reasonHint").classList.remove("warn");
+  return wrap;
+}
+/* 选贴纸：从贴纸本上撕下来，飞进表头虚线槽（FLIP），落地压扁回弹 */
+function pickEvent(ev, btn, toneCls) {
+  buzz(10);
+  unlockAudio();
+  tone(420, { type: "triangle", dur: .14, vol: .18, to: 900 });
+  pickEv = ev;
+  pickTone = toneCls;
+  $("sayText").value = "";
+  const from = btn.querySelector(".stk-body").getBoundingClientRect();
+  document.querySelectorAll(".ev-stk").forEach(x => x.classList.toggle("peeled", x === btn));
+  const wrap = fillSlot(makeSticker(ev.emo, ev.tag, toneCls), ev.level);
+  if (!wrap.animate) { wrap.classList.add("landed"); return; }
+  const to = wrap.getBoundingClientRect();
+  const dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top + from.height / 2 - (to.top + to.height / 2);
+  wrap.animate([
+    { transform: "translate(" + dx + "px," + dy + "px) scale(" + (from.width / to.width).toFixed(2) + ") rotate(0deg)" },
+    { transform: "translate(" + dx * .35 + "px," + (dy * .35 - 36) + "px) scale(1.3) rotate(-14deg)", offset: .6 },
+    { transform: "translate(0,0) scale(1) rotate(-6deg)" }
+  ], { duration: 480, easing: "cubic-bezier(.3,.7,.3,1)" }).onfinish = () => {
+    wrap.classList.add("landed");
+    tone(200, { to: 80, dur: .12, vol: .35 });
+    buzz(14);
+  };
+}
+/* 自己写：边打字边生成一张"手写贴纸"，和选贴纸二选一 */
 $("sayText").oninput = () => {
-  if (!$("sayText").value.trim()) return;
+  const t = $("sayText").value.trim();
+  if (!t) { if (!pickEv) resetSlot(); return; }
   pickEv = null;
-  $("evChips").querySelectorAll(".chip").forEach(x => x.classList.remove("on"));
+  document.querySelectorAll(".ev-stk").forEach(x => x.classList.remove("peeled"));
+  fillSlot(makeSticker("✏️", t.length > 6 ? t.slice(0, 6) + "…" : t, "t-ink"));
 };
 function submit() {
   const t = $("sayText").value.trim();
   if (!pickEv && !t) {
     buzz([30, 40, 30]);
-    const z = $("reasonZone");
+    const z = $("slot");
     z.classList.remove("shake-x"); void z.offsetWidth; z.classList.add("shake-x");
-    $("reasonHint").textContent = "先选一个，或者自己写一句";
+    $("reasonHint").textContent = "先挑一张贴纸，或者自己写一句";
     $("reasonHint").classList.add("warn");
     return;
   }
@@ -554,8 +694,8 @@ function submit() {
   unlockAudio();
   $("sayText").blur();
   window.scrollTo(0, 0); /* iOS 收起键盘后页面偶尔不复位 */
-  if (pickEv) approve(pickEv, pickEv.label, pickTaste);
-  else approve(EVENTS.find(e => e.id === matchEvent(t)) || EVENT_MISC, "「" + t + "」", pickTaste);
+  if (pickEv) approve(pickEv, pickEv.label, pickTaste, { emo: pickEv.emo, tone: pickTone });
+  else approve(EVENTS.find(e => e.id === matchEvent(t)) || EVENT_MISC, "「" + t + "」", pickTaste, { emo: "✏️", tone: "t-ink" });
 }
 $("submitBtn").onclick = submit;
 $("sayText").onkeydown = e => { if (e.key === "Enter") submit(); };
@@ -593,7 +733,7 @@ function fillFood(box, html) {
 }
 
 /* 时序：批准书滑入（食物位是"?"）→ 审批意见逐字打出 → 落章砸中（震屏+闷响）→ 揭晓食物（放射光+彩纸+烟花+叮咚）→ 出按钮 */
-function approve(ev, reason, taste) {
+function approve(ev, reason, taste, stk) {
   seq.forEach(clearTimeout); seq = [];
   /* Skill 注入的实时菜单与券后价只给注入的那个事件用，且不提供"换一个"（换餐在 WorkBuddy 里说） */
   const inj = !!(D && D.eventId === ev.id && D.meals && D.meals.length);
@@ -608,7 +748,10 @@ function approve(ev, reason, taste) {
   $("st-approve").classList.toggle("gold", gold);
   $("st-approve").classList.remove("won");
   $("certNo").textContent = "No." + todayStr() + "-" + (hashStr(ev.id + reason) % 9000 + 1000);
-  $("certReason").textContent = reason;
+  /* 事由联动：申请单上贴的那张贴纸原样贴到批准书（自己写的照抄原话） */
+  stk = stk || { emo: ev.emo || "✏️", tone: "t-red" };
+  $("certReason").innerHTML = "";
+  $("certReason").appendChild(makeSticker(stk.emo, reason, stk.tone));
   $("certStars").textContent = "★".repeat(ev.level) + "☆".repeat(5 - ev.level);
   $("tasteRow").style.display = tt ? "" : "none";
   $("certTaste").textContent = tt ? tt.emo + " " + tt.label : "";
@@ -620,6 +763,7 @@ function approve(ev, reason, taste) {
   $("certMeal").className = "cert-meal muted";
   $("certMeal").textContent = "审批后揭晓";
   $("certMeta").textContent = "";
+  $("certPrice").innerHTML = "";
   $("stampText").innerHTML = gold ? "麦麦<br>特批" : "麦麦<br>批准";
   $("stampDate").textContent = dateStr;
   $("stamp").classList.remove("hit");
@@ -660,21 +804,30 @@ function showMeal(inj) {
   cur = {
     items,
     names: items.map(x => x.name).join(" + "),
+    base,
     price: inj && D.finalPrice != null ? D.finalPrice : base,
     kcal: items.every(x => x.kcal != null) ? items.reduce((s, x) => s + x.kcal, 0) : null,
-    saved: inj ? D.saved || 0 : 0,
+    saved: inj ? (D.saved != null ? D.saved : Math.max(0, base - (D.finalPrice != null ? D.finalPrice : base))) : 0,
     coupons: inj ? D.couponCount || 0 : 0,
     realMenu: inj && !!D.realMenu
   };
   const box = $("certFood");
   box.className = "cert-food reveal";
   fillFood(box, photoHTML(items[0], "photo-a") + (items[1] ? photoHTML(items[1], "photo-b") : ""));
-  $("certMealLabel").textContent = "批准你吃";
+  $("certMealLabel").textContent = "批准你吃" + (cur.kcal != null ? " · 约 " + cur.kcal + " kcal" : "");
   $("certMeal").className = "cert-meal";
   $("certMeal").textContent = cur.names;
-  $("certMeta").textContent = (inj && D.mealNote ? D.mealNote + " · " : "")
-    + (cur.kcal != null ? "约 " + cur.kcal + " kcal · " : "")
-    + (cur.realMenu ? "券后 ¥" : "门店价 ¥") + Number(cur.price).toFixed(1);
+  $("certMeta").textContent = (inj && D.mealNote) || "";
+  $("certPrice").innerHTML = priceHTML();
+}
+/* 价格：有真实券后价（Skill 注入）→ 门店价划线 + 券后价放大标红 + 省多少；
+   演示快照只有门店价，不编优惠，提示下单时实时算 */
+function priceHTML() {
+  const f = n => Number(n).toFixed(1);
+  if (cur.realMenu && cur.saved > 0)
+    return "<s>门店价 ¥" + f(cur.base) + "</s><b><small>券后</small>¥" + f(cur.price) + "</b><em>省 ¥" + f(cur.saved) + "</em>";
+  return '<span class="plain">' + (cur.realMenu ? "实付 ¥" : "门店价 ¥") + f(cur.price) + "</span>"
+    + (cur.realMenu ? "" : '<span class="hint">领券价下单时实时算</span>');
 }
 $("swapBtn").onclick = () => {
   buzz(10);
@@ -748,9 +901,12 @@ $("goDeal").onclick = () => {
     c.textContent = "接入 MCP 后自动领取麦麦省券";
     row.appendChild(c);
   }
+  const deal = cur.realMenu && cur.saved > 0;
+  $("dealLbl").textContent = deal ? "券后" : "门店价";
   $("dealNow").textContent = "¥" + Number(cur.price).toFixed(1);
-  $("dealWas").textContent = cur.saved ? "¥" + Number(cur.price + cur.saved).toFixed(1) : "";
-  $("dealSave").textContent = cur.saved ? "已省 ¥" + Number(cur.saved).toFixed(1) : "";
+  $("dealNow").className = "now" + (deal ? "" : " plain");
+  $("dealWas").textContent = deal ? "门店价 ¥" + Number(cur.base).toFixed(1) : "";
+  $("dealSave").textContent = deal ? "已省 ¥" + Number(cur.saved).toFixed(1) : "";
   goTo("deal");
 };
 $("dealUnderlay").onclick = () => goTo("approve");
