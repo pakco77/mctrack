@@ -112,3 +112,9 @@
 
 **WorkBuddy**：仓库改名 mctrack → mcd-approved（push v3.8.2）。①改前先说清代价：Pages 不像仓库页那样 301，旧试玩地址 `pakco77.github.io/mctrack/app/` 会 404；仓库链接会自动跳转。②执行：`gh repo rename mcd-approved` → 本地 remote 改指新地址 → 仓库 homepage 指向新试玩 `https://pakco77.github.io/mcd-approved/app/`。③同步所有引用：页面里 6 处（来源行「麦麦批准 McApproved · github.com/pakco77/mcd-approved」中英各一、批准书星标入口、领券抽屉星标链接、分享文案落地链接）、README 两处试玩地址。SKILL.md 的 `name: mctrack` 暂不动——SkillHub 首个版本已按 slug mctrack 提交在审，改名会让在审版本与仓库不一致，等审核通过再一起改。④验证：新试玩地址 200、新地址食物图 200、旧试玩地址 404、旧仓库链接 301；verify.py 全绿。⑤HANDOFF 关键坐标更新（含"旧试玩地址已失效"警示，原"别改仓库名"条款作废）。遗留提醒：报名 Issue #17 里写的旧仓库链接靠 301 仍可用，公众号拉票文一律用新地址。
 
+---
+
+**用户**（10-10 20:16）：根据实际修改参赛申请：https://github.com/M-China/mcd-developer-innovation-challenge/issues/17
+
+**WorkBuddy**：Issue #17 已按实际更新。①先读官方 README 的报名格式（三行字段：项目名称/项目地址/项目简介；两条硬约束：简介标签与正文之间不换行、地址不用 Markdown 链接），再核对现状——Issue 里还是 v0.x 时代的「麦乐点唱机 McTrack」+ 旧仓库地址，与线上项目完全脱节。②改写：标题改为「【参赛申请】麦麦批准 McApproved —— 说一件今天发生的事，麦当劳给你盖章批一顿」；正文三项更新为 麦麦批准 McApproved / github.com/pakco77/mcd-approved / 现在的产品简介（对症匹配、麦麦处方、真实菜单与热量、口味史"你点过 N 次"、领券算价、可存图可复制文案的中英双语批准书、一句话下单，并标注 v3.8.1 与免安装试玩地址），严格保持官方三行格式。③合规复核：CONTEST_DECLARATION.md 与官方文件 diff 一致（未改动）、五个必备文件（README/CONTEST_DECLARATION/MCP_INTEGRATION/workbuddy.md/app/index.html）线上均 200、仓库 Public。④官方机器人在 10-09 已回复"成功参赛"，本次编辑后未触发重复校验（文件与格式均满足条件）。
+
