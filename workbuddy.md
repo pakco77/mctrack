@@ -87,3 +87,9 @@
 **用户**（10-10 13:31）：帮我上架 WorkBuddy 官方 skill 池子 →（随后扫码完成 SkillHub 登录）。
 
 **WorkBuddy**：SkillHub 上架提交完成。①查明官方池子 = SkillHub（skillhub.cn），发布需登录 + 实名 + 三线安全审核。②备料：outputs/mctrack-skill.zip（SKILL.md + app/ 全部，1.2MB）、PIL 手绘 512×512 品牌图标（红底 + 批准书 + 批字章）、填写资料文案（outputs/skillhub-上架资料.md）。③agent-browser 自动化提交：用户微信扫码登录（账号 Pakco @user_d4847051，已绑 pakco77）→ 发布 Skill → 本地上传 zip（解析出 SKILL.md + app 正常）→ 填 Slug mctrack / 显示名「麦麦批准 McApproved」/ 240 字描述 / 版本 1.0.0 / 变更说明 → 自定义图标（Radix tab 合成事件不响应，改真实鼠标序列激活；动态 file input 用 accept 属性选中上传，裁剪器确认）→ 分类「生活服务 × 本地生活」→ 提交成功。④状态：v1.0.0 安全审核中，通过后在【我的 Skills】点上架即全网可搜。坑记录：agent-browser 对 Radix 组件用 mouse move/down/up 真实序列有效，eval click 无效；页面动态创建的 file input 可以按 accept 属性直接 upload。
+
+---
+
+**用户**（10-10 14:58）：外部评审反馈 9 条（转化/健壮性/沉浸/文案），核心问题："线上图源仍依赖外部 CDN，本地 app/food/ 只用于存图兜底，建议 16 行替换让线上页自包含"。问：你觉得对吗？
+
+**WorkBuddy**：核实并采纳，v3.7 落地。①核实：`FOOD_DB` 16 张确实全是 menu-img.mcd.cn 直链，`app/food/` 只在存图的 canvas 链路里用——评审说得对，而且代价比反馈里写的更大：开屏还要预加载 CDN，官方一改地址线上就静默退化成插画。②改动：`FOOD_DB[].img` 全部换成仓库内置 `food/<k>.<png|gif>`；`LOCAL_IMG` 提到 `MEAL_ART` 之后（photoHTML 之前，避免 TDZ）；`photoHTML` 图源优先级改为 给的原图 → 本地同款图 → 插画（注入模式 CDN 图被官方改坏的场景自动兜住真照片）；verify.py 重建演示页时同步拷贝 `app/food/` 到 `outputs/food`。③验证：起本地 http 服务并**拦截全部外部请求**走查——外部请求 0 次、批准书两张食物图从本地加载（`food/mcSpicy.png` + `food/fries.png`，naturalWidth>0）、无 SVG 兜底、存图正常出真照片。verify.py 全绿，push v3.7。④对其余 8 条评审给出判断（Star CTA 前置/复制分享文案/裂变钩子/金章 tease/H5 断头路/抽屉措辞/foot-note 等），待 Pakco 定优先级。
