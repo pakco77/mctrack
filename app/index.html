@@ -466,26 +466,28 @@
 <script type="application/json" id="mc-data">__MCTRACK_DATA__</script>
 <script>
 /* @pure-begin 纯数据与纯函数（verify.py 会单独抽出来跑断言） */
-/* 真实菜单快照：麦当劳 MCP query-meals（东莞门店 1421187，2026-10-09；图片地址 2026-10-10 复核，官方会改后缀/文件名，失效就重拉）。
+/* 真实菜单快照：麦当劳 MCP query-meals（东莞门店 1421187，2026-10-09）。
+   图片用仓库内置的 app/food/ 快照（2026-10-10 从 menu-img.mcd.cn 下载）——线上页因此完全自包含：
+   瞬时加载、不怕官方改 CDN 地址、存图也不受 CORS 限制。官方菜单更新时重拉 FOOD_DB 并同步替换 app/food/。
    kcal：MCP list-nutrition-foods（2026-10-10），饮品按中杯、薯条按中份、玉米杯按大杯。
    needs：这样东西能给情绪什么（发泄/安慰/庆祝/犒赏/补能/取暖/恢复/小确幸/安全感），排越前越对症。 */
 const FOOD_DB = [
-  { k: "bigmac",       name: "巨无霸",       price: 26.5, kcal: 513, needs: ["reward", "celebrate", "refuel"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1100_320.png" },
-  { k: "doubleCheese", name: "双层吉士汉堡", price: 23,   kcal: 429, needs: ["comfort", "reward"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1120_320.png" },
-  { k: "grilled",      name: "板烧鸡腿堡",   price: 23.5, kcal: 391, needs: ["recover", "refuel"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20241008/product/MS_1406_320.png" },
-  { k: "mcSpicy",      name: "麦辣鸡腿汉堡", price: 22.5, kcal: 485, needs: ["refuel", "vent", "reward"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_1440_320.png" },
-  { k: "mcChicken",    name: "麦香鸡",       price: 16.5, kcal: 369, needs: ["warm", "comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_1450_320.png" },
-  { k: "filet",        name: "麦香鱼",       price: 22,   kcal: 325, needs: ["comfort", "safe"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260101/product/MS_1600_320.png" },
-  { k: "fries",        name: "薯条",         price: 14,   kcal: 289, needs: ["safe", "comfort", "celebrate", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_G4810_320_1747877491921.png" },
-  { k: "nuggets",      name: "麦乐鸡",       price: 14.5, kcal: 213, needs: ["celebrate", "comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260529/product/MS_G1401_320.png" },
-  { k: "wings",        name: "麦辣鸡翅",     price: 14.5, kcal: 224, needs: ["vent", "celebrate", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_G1700_320.png" },
-  { k: "corn",         name: "玉米杯",       price: 13,   kcal: 87, needs: ["warm", "recover"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G4437_320.png" },
-  { k: "flurry",       name: "经典麦旋风",   price: 15,   kcal: 266, needs: ["comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008754_320.gif" },
-  { k: "sundae",       name: "新地",         price: 12.5, kcal: 282, needs: ["comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008745_320.gif" },
-  { k: "cone",         name: "圆筒冰淇淋",   price: 5,    kcal: 93, needs: ["treat"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_515837_320.png" },
-  { k: "coke",         name: "可乐",         price: 9.5,  kcal: 147, needs: ["refuel", "celebrate", "vent"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008751_320.gif" },
-  { k: "coffee",       name: "鲜萃咖啡",     price: 10,   kcal: 15, needs: ["refuel", "warm"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/20250324/product/MS_G520688_320.png" },
-  { k: "appleJuice",   name: "100% 苹果汁",  price: 11.5, kcal: 88, needs: ["recover"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/20250430/product/MS_6362_320_1745552987716.png" }
+  { k: "bigmac",       name: "巨无霸",       price: 26.5, kcal: 513, needs: ["reward", "celebrate", "refuel"], img: "food/bigmac.png" },
+  { k: "doubleCheese", name: "双层吉士汉堡", price: 23,   kcal: 429, needs: ["comfort", "reward"], img: "food/doubleCheese.png" },
+  { k: "grilled",      name: "板烧鸡腿堡",   price: 23.5, kcal: 391, needs: ["recover", "refuel"], img: "food/grilled.png" },
+  { k: "mcSpicy",      name: "麦辣鸡腿汉堡", price: 22.5, kcal: 485, needs: ["refuel", "vent", "reward"], img: "food/mcSpicy.png" },
+  { k: "mcChicken",    name: "麦香鸡",       price: 16.5, kcal: 369, needs: ["warm", "comfort", "treat"], img: "food/mcChicken.png" },
+  { k: "filet",        name: "麦香鱼",       price: 22,   kcal: 325, needs: ["comfort", "safe"], img: "food/filet.png" },
+  { k: "fries",        name: "薯条",         price: 14,   kcal: 289, needs: ["safe", "comfort", "celebrate", "treat"], img: "food/fries.png" },
+  { k: "nuggets",      name: "麦乐鸡",       price: 14.5, kcal: 213, needs: ["celebrate", "comfort", "treat"], img: "food/nuggets.png" },
+  { k: "wings",        name: "麦辣鸡翅",     price: 14.5, kcal: 224, needs: ["vent", "celebrate", "treat"], img: "food/wings.png" },
+  { k: "corn",         name: "玉米杯",       price: 13,   kcal: 87, needs: ["warm", "recover"],  img: "food/corn.png" },
+  { k: "flurry",       name: "经典麦旋风",   price: 15,   kcal: 266, needs: ["comfort", "treat"], img: "food/flurry.gif" },
+  { k: "sundae",       name: "新地",         price: 12.5, kcal: 282, needs: ["comfort", "treat"], img: "food/sundae.gif" },
+  { k: "cone",         name: "圆筒冰淇淋",   price: 5,    kcal: 93, needs: ["treat"],  img: "food/cone.png" },
+  { k: "coke",         name: "可乐",         price: 9.5,  kcal: 147, needs: ["refuel", "celebrate", "vent"], img: "food/coke.gif" },
+  { k: "coffee",       name: "鲜萃咖啡",     price: 10,   kcal: 15, needs: ["refuel", "warm"],  img: "food/coffee.png" },
+  { k: "appleJuice",   name: "100% 苹果汁",  price: 11.5, kcal: 88, needs: ["recover"],  img: "food/appleJuice.png" }
 ];
 
 /* 事件表：今天发生的事 → 情绪需求（need，决定吃什么）+ 犒劳指数（level，决定吃多少）；meal 是口味选"都行"时的首选。
@@ -729,6 +731,14 @@ const ART = {
   nuggets: () => `<svg viewBox="0 0 100 100"><path d="M22 34a14 14 0 0 1 28 0v6H22z" fill="#E8A33D"/><rect x="18" y="40" width="36" height="6" rx="3" fill="#4C9A2A"/><rect x="20" y="46" width="32" height="9" rx="3" fill="#7A4A21"/><rect x="20" y="55" width="32" height="5" rx="2.5" fill="#F4C33D"/><path d="M20 60h32v2a8 8 0 0 1-8 8H28a8 8 0 0 1-8-8z" fill="#E8A33D"/><rect x="58" y="52" width="26" height="20" rx="4" fill="#DA291C"/><path d="M63 52v20" stroke="#FFC72C" stroke-width="3"/><circle cx="71" cy="47" r="8" fill="#F4C33D"/><circle cx="81" cy="44" r="7" fill="#F4C33D"/></svg>`
 };
 const MEAL_ART = { bigmac: "burger", doubleCheese: "burger", grilled: "burger", filet: "burger", mcChicken: "burger", mcSpicy: "spicy", wings: "wings", nuggets: "nuggets", fries: "fries", corn: "fries", flurry: "icecream", sundae: "icecream", cone: "icecream", coke: "drink", appleJuice: "drink", coffee: "coffee" };
+
+/* 仓库内置食物图（menu-img.mcd.cn 快照 2026-10-10）：展示与存图都用它，官方改 CDN 地址也不怕 */
+const LOCAL_IMG = {
+  bigmac: "food/bigmac.png", doubleCheese: "food/doubleCheese.png", grilled: "food/grilled.png", mcSpicy: "food/mcSpicy.png",
+  mcChicken: "food/mcChicken.png", filet: "food/filet.png", fries: "food/fries.png", nuggets: "food/nuggets.png",
+  wings: "food/wings.png", corn: "food/corn.png", flurry: "food/flurry.gif", sundae: "food/sundae.gif",
+  cone: "food/cone.png", coke: "food/coke.gif", coffee: "food/coffee.png", appleJuice: "food/appleJuice.png"
+};
 
 /* ---------- 状态 ---------- */
 const $ = id => document.getElementById(id);
@@ -975,8 +985,11 @@ function preload(items) {
   });
 }
 function photoHTML(item, cls) {
-  const inner = item.img && imgState[item.img] !== "fail"
-    ? '<img src="' + item.img + '" alt="' + nameOf(item) + '" data-k="' + (item.k || "burger") + '" onerror="window.__svgFallback(this)">'
+  /* 图源优先级：给的原图（注入模式是 MCP 的 CDN 图）→ 仓库内置同款图（官方改地址/加载失败时的真照片）→ 插画 */
+  const src = item.img && imgState[item.img] !== "fail" ? item.img
+    : (LOCAL_IMG[item.k] && imgState[LOCAL_IMG[item.k]] !== "fail" ? LOCAL_IMG[item.k] : null);
+  const inner = src
+    ? '<img src="' + src + '" alt="' + nameOf(item) + '" data-k="' + (item.k || "burger") + '" onerror="window.__svgFallback(this)">'
     : artOf(item.k);
   return '<div class="' + cls + '"><div class="stk">' + inner + "</div></div>";
 }
@@ -1124,13 +1137,6 @@ function loadImg(src, cors) {
     i.src = src;
   });
 }
-/* 仓库内置食物图（menu-img.mcd.cn 快照 2026-10-10）：存图走同源，不脏 canvas，官方改 CDN 地址也不怕 */
-const LOCAL_IMG = {
-  bigmac: "food/bigmac.png", doubleCheese: "food/doubleCheese.png", grilled: "food/grilled.png", mcSpicy: "food/mcSpicy.png",
-  mcChicken: "food/mcChicken.png", filet: "food/filet.png", fries: "food/fries.png", nuggets: "food/nuggets.png",
-  wings: "food/wings.png", corn: "food/corn.png", flurry: "food/flurry.gif", sundae: "food/sundae.gif",
-  cone: "food/cone.png", coke: "food/coke.gif", coffee: "food/coffee.png", appleJuice: "food/appleJuice.png"
-};
 async function mealImage(item) {
   /* file:// 直接打开时本地图也会让 canvas 变脏（opaque origin），跳过走 SVG 兜底 */
   if (item.k && LOCAL_IMG[item.k] && location.protocol !== "file:") {
