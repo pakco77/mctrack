@@ -106,3 +106,9 @@
 
 **WorkBuddy**：v3.8.1 落地。①中文尾巴改为「发给今天也不容易的 TA · 今天也被批准一下：链接」。②顺手抓出三处硬编码（中文引号「」、硬写"约 N kcal"、冒号后空格）——英文版会变成「Got scolded」+ 约 709 kcal 这种中英混排；改为用 I18N 的 `T.q` / `T.kcal` / 按语言决定冒号后空格。验证：中英各跑一遍复制链路读出剪贴板内容，英文现在是 `"Got scolded" → McSpicy Chicken Burger + Spicy Wings · ~709 kcal` + `then get approved: <链接>`。verify.py 全绿，push v3.8.1。
 
+---
+
+**用户**（10-10 18:10）：github 上的项目命名好像要加"-"，比如 mcd-approved，帮我改一下。
+
+**WorkBuddy**：仓库改名 mctrack → mcd-approved（push v3.8.2）。①改前先说清代价：Pages 不像仓库页那样 301，旧试玩地址 `pakco77.github.io/mctrack/app/` 会 404；仓库链接会自动跳转。②执行：`gh repo rename mcd-approved` → 本地 remote 改指新地址 → 仓库 homepage 指向新试玩 `https://pakco77.github.io/mcd-approved/app/`。③同步所有引用：页面里 6 处（来源行「麦麦批准 McApproved · github.com/pakco77/mcd-approved」中英各一、批准书星标入口、领券抽屉星标链接、分享文案落地链接）、README 两处试玩地址。SKILL.md 的 `name: mctrack` 暂不动——SkillHub 首个版本已按 slug mctrack 提交在审，改名会让在审版本与仓库不一致，等审核通过再一起改。④验证：新试玩地址 200、新地址食物图 200、旧试玩地址 404、旧仓库链接 301；verify.py 全绿。⑤HANDOFF 关键坐标更新（含"旧试玩地址已失效"警示，原"别改仓库名"条款作废）。遗留提醒：报名 Issue #17 里写的旧仓库链接靠 301 仍可用，公众号拉票文一律用新地址。
+
