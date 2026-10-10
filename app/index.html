@@ -287,6 +287,16 @@
   .cta-row { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 10px; color: rgba(255,255,255,.5); font-size: 13px; }
   .cta-row button { border: none; background: none; color: #fff; font-size: 14px; font-weight: 700; padding: 6px 8px; }
 
+  /* ===== 存图浮层：canvas 画好的批准书，长按/下载带走 ===== */
+  .save-layer { position: absolute; inset: 0; z-index: 90; background: rgba(20,8,6,.86); display: none; align-items: center; justify-content: center; padding: 24px; }
+  .save-layer.on { display: flex; }
+  .save-card { display: flex; flex-direction: column; align-items: center; gap: 10px; max-height: 100%; }
+  .save-card img { max-width: 100%; max-height: 62vh; width: auto; border-radius: 12px; box-shadow: 0 18px 40px rgba(0,0,0,.45); }
+  .save-hint { color: #fff; font-size: 13px; font-weight: 700; opacity: .88; text-align: center; }
+  .save-ops { display: flex; align-items: center; gap: 14px; }
+  .save-ops .order-btn { width: auto; margin: 0; padding: 10px 22px; font-size: 15px; text-decoration: none; display: inline-block; }
+  .save-ops button { border: none; background: none; color: rgba(255,255,255,.75); font-size: 13px; padding: 8px; text-decoration: underline; }
+
   /* ===== 沿食物轮廓的白边贴纸（批准书 + 领券抽屉共用）=====
      菜单图是透明底抠图：四个方向各叠一层白色实心投影 = 沿轮廓长出白边，再加一层软阴影做"贴纸翘起"。
      主食在前、配餐在后并抬高，叠出层次。 */
@@ -417,7 +427,7 @@
   </div>
   <div class="approve-cta" id="approveCta">
     <button class="order-btn" id="goDeal" data-t="go">这就去吃 →</button>
-    <div class="cta-row"><button id="swapBtn" data-t="swap">不对胃口？换一个</button><span id="swapDot">·</span><button id="againBtn" data-t="again">换件事说说</button></div>
+    <div class="cta-row"><button id="swapBtn" data-t="swap">不对胃口？换一个</button><span id="swapDot">·</span><button id="saveBtn" data-t="save">存图炫耀一下</button><span>·</span><button id="againBtn" data-t="again">换件事说说</button></div>
   </div>
 </section>
 
@@ -442,6 +452,15 @@
     <div class="replay"><button id="replayBtn" data-t="replay">今天还有别的委屈？再批一次</button></div>
   </div>
 </section>
+
+<!-- 存图浮层 -->
+<div class="save-layer" id="saveLayer">
+  <div class="save-card">
+    <img id="saveImg" alt="">
+    <div class="save-hint" data-t="saveHint"></div>
+    <div class="save-ops"><a class="order-btn" id="saveDl" data-t="saveDl" download="mcapproved.png"></a><button id="saveClose" data-t="saveClose"></button></div>
+  </div>
+</div>
 
 <!-- Skill 注入点：替换为 JSON；未注入（直接打开 / GitHub Pages）时解析失败 → 走内置快照 -->
 <script type="application/json" id="mc-data">__MCTRACK_DATA__</script>
@@ -560,6 +579,8 @@ const I18N = {
     kcal: "约 {n} kcal", store: "门店价", after: "券后", saved: "帮你省 ¥", paid: "实付", priceHint: "领券还能再省，下单时现算",
     sign: "审批人：一直在的麦麦", stamp: "麦麦<br>批准", stampGold: "麦麦<br>特批",
     go: "这就去吃 →", swap: "不对胃口？换一个", again: "换件事说说",
+    save: "存图炫耀一下", saveHint: "长按图片存下来，发群里——今天这顿，是麦麦亲自批的",
+    saveDl: "直接下载图片", saveClose: "不炫耀了，先吃",
     dealTitle: "批准生效，开饭！", couponDemo: "在 WorkBuddy 里用，券会自动帮你领好", couponGot: " · 已帮你领好", couponName: "麦麦省券",
     order: "就吃这个，下单！", share: "截图发群：今天这顿，是麦麦亲自批的", star: "⭐ 被批准到了？去 GitHub 点个 Star",
     replay: "今天还有别的委屈？再批一次", orderAlert: "在 WorkBuddy 里说一句「就吃这个」，麦麦帮你领券下单，热乎的马上到。",
@@ -627,6 +648,8 @@ const I18N = {
     kcal: "~{n} kcal", store: "Store", after: "With coupons", saved: "Saved ¥", paid: "Total", priceHint: "more off with coupons",
     sign: "Approved by: McD, always open", stamp: "Mc<br>APPROVED", stampGold: "GOLDEN<br>APPROVED",
     go: "Go eat it →", swap: "Not feeling it? Swap", again: "Tell another story",
+    save: "Save & show off", saveHint: "Long-press to save — this meal is officially McD-approved",
+    saveDl: "Download image", saveClose: "Nah, food first",
     dealTitle: "Approved. Let's eat!", couponDemo: "In WorkBuddy, coupons get claimed for you", couponGot: " · claimed for you", couponName: "McD coupon",
     order: "This one. Order it!", share: "Screenshot it: this meal is officially approved", star: "⭐ Felt approved? Star it on GitHub",
     replay: "More to tell? Get approved again", orderAlert: "Say “this one” in WorkBuddy, and McD will claim coupons and order for you. Hot food, on its way.",
@@ -732,7 +755,7 @@ function applyText() {
 
 
 const D = (() => { try { return JSON.parse($("mc-data").textContent); } catch (e) { return null; } })();
-let stage = "ask", cur = null, seq = [], pickEv = null, pickTaste = "any", cands = [], ci = 0, curNeed = "safe";
+let stage = "ask", cur = null, seq = [], pickEv = null, pickTaste = "any", cands = [], ci = 0, curNeed = "safe", appr = null;
 
 function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h; }
 function todayStr() { const d = new Date(); return d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0"); }
@@ -988,6 +1011,10 @@ function approve(ev, reason, taste, stk) {
   $("certNo").textContent = "No." + todayStr() + "-" + (hashStr(ev.id + reason) % 9000 + 1000);
   /* 事由联动：申请单上贴的那张贴纸原样贴到批准书（自己写的照抄原话） */
   stk = stk || { emo: ev.emo || "✏️", tone: "t-red" };
+  /* 存图用的快照：批准书上有的一切，画 canvas 时不再读 DOM */
+  appr = { emo: stk.emo, reason, level: ev.level, tasteLabel: tt ? tt.emo + " " + T.taste[tt.id].label : "",
+    gold, dateStr, no: "No." + todayStr() + "-" + (hashStr(ev.id + reason) % 9000 + 1000),
+    verdict: quote((inj && D.verdict) || evText(ev).verdict), rx: "" };
   $("certReason").innerHTML = "";
   $("certReason").appendChild(makeSticker(stk.emo, reason, stk.tone));
   $("certStars").textContent = "★".repeat(ev.level) + "☆".repeat(5 - ev.level);
@@ -1058,6 +1085,7 @@ function showMeal(inj) {
   $("certMeta").textContent = (inj && D.mealNote) || "";
   $("certRx").innerHTML = "";
   const rx = (inj && D.rx) || prescription(items.map(x => x.k), curNeed, LANG);
+  if (appr) appr.rx = rx || "";
   if (rx) {
     const b = document.createElement("b");
     b.textContent = T.rxLabel;
@@ -1082,6 +1110,261 @@ $("swapBtn").onclick = () => {
   setTimeout(SFX.land, 260);
 };
 $("againBtn").onclick = () => { buzz(8); SFX.back(); toAsk(); };
+
+/* ---------- 批准书存图 ----------
+   菜单图 CDN 不开 CORS（画了会让 canvas 变脏、导不出），所以先尝试 anonymous 跨域加载，
+   不行就用页面同款的兜底 SVG 插画（data URL 不脏 canvas）——存下来的图永远出得来。 */
+function loadImg(src, cors) {
+  return new Promise(res => {
+    const i = new Image();
+    if (cors) i.crossOrigin = "anonymous";
+    const to = setTimeout(() => res(null), 2800);
+    i.onload = () => { clearTimeout(to); res(i); };
+    i.onerror = () => { clearTimeout(to); res(null); };
+    i.src = src;
+  });
+}
+async function mealImage(item) {
+  if (item.img && imgState[item.img] !== "fail") {
+    const p = await loadImg(item.img, true);
+    if (p) return { img: p, sq: false };
+  }
+  /* 内联 SVG 不需要 xmlns，但作为图片文档加载必须带，否则静默加载失败 */
+  const svg = artOf(item.k).replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" ');
+  const s = await loadImg("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg), false);
+  return { img: s, sq: true }; /* 兜底插画是方图、无留白，缩到视觉等大 */
+}
+function rrect(c, x, y, w, h, r) {
+  c.beginPath();
+  c.moveTo(x + r, y);
+  c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r);
+  c.closePath();
+}
+function wrapLines(c, text, maxW) {
+  const out = []; let line = "";
+  for (const ch of text) {
+    if (line && c.measureText(line + ch).width > maxW) {
+      /* 英文优先在空格处断行，别从单词中间劈开；中文没有空格，逐字断 */
+      const sp = line.lastIndexOf(" ");
+      if (sp > 0) { out.push(line.slice(0, sp)); line = line.slice(sp + 1) + ch; }
+      else { out.push(line); line = ch; }
+    } else line += ch;
+  }
+  if (line) out.push(line);
+  return out;
+}
+/* 白边贴纸：离屏把图涂成白色剪影，八个方向叠画 = 沿轮廓长白边，再加软阴影 */
+function drawSticker(c, img, cx, cy, w, rot, sq) {
+  const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+  let dw = w, dh = w * ih / iw;
+  if (sq) { dw *= .66; dh *= .66; }
+  const off = document.createElement("canvas");
+  off.width = Math.ceil(dw) + 24; off.height = Math.ceil(dh) + 24;
+  const o = off.getContext("2d");
+  o.drawImage(img, 12, 12, dw, dh);
+  o.globalCompositeOperation = "source-in";
+  o.fillStyle = "#fff"; o.fillRect(0, 0, off.width, off.height);
+  c.save();
+  c.translate(cx, cy); c.rotate(rot);
+  for (const [ox, oy] of [[-7,0],[7,0],[0,-7],[0,7],[-5,-5],[5,-5],[-5,5],[5,5]])
+    c.drawImage(off, -dw / 2 - 12 + ox, -dh / 2 - 12 + oy);
+  c.shadowColor = "rgba(0,0,0,.26)"; c.shadowBlur = 14; c.shadowOffsetY = 12;
+  c.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+  c.restore();
+}
+let saving = false, saveURL = null;
+async function saveCert() {
+  if (!cur || !appr || saving) return;
+  saving = true;
+  buzz(12); SFX.coin();
+  try {
+    const photos = await Promise.all(cur.items.slice(0, 2).map(mealImage));
+    const W = 750, M = 28, PW = W - M * 2, PAD = 40; /* 2 倍清晰度，和手机上的批准书同比例 */
+    const F = (wt, s) => wt + " " + s + "px \"PingFang SC\",\"Microsoft YaHei\",system-ui,sans-serif";
+    const tall = document.createElement("canvas");
+    tall.width = W; tall.height = 2400;
+    const c = tall.getContext("2d");
+    c.textBaseline = "alphabetic";
+    const setLS = v => { try { c.letterSpacing = v; } catch (e) {} };
+    let y = M + PAD;
+    const center = (txt, font, color, lh, ls, gap) => {
+      y += (gap || 0);
+      c.font = font; c.fillStyle = color; c.textAlign = "center"; setLS(ls || "0px");
+      c.fillText(txt, W / 2, y + lh * .76);
+      y += lh; setLS("0px");
+    };
+    /* 头（英文标题长，字距和字号收小，别撑出纸边） */
+    center(T.certTitle, F(900, LANG === "zh" ? 46 : 38), "#DA291C", 52, LANG === "zh" ? "8px" : "2px");
+    center(appr.no, F(600, 20), "#6E6259", 28, "2px", 4);
+    if (appr.gold) {
+      y += 8;
+      const g = c.createLinearGradient(M + PAD, 0, W - M - PAD, 0);
+      g.addColorStop(0, "rgba(255,233,168,0)"); g.addColorStop(.5, "#FFE9A8"); g.addColorStop(1, "rgba(255,233,168,0)");
+      c.fillStyle = g; c.fillRect(M + PAD, y, PW - PAD * 2, 40);
+      center(T.gold, F(900, 24), "#9A7000", 40, "4px");
+      y += 8;
+    }
+    /* 信息行：dt 灰 + dd 黑，虚线分隔 */
+    const row = (dt, dd, ddFont) => {
+      y += 14;
+      c.textAlign = "left"; setLS("0px");
+      c.font = F(600, 26); c.fillStyle = "#6E6259";
+      c.fillText(dt, M + PAD, y + 26 * .76);
+      const ddX = M + PAD + Math.max(140, c.measureText(dt).width + 32); /* dt 多长，dd 就让多远 */
+      c.font = ddFont || F(700, 26); c.fillStyle = "#1D1D1F";
+      c.fillText(dd, ddX, y + 26 * .76);
+      y += 26 + 14;
+      c.strokeStyle = "#E8DCC6"; c.lineWidth = 2; c.setLineDash([6, 6]);
+      c.beginPath(); c.moveTo(M + PAD, y); c.lineTo(W - M - PAD, y); c.stroke();
+      c.setLineDash([]);
+    };
+    row(T.dtReason, appr.emo + "  " + appr.reason);
+    row(T.dtLevel, "★".repeat(appr.level) + "☆".repeat(5 - appr.level), F(700, 26));
+    if (appr.tasteLabel) row(T.dtTaste, appr.tasteLabel);
+    /* 麦麦说 */
+    y += 20;
+    c.font = F(800, 30);
+    const vLines = wrapLines(c, appr.verdict, PW - PAD * 2 - 56);
+    const vH = 24 + 20 + vLines.length * 42 + 20;
+    rrect(c, M + PAD, y, PW - PAD * 2, vH, 24);
+    c.fillStyle = "#fff"; c.fill();
+    c.strokeStyle = "#F0E3CB"; c.lineWidth = 2; c.stroke();
+    c.textAlign = "center"; c.font = F(700, 18); c.fillStyle = "#6E6259"; setLS("4px");
+    c.fillText(T.says, W / 2, y + 24 + 14); setLS("0px");
+    c.font = F(800, 30); c.fillStyle = "#1D1D1F";
+    vLines.forEach((ln, i) => c.fillText(ln, W / 2, y + 24 + 20 + 14 + i * 42 + 22));
+    y += vH;
+    /* 食物贴纸：配餐在后抬高，主食在前 */
+    y += 30;
+    const areaH = 300;
+    if (photos[1]) drawSticker(c, photos[1].img, W / 2 + 160, y + areaH / 2 - 36, 300, .14, photos[1].sq);
+    drawSticker(c, photos[0].img, W / 2 - (photos[1] ? 70 : 0), y + areaH / 2, photos[1] ? 420 : 460, -.105, photos[0].sq);
+    y += areaH + 20;
+    /* 餐名与处方 */
+    center(T.mealPost + (cur.kcal != null ? " · " + T.kcal.replace("{n}", cur.kcal) : ""), F(800, 22), "#DA291C", 30, "4px");
+    c.font = F(900, 34);
+    wrapLines(c, cur.names, PW - PAD * 2).forEach(ln => center(ln, F(900, 34), "#1D1D1F", 46));
+    if ($("certMeta").textContent) center($("certMeta").textContent, F(600, 22), "#6E6259", 30);
+    if (appr.rx) {
+      y += 10;
+      c.font = F(700, 25);
+      const pre = T.rxLabel + " ", preW = c.measureText(pre).width;
+      const first = wrapLines(c, appr.rx, PW - PAD * 2 - 40 - preW);
+      const lines = [first[0] || ""].concat(wrapLines(c, appr.rx.slice((first[0] || "").length), PW - PAD * 2 - 40));
+      const rxH = lines.length * 36 + 22;
+      const rxW = PW - PAD * 2 - 40;
+      rrect(c, W / 2 - rxW / 2 - 20, y, rxW + 40, rxH, 20);
+      c.fillStyle = "rgba(255,199,44,.25)"; c.fill();
+      c.textAlign = "left";
+      lines.forEach((ln, i) => {
+        const ly = y + 11 + i * 36 + 25 * .76;
+        if (i === 0) {
+          c.font = F(900, 25); c.fillStyle = "#DA291C"; c.fillText(T.rxLabel, W / 2 - rxW / 2, ly);
+          c.font = F(700, 25); c.fillStyle = "#1D1D1F"; c.fillText(ln, W / 2 - rxW / 2 + preW, ly);
+        } else { c.font = F(700, 25); c.fillStyle = "#1D1D1F"; c.fillText(ln, W / 2 - rxW / 2, ly); }
+      });
+      y += rxH;
+    }
+    /* 价格：和页面上同一套规则 */
+    y += 26;
+    const f1 = n => Number(n).toFixed(1);
+    c.textAlign = "left"; setLS("0px");
+    if (cur.realMenu && cur.saved > 0) {
+      const sT = T.store + " ¥" + f1(cur.base), bT = T.after + " ¥" + f1(cur.price), eT = T.saved + f1(cur.saved);
+      c.font = F(600, 24);
+      const sW = c.measureText(sT).width;
+      c.font = F(900, 44);
+      const bW = c.measureText(bT).width;
+      c.font = F(800, 22);
+      const eW = c.measureText(eT).width + 28;
+      let px = W / 2 - (sW + 16 + bW + 16 + eW) / 2;
+      c.font = F(600, 24); c.fillStyle = "#6E6259";
+      c.fillText(sT, px, y + 24 * .76);
+      c.strokeStyle = "#6E6259"; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(px, y + 8); c.lineTo(px + sW, y + 8); c.stroke();
+      px += sW + 16;
+      c.font = F(900, 44); c.fillStyle = "#DA291C";
+      c.fillText(bT, px, y + 44 * .76 + 4);
+      px += bW + 16;
+      rrect(c, px, y - 2, eW, 34, 17);
+      c.fillStyle = "#1D9E75"; c.fill();
+      c.font = F(800, 22); c.fillStyle = "#fff";
+      c.fillText(eT, px + 14, y - 2 + 34 / 2 + 22 * .36);
+      y += 52;
+    } else {
+      const pT = (cur.realMenu ? T.paid : T.store) + " ¥" + f1(cur.price);
+      c.font = F(800, 30);
+      const pW = c.measureText(pT).width;
+      let hW = 0;
+      if (!cur.realMenu) { c.font = F(700, 22); hW = c.measureText(T.priceHint).width + 32; }
+      let px = W / 2 - (pW + (hW ? 16 + hW : 0)) / 2;
+      c.font = F(800, 30); c.fillStyle = "#1D1D1F";
+      c.fillText(pT, px, y + 30 * .76);
+      px += pW + 16;
+      if (hW) {
+        rrect(c, px, y - 2, hW, 36, 18);
+        c.fillStyle = "rgba(218,41,28,.08)"; c.fill();
+        c.font = F(700, 22); c.fillStyle = "#DA291C";
+        c.fillText(T.priceHint, px + 16, y - 2 + 18 + 22 * .36);
+      }
+      y += 48;
+    }
+    /* 落款 */
+    y += 16;
+    c.strokeStyle = "#E8DCC6"; c.lineWidth = 2; c.setLineDash([6, 6]);
+    c.beginPath(); c.moveTo(M + PAD, y); c.lineTo(W - M - PAD, y); c.stroke();
+    c.setLineDash([]);
+    y += 22;
+    c.textAlign = "left"; c.font = F(600, 22); c.fillStyle = "#6E6259";
+    c.fillText(T.sign, M + PAD, y + 22 * .76);
+    y += 34;
+    center(T.src, F(600, 18), "#B4A795", 26, "1px");
+    /* 大章：右上角斜盖，红色/金色，multiply 感靠透明度 */
+    c.save();
+    c.translate(W - M - 150, M + 190);
+    c.rotate(-.28);
+    c.globalAlpha = .88;
+    const sc = appr.gold ? "#B8860B" : "#DA291C";
+    c.strokeStyle = sc; c.fillStyle = sc;
+    c.lineWidth = 8; c.beginPath(); c.arc(0, 0, 118, 0, 7); c.stroke();
+    c.lineWidth = 5; c.beginPath(); c.arc(0, 0, 96, 0, 7); c.stroke();
+    c.textAlign = "center";
+    const sLines = (appr.gold ? T.stampGold : T.stamp).split(/<br\s*\/?>/i);
+    c.font = F(900, LANG === "zh" ? 56 : 34); setLS(LANG === "zh" ? "6px" : "1px"); /* 英文单词长，字号收小才进得了章圈 */
+    sLines.forEach((ln, i) => c.fillText(ln, 2, (i - (sLines.length - 1) / 2) * (LANG === "zh" ? 58 : 40) + (LANG === "zh" ? 20 : 12)));
+    setLS("0px");
+    c.font = F(800, 18);
+    c.fillText(appr.dateStr, 0, sLines.length * (LANG === "zh" ? 30 : 22) + 26);
+    c.restore();
+    /* 内容画完了，按实际高度出终稿：红底 + 纸卡 + 内容 */
+    const H = y + PAD + M;
+    const out = document.createElement("canvas");
+    out.width = W; out.height = H;
+    const o = out.getContext("2d");
+    o.fillStyle = "#DA291C"; o.fillRect(0, 0, W, H);
+    rrect(o, M, M, PW, H - M * 2, 20);
+    o.fillStyle = "#FFF9EE"; o.fill();
+    rrect(o, M + 16, M + 16, PW - 32, H - M * 2 - 32, 10);
+    o.strokeStyle = "rgba(218,41,28,.3)"; o.lineWidth = 3; o.stroke();
+    o.drawImage(tall, 0, 0, W, H, 0, 0, W, H);
+    out.toBlob(b => {
+      if (!b) { saving = false; return; }
+      if (saveURL) URL.revokeObjectURL(saveURL);
+      saveURL = URL.createObjectURL(b);
+      $("saveImg").src = saveURL;
+      const dl = $("saveDl");
+      dl.href = saveURL;
+      dl.download = (LANG === "zh" ? "麦麦批准-" : "mcapproved-") + todayStr() + ".png";
+      $("saveLayer").classList.add("on");
+      SFX.sheet();
+      saving = false;
+    }, "image/png");
+  } catch (e) { if (window.console) console.error("saveCert", e); saving = false; }
+}
+$("saveBtn").onclick = saveCert;
+$("saveClose").onclick = () => { buzz(8); SFX.back(); $("saveLayer").classList.remove("on"); };
+$("saveLayer").onclick = e => { if (e.target === $("saveLayer")) $("saveLayer").classList.remove("on"); };
 
 /* 庆祝：底部烟花升空 + 顶部彩纸飘落，零图片零依赖 */
 function launchFireworks(colors) {
