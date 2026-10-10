@@ -241,7 +241,10 @@
   .cert-meal { text-align: center; font-size: 17px; font-weight: 900; margin-top: 2px; }
   .cert-meal.muted { font-size: 14px; font-weight: 600; color: var(--ink-soft); }
   .cert-meta { text-align: center; font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
-  .cert-meta:empty { display: none; }
+  .cert-meta:empty, .cert-rx:empty { display: none; }
+  /* 麦麦处方：一句话讲清"为什么是它" */
+  .cert-rx { margin: 6px auto 0; max-width: 300px; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--ink); line-height: 1.45; background: rgba(255,199,44,.22); border-radius: 10px; padding: 5px 10px; }
+  .cert-rx b { color: var(--red); margin-right: 4px; font-weight: 900; }
   /* 事由行直接贴申请单上那张贴纸（联动） */
   .cert-row dd .stk-body { flex-direction: row; transform: rotate(-3deg); transform-origin: left center; }
   .cert-row dd .stk-emo { font-size: 20px; }
@@ -404,6 +407,7 @@
       <div class="cert-food" id="certFood"></div>
       <div class="cert-meal-label" id="certMealLabel"></div>
       <div class="cert-meal" id="certMeal"></div>
+      <div class="cert-rx" id="certRx"></div>
       <div class="cert-meta" id="certMeta"></div>
       <div class="cert-price" id="certPrice"></div>
       <div class="cert-sign" data-t="sign">审批人：一直在的麦麦</div>
@@ -444,40 +448,41 @@
 <script>
 /* @pure-begin 纯数据与纯函数（verify.py 会单独抽出来跑断言） */
 /* 真实菜单快照：麦当劳 MCP query-meals（东莞门店 1421187，2026-10-09），图片为官方 menu-img.mcd.cn CDN。
-   kcal：MCP list-nutrition-foods（2026-10-10），饮品按中杯、薯条按中份、玉米杯按大杯。 */
+   kcal：MCP list-nutrition-foods（2026-10-10），饮品按中杯、薯条按中份、玉米杯按大杯。
+   needs：这样东西能给情绪什么（发泄/安慰/庆祝/犒赏/补能/取暖/恢复/小确幸/安全感），排越前越对症。 */
 const FOOD_DB = [
-  { k: "bigmac",       name: "巨无霸",       price: 26.5, kcal: 513, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1100_320.png" },
-  { k: "doubleCheese", name: "双层吉士汉堡", price: 23,   kcal: 429, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1120_320.png" },
-  { k: "grilled",      name: "板烧鸡腿堡",   price: 23.5, kcal: 391, img: "https://menu-img.mcd.cn/pcm/prod/menu/20241008/product/MS_1406_320.png" },
-  { k: "mcSpicy",      name: "麦辣鸡腿汉堡", price: 22.5, kcal: 485, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_1440_320.png" },
-  { k: "mcChicken",    name: "麦香鸡",       price: 16.5, kcal: 369, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_1450_320.png" },
-  { k: "filet",        name: "麦香鱼",       price: 22,   kcal: 325, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260101/product/MS_1600_320.png" },
-  { k: "fries",        name: "薯条",         price: 14,   kcal: 289, img: "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_G4810_320_1745552987716.png" },
-  { k: "nuggets",      name: "麦乐鸡",       price: 14.5, kcal: 213, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260529/product/MS_G1401_320.png" },
-  { k: "wings",        name: "麦辣鸡翅",     price: 14.5, kcal: 224, img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_G1700_320.png" },
-  { k: "corn",         name: "玉米杯",       price: 13,   kcal: 87,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G4437_320.png" },
-  { k: "flurry",       name: "经典麦旋风",   price: 15,   kcal: 266, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008754_320.png" },
-  { k: "sundae",       name: "新地",         price: 12.5, kcal: 282, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008745_320.png" },
-  { k: "cone",         name: "圆筒冰淇淋",   price: 5,    kcal: 93,  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_515837_320.png" },
-  { k: "coke",         name: "可乐",         price: 9.5,  kcal: 147, img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008751_320.png" },
-  { k: "coffee",       name: "鲜萃咖啡",     price: 10,   kcal: 15,  img: "https://menu-img.mcd.cn/pcm/prod/menu/20250324/product/MS_G520688_320.png" },
-  { k: "appleJuice",   name: "100% 苹果汁",  price: 11.5, kcal: 88,  img: "https://menu-img.mcd.cn/pcm/prod/menu/20250430/product/MS_6362_320_1745552987716.png" }
+  { k: "bigmac",       name: "巨无霸",       price: 26.5, kcal: 513, needs: ["reward", "celebrate", "refuel"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1100_320.png" },
+  { k: "doubleCheese", name: "双层吉士汉堡", price: 23,   kcal: 429, needs: ["comfort", "reward"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260309/product/MS_1120_320.png" },
+  { k: "grilled",      name: "板烧鸡腿堡",   price: 23.5, kcal: 391, needs: ["recover", "refuel"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20241008/product/MS_1406_320.png" },
+  { k: "mcSpicy",      name: "麦辣鸡腿汉堡", price: 22.5, kcal: 485, needs: ["refuel", "vent", "reward"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_1440_320.png" },
+  { k: "mcChicken",    name: "麦香鸡",       price: 16.5, kcal: 369, needs: ["warm", "comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_1450_320.png" },
+  { k: "filet",        name: "麦香鱼",       price: 22,   kcal: 325, needs: ["comfort", "safe"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260101/product/MS_1600_320.png" },
+  { k: "fries",        name: "薯条",         price: 14,   kcal: 289, needs: ["safe", "comfort", "celebrate", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_G4810_320_1745552987716.png" },
+  { k: "nuggets",      name: "麦乐鸡",       price: 14.5, kcal: 213, needs: ["celebrate", "comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260529/product/MS_G1401_320.png" },
+  { k: "wings",        name: "麦辣鸡翅",     price: 14.5, kcal: 224, needs: ["vent", "celebrate", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_G1700_320.png" },
+  { k: "corn",         name: "玉米杯",       price: 13,   kcal: 87, needs: ["warm", "recover"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G4437_320.png" },
+  { k: "flurry",       name: "经典麦旋风",   price: 15,   kcal: 266, needs: ["comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008754_320.png" },
+  { k: "sundae",       name: "新地",         price: 12.5, kcal: 282, needs: ["comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008745_320.png" },
+  { k: "cone",         name: "圆筒冰淇淋",   price: 5,    kcal: 93, needs: ["treat"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_515837_320.png" },
+  { k: "coke",         name: "可乐",         price: 9.5,  kcal: 147, needs: ["refuel", "celebrate", "vent"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008751_320.png" },
+  { k: "coffee",       name: "鲜萃咖啡",     price: 10,   kcal: 15, needs: ["refuel", "warm"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/20250324/product/MS_G520688_320.png" },
+  { k: "appleJuice",   name: "100% 苹果汁",  price: 11.5, kcal: 88, needs: ["recover"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/20250430/product/MS_6362_320_1745552987716.png" }
 ];
 
-/* 事件表：今天发生的事 → 犒劳指数（1-4 星）定份量；meal 是口味选"都行"时的首选。
+/* 事件表：今天发生的事 → 情绪需求（need，决定吃什么）+ 犒劳指数（level，决定吃多少）；meal 是口味选"都行"时的首选。
    文字（贴纸标签/批准书事由/判词）在 I18N 里；判词只说人不说菜，换口味/换一个都不穿帮。 */
 const EVENTS = [
-  { id: "ot",      emo: "🌙", level: 4, meal: ["mcSpicy", "fries"] },
-  { id: "scolded", emo: "💢", level: 4, meal: ["doubleCheese", "sundae"] },
-  { id: "done",    emo: "🎉", level: 3, meal: ["wings", "fries"] },
-  { id: "payday",  emo: "💰", level: 3, meal: ["bigmac", "coke"] },
-  { id: "rain",    emo: "☔", level: 2, meal: ["mcChicken", "coffee"] },
-  { id: "emo",     emo: "🥲", level: 3, meal: ["nuggets", "flurry"] },
-  { id: "workout", emo: "💪", level: 3, meal: ["grilled", "appleJuice"] },
-  { id: "nothing", emo: "🦥", level: 1, meal: ["cone"] }
+  { id: "ot",      emo: "🌙", need: "refuel",    level: 4, meal: ["mcSpicy", "fries"] },
+  { id: "scolded", emo: "💢", need: "vent",      level: 4, meal: ["mcSpicy", "wings"] },
+  { id: "done",    emo: "🎉", need: "celebrate", level: 3, meal: ["wings", "coke"] },
+  { id: "payday",  emo: "💰", need: "reward",    level: 4, meal: ["bigmac", "fries"] },
+  { id: "rain",    emo: "☔", need: "warm",      level: 2, meal: ["mcChicken", "coffee"] },
+  { id: "emo",     emo: "🥲", need: "comfort",   level: 3, meal: ["fries", "flurry"] },
+  { id: "workout", emo: "💪", need: "recover",   level: 3, meal: ["grilled", "appleJuice"] },
+  { id: "nothing", emo: "🦥", need: "treat",     level: 1, meal: ["cone"] }
 ];
 /* 一句话没命中任何事件：照抄原话上批准书，给一份标准餐 */
-const EVENT_MISC = { id: "misc", emo: "✏️", level: 3, meal: ["filet", "coke"] };
+const EVENT_MISC = { id: "misc", emo: "✏️", need: "safe", level: 3, meal: ["filet", "fries"] };
 
 /* 口味 × 犒劳指数 → 候选餐。犒劳指数定份量，口味定吃什么；第一个是首选，"换一个"按序轮换。
    每个口味都满足：1 星最大份 < 4 星最小份（verify.py 断言）。 */
@@ -486,18 +491,32 @@ const TASTES = [
   { id: "spicy", emo: "🌶️" }, { id: "sweet", emo: "🍦" }, { id: "light", emo: "🥗" }
 ];
 const COMBOS = {
-  burger:  { 1: [["mcChicken"], ["fries"]], 2: [["mcChicken", "coffee"], ["filet", "coffee"]], 3: [["doubleCheese", "coke"], ["bigmac", "coffee"], ["mcChicken", "fries"]], 4: [["bigmac", "fries"], ["doubleCheese", "fries"]] },
-  chicken: { 1: [["nuggets"], ["wings"]], 2: [["nuggets", "coke"], ["wings", "coke"]], 3: [["mcSpicy", "coke"], ["wings", "fries"], ["nuggets", "fries"]], 4: [["mcSpicy", "fries"], ["mcSpicy", "wings"]] },
-  spicy:   { 1: [["wings"]], 2: [["wings", "coke"], ["mcSpicy"]], 3: [["mcSpicy", "coke"], ["wings", "fries"]], 4: [["mcSpicy", "fries"], ["mcSpicy", "wings"]] },
-  sweet:   { 1: [["cone"], ["sundae"]], 2: [["flurry", "coffee"], ["sundae", "coffee"]], 3: [["nuggets", "flurry"], ["mcChicken", "sundae"]], 4: [["doubleCheese", "sundae"], ["mcSpicy", "flurry"]] },
+  burger:  { 1: [["mcChicken"], ["fries"]], 2: [["mcChicken", "coffee"], ["filet", "coffee"]], 3: [["doubleCheese", "coke"], ["bigmac", "coffee"], ["mcChicken", "fries"], ["grilled", "corn"]], 4: [["bigmac", "fries"], ["doubleCheese", "fries"], ["bigmac", "coke"]] },
+  chicken: { 1: [["nuggets"], ["wings"]], 2: [["nuggets", "coke"], ["wings", "coke"], ["nuggets", "corn"]], 3: [["mcSpicy", "coke"], ["wings", "fries"], ["nuggets", "fries"], ["grilled", "corn"]], 4: [["mcSpicy", "fries"], ["mcSpicy", "wings"]] },
+  spicy:   { 1: [["wings"]], 2: [["wings", "coke"], ["mcSpicy"], ["wings", "coffee"]], 3: [["mcSpicy", "coke"], ["wings", "fries"], ["mcSpicy", "appleJuice"]], 4: [["mcSpicy", "fries"], ["mcSpicy", "wings"]] },
+  sweet:   { 1: [["cone"], ["sundae"]], 2: [["flurry", "coffee"], ["sundae", "coffee"]], 3: [["nuggets", "flurry"], ["mcChicken", "sundae"], ["fries", "flurry"], ["grilled", "sundae"]], 4: [["doubleCheese", "sundae"], ["mcSpicy", "flurry"]] },
   light:   { 1: [["corn"], ["cone"]], 2: [["filet", "coffee"], ["grilled", "coffee"]], 3: [["grilled", "appleJuice"], ["filet", "corn"]], 4: [["grilled", "nuggets"], ["filet", "fries"]] }
 };
-/* 选了口味：先轮完该口味的候选，再顺延到同档位的其他餐，"换一个"永远换得动 */
+const NEED_OF = Object.fromEntries(FOOD_DB.map(f => [f.k, f.needs]));
+/* 选餐：口味是过滤器，对症是排序。
+   选了口味 → 先在该口味候选里挑对症的，再顺延到同档位其他餐（也是对症的在前），"换一个"永远换得动。 */
 function candidates(ev, taste) {
-  const all = [ev.meal].concat(...Object.values(COMBOS).map(c => c[ev.level]));
-  const pool = taste === "any" ? all : COMBOS[taste][ev.level].concat(all);
+  /* 对症分：组合里最对症那样东西的排位（需求在标签里越靠前越对症），完全不对症记 9 */
+  const fit = m => Math.min(9, ...m.map(k => { const i = NEED_OF[k].indexOf(ev.need); return i < 0 ? 9 : i; }));
+  const byFit = list => list.slice().sort((a, b) => fit(a) - fit(b)); /* sort 是稳定的：同分保持原顺序 */
+  const others = Object.values(COMBOS).map(c => c[ev.level]).flat();
+  const pool = taste === "any" ? [ev.meal].concat(byFit(others)) : byFit(COMBOS[taste][ev.level]).concat(byFit([ev.meal].concat(others)));
   const seen = new Set();
   return pool.filter(m => { const k = m.join("+"); if (seen.has(k)) return false; seen.add(k); return true; });
+}
+/* 麦麦处方：为什么批这个。经典吃法组合有专属台词；否则取最对症的那样东西（需求在它标签里越靠前越对症，平手取主食）。 */
+function prescription(keys, need, lang) {
+  const L = I18N[lang], combo = L.combo[keys.slice().sort().join("+")];
+  if (combo) return combo;
+  let best = null, bi = 99;
+  keys.forEach(k => { const i = (NEED_OF[k] || []).indexOf(need); if (i >= 0 && i < bi) { bi = i; best = k; } });
+  /* 口味和情绪实在凑不到一起（如"被骂了 × 清淡"）：不硬套菜的台词，按情绪需求说一句 */
+  return best ? L.line[best][need] : L.fallback[need];
 }
 
 /* 一句话 → 事件：按序关键词命中（中英都认）。顺序即优先级——"加班被骂"算被骂，"面试挂了/failed"算 emo 不算搞定。
@@ -544,7 +563,31 @@ const I18N = {
     dealTitle: "批准生效，开饭！", couponDemo: "在 WorkBuddy 里用，券会自动帮你领好", couponGot: " · 已帮你领好", couponName: "麦麦省券",
     order: "就吃这个，下单！", share: "截图发群：今天这顿，是麦麦亲自批的", star: "⭐ 被批准到了？去 GitHub 点个 Star",
     replay: "今天还有别的委屈？再批一次", orderAlert: "在 WorkBuddy 里说一句「就吃这个」，麦麦帮你领券下单，热乎的马上到。",
-    q: ["「", "」"], cut: 6,
+    q: ["「", "」"], cut: 6, rxLabel: "麦麦处方",
+    combo: { "flurry+fries": "薯条蘸麦旋风，甜咸一口，心情回来一半", "fries+sundae": "薯条蘸新地，懂的都懂" },
+    line: {
+      bigmac:       { reward: "今天就点最大的那个，两层牛肉都是你的", celebrate: "庆功就要最大的，两层牛肉一起干杯", refuel: "两层牛肉，一口回血" },
+      doubleCheese: { comfort: "芝士加倍，委屈减半", reward: "芝士加倍，今天不用省" },
+      grilled:      { recover: "扎实的鸡腿肉，蛋白质到账", refuel: "嫩嫩的板烧鸡腿，稳稳回血" },
+      mcSpicy:      { refuel: "一整块鸡腿，熬掉的力气补回来", vent: "辣到冒汗，火气跟着散", reward: "今天不用挑，招牌麦辣鸡腿直接安排" },
+      mcChicken:    { warm: "热乎乎软绵绵，捧在手里就安心", comfort: "软软的一口，什么都不用说", treat: "一个麦香鸡，小小的快乐刚刚好" },
+      filet:        { comfort: "软软的鱼，温柔地接住你", safe: "麦香鱼不会出错，像老朋友" },
+      fries:        { safe: "说不清的时候，薯条永远懂", comfort: "咸香酥脆，麦门最稳的安全感", celebrate: "薯条一倒，派对开始", treat: "一包薯条，没理由也可以" },
+      nuggets:      { celebrate: "一口一个，开心可以慢慢吃", comfort: "蘸一口酱，心情跟着软下来", treat: "一盒麦乐鸡，奖励无所事事的自己" },
+      wings:        { vent: "咔嚓咬碎的是鸡翅，不是你", celebrate: "举杯的那只手，得拿着鸡翅", treat: "两只鸡翅，摸鱼也要有仪式感" },
+      corn:         { warm: "一杯热玉米，暖到胃里", recover: "清爽一杯，练完刚刚好" },
+      flurry:       { comfort: "甜的先到，坏心情后走", treat: "一杯麦旋风，奖励没理由的自己" },
+      sundae:       { comfort: "一勺甜，委屈化掉一半", treat: "一勺新地，小小的快乐" },
+      cone:         { treat: "啥也没干也值得一个甜筒，但只有一个" },
+      coke:         { refuel: "冰可乐一口，人醒了", celebrate: "气泡一冒，碰杯！", vent: "冰可乐一灌，火气往下压" },
+      coffee:       { refuel: "一口咖啡，续上今天的电", warm: "热咖啡捧在手里，雨就不算什么" },
+      appleJuice:   { recover: "清清爽爽，汗没白流" }
+    },
+    fallback: {
+      refuel: "吃饱了，才有力气继续", vent: "慢慢嚼，火气慢慢消", celebrate: "怎么吃都算庆功，今天你说了算",
+      reward: "犒赏自己，不必挑最贵的", warm: "热乎的一口，先把自己捂暖", comfort: "好好吃一顿，就是在抱抱自己",
+      recover: "练完好好吃，才算没白练", treat: "小小一份，刚刚好", safe: "说不清的日子，吃点熟悉的"
+    },
     ev: {
       ot:      { tag: "加班到深夜", label: "加班到深夜",   verdict: "麦门为打工人留灯到凌晨" },
       scolded: { tag: "被骂了",     label: "被骂了",       verdict: "他骂他的，你吃你的" },
@@ -587,7 +630,31 @@ const I18N = {
     dealTitle: "Approved. Let's eat!", couponDemo: "In WorkBuddy, coupons get claimed for you", couponGot: " · claimed for you", couponName: "McD coupon",
     order: "This one. Order it!", share: "Screenshot it: this meal is officially approved", star: "⭐ Felt approved? Star it on GitHub",
     replay: "More to tell? Get approved again", orderAlert: "Say “this one” in WorkBuddy, and McD will claim coupons and order for you. Hot food, on its way.",
-    q: ["“", "”"], cut: 12,
+    q: ["“", "”"], cut: 12, rxLabel: "McD's prescription",
+    combo: { "flurry+fries": "Fries dipped in McFlurry. Sweet, salty, half your mood back.", "fries+sundae": "Fries in sundae. If you know, you know." },
+    line: {
+      bigmac:       { reward: "Today you get the biggest one. Both patties are yours.", celebrate: "Big wins deserve the big one.", refuel: "Two patties. Instant recharge." },
+      doubleCheese: { comfort: "Double cheese, half the grief.", reward: "Double cheese. No holding back today." },
+      grilled:      { recover: "Solid chicken thigh. Protein, delivered.", refuel: "Tender grilled thigh. Steady recharge." },
+      mcSpicy:      { refuel: "A whole crispy thigh to win your energy back.", vent: "Spicy enough to sweat the anger out.", reward: "No need to choose. The signature McSpicy is yours." },
+      mcChicken:    { warm: "Warm and soft. Holding it already helps.", comfort: "One soft bite. No words needed.", treat: "One McChicken. Small joy, just right." },
+      filet:        { comfort: "Soft fish, gently catching you.", safe: "Filet-O-Fish never fails. Like an old friend." },
+      fries:        { safe: "When words fail, fries understand.", comfort: "Salty, crispy, the safest comfort there is.", celebrate: "Pour the fries. Party's on.", treat: "A pack of fries. No reason needed." },
+      nuggets:      { celebrate: "One bite at a time. Joy in small pieces.", comfort: "One dip and the mood softens.", treat: "A box of nuggets for a perfectly lazy you." },
+      wings:        { vent: "What crunches is the wing, not you.", celebrate: "The hand that raises a toast should hold a wing.", treat: "Two wings. Even slacking deserves a ritual." },
+      corn:         { warm: "Warm corn, straight to the soul.", recover: "Light and clean. Perfect after a workout." },
+      flurry:       { comfort: "Sweet arrives first. The bad mood leaves.", treat: "A McFlurry for no reason at all." },
+      sundae:       { comfort: "One spoon of sweet, half the hurt melts.", treat: "A spoon of sundae. Small happiness." },
+      cone:         { treat: "Even doing nothing earns a cone. Just one." },
+      coke:         { refuel: "One cold sip and you're back.", celebrate: "Bubbles up. Cheers!", vent: "Ice-cold Coke, anger down." },
+      coffee:       { refuel: "A sip of coffee to recharge the day.", warm: "Hot coffee in hand. Rain doesn't matter." },
+      appleJuice:   { recover: "Fresh and clean. Sweat well spent." }
+    },
+    fallback: {
+      refuel: "Eat well. Then keep going.", vent: "Chew slowly. Let the anger fade.", celebrate: "However you eat it, it's a celebration.",
+      reward: "Treating yourself doesn't have to be fancy.", warm: "A warm bite. Get cozy first.", comfort: "A proper meal is a hug for yourself.",
+      recover: "Eat right after training. That's the point.", treat: "Small portion, just right.", safe: "On unclear days, eat something familiar."
+    },
     ev: {
       ot:      { tag: "Late OT",     label: "Worked late",            verdict: "McD keeps the lights on for you." },
       scolded: { tag: "Scolded",     label: "Got scolded",            verdict: "They talk. You chew." },
@@ -665,7 +732,7 @@ function applyText() {
 
 
 const D = (() => { try { return JSON.parse($("mc-data").textContent); } catch (e) { return null; } })();
-let stage = "ask", cur = null, seq = [], pickEv = null, pickTaste = "any", cands = [], ci = 0;
+let stage = "ask", cur = null, seq = [], pickEv = null, pickTaste = "any", cands = [], ci = 0, curNeed = "safe";
 
 function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h; }
 function todayStr() { const d = new Date(); return d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0"); }
@@ -690,6 +757,50 @@ function tone(f, { type = "sine", at = 0, dur = .2, vol = .5, to } = {}) {
   g.gain.exponentialRampToValueAtTime(.001, t + dur);
   o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur + .02);
 }
+/* 滤波噪声：撕贴纸、咻、纸张滑动都靠它 */
+let noiseBuf = null;
+function noise({ at = 0, dur = .15, vol = .3, type = "bandpass", f = 1200, to, q = 1 } = {}) {
+  if (!actx || actx.state !== "running") return;
+  if (!noiseBuf) {
+    noiseBuf = actx.createBuffer(1, actx.sampleRate * .5, actx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const t = actx.currentTime + at, src = actx.createBufferSource(), flt = actx.createBiquadFilter(), g = actx.createGain();
+  src.buffer = noiseBuf;
+  flt.type = type; flt.Q.value = q;
+  flt.frequency.setValueAtTime(f, t);
+  if (to) flt.frequency.exponentialRampToValueAtTime(to, t + dur);
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + dur * .2);
+  g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  src.connect(flt); flt.connect(g); g.connect(actx.destination); src.start(t); src.stop(t + dur + .02);
+}
+/* 卡通物理音效表：点按=啵、撕贴纸=嘶啦、飞=咻、落地=啪叽、徽章=boing、换一个=老虎机、开抽屉=叮当收银 */
+const SFX = {
+  tap:     () => tone(880, { dur: .06, vol: .18, to: 1320 }),
+  peel:    () => noise({ dur: .16, vol: .35, f: 900, to: 4200, q: 1.4 }),
+  whoosh:  () => noise({ at: .05, dur: .38, vol: .22, f: 500, to: 2400, q: .9 }),
+  land:    () => { tone(180, { to: 70, dur: .14, vol: .5 }); noise({ dur: .05, vol: .25, type: "lowpass", f: 1800 }); },
+  boing:   () => { tone(320, { type: "triangle", dur: .28, vol: .22, to: 780 }); tone(780, { at: .1, dur: .18, vol: .1, to: 620 }); },
+  blip:    () => tone(1400, { at: .08, dur: .07, vol: .12, to: 1900 }),
+  submit:  () => [523, 659, 784].forEach((f, i) => tone(f, { type: "triangle", at: i * .06, dur: .18, vol: .2 })),
+  nope:    () => { tone(260, { type: "square", dur: .08, vol: .08 }); tone(200, { type: "square", at: .1, dur: .1, vol: .08 }); },
+  paper:   () => noise({ dur: .22, vol: .18, type: "highpass", f: 2500, to: 6000, q: .7 }),
+  tick:    () => tone(1800, { type: "square", dur: .02, vol: .03 }),
+  stamp:   () => { tone(140, { to: 40, dur: .22, vol: .8 }); noise({ dur: .08, vol: .4, type: "lowpass", f: 900 }); },
+  fanfare: gold => {
+    [784, 988, 1175].concat(gold ? [1568] : []).forEach((f, i) => tone(f, { type: "triangle", at: i * .08, dur: .5, vol: .2 }));
+    for (let i = 0; i < 6; i++) tone(2000 + Math.random() * 1500, { at: .3 + i * .07, dur: .12, vol: .06 });
+  },
+  swap:    () => [600, 800, 1000].forEach((f, i) => tone(f, { type: "square", at: i * .05, dur: .05, vol: .06 })),
+  sheet:   () => noise({ dur: .3, vol: .15, f: 300, to: 1500, q: .8 }),
+  coin:    () => { tone(1568, { at: .18, dur: .12, vol: .18 }); tone(2093, { at: .26, dur: .3, vol: .18 }); },
+  back:    () => noise({ dur: .25, vol: .15, f: 2000, to: 400, q: .8 }),
+  order:   () => { tone(1047, { type: "triangle", dur: .15, vol: .2 }); tone(1568, { type: "triangle", at: .1, dur: .4, vol: .2 }); }
+};
+/* 任何点按都先唤醒音频（捕获阶段，早于按钮自己的处理），iOS 第一下也有声 */
+["touchend", "click"].forEach(e => document.addEventListener(e, unlockAudio, true));
 
 /* ---------- 舞台机 ---------- */
 const ORDER = ["ask", "approve", "deal"];
@@ -701,7 +812,7 @@ function goTo(name) {
   $("backBtn").style.display = name === "approve" ? "flex" : "none";
 }
 function toAsk() { seq.forEach(clearTimeout); seq = []; goTo("ask"); }
-$("backBtn").onclick = () => { buzz(8); toAsk(); };
+$("backBtn").onclick = () => { buzz(8); SFX.back(); toAsk(); };
 
 /* ---------- Stage 1：犒劳申请单 ---------- */
 let pickTone = "t-red";
@@ -741,8 +852,8 @@ function buildAsk() {
     b.innerHTML = '<span class="taste-badge">' + t.emo + "</span><small>" + tt.label + '</small><em class="bubble">' + tt.quip + "</em>";
     b.onclick = () => {
       buzz(8);
-      unlockAudio();
-      tone(660, { type: "triangle", dur: .14, vol: .16, to: 990 });
+      SFX.boing();
+      SFX.blip();
       $("tasteBadges").querySelectorAll(".taste").forEach(x => x.classList.toggle("on", x === b));
       pickTaste = t.id;
     };
@@ -775,8 +886,8 @@ function fillSlot(body, level) {
 /* 选贴纸：从贴纸本上撕下来，飞进表头虚线槽（FLIP），落地压扁回弹 */
 function pickEvent(ev, btn, toneCls) {
   buzz(10);
-  unlockAudio();
-  tone(420, { type: "triangle", dur: .14, vol: .18, to: 900 });
+  SFX.peel();
+  SFX.whoosh();
   pickEv = ev;
   pickTone = toneCls;
   $("sayText").value = "";
@@ -792,7 +903,7 @@ function pickEvent(ev, btn, toneCls) {
     { transform: "translate(0,0) scale(1) rotate(-6deg)" }
   ], { duration: 480, easing: "cubic-bezier(.3,.7,.3,1)" }).onfinish = () => {
     wrap.classList.add("landed");
-    tone(200, { to: 80, dur: .12, vol: .35 });
+    SFX.land();
     buzz(14);
   };
 }
@@ -800,6 +911,7 @@ function pickEvent(ev, btn, toneCls) {
 $("sayText").oninput = () => {
   const t = $("sayText").value.trim();
   if (!t) { if (!pickEv) resetSlot(); return; }
+  if (!$("slot").classList.contains("filled") || pickEv) SFX.tap();
   pickEv = null;
   document.querySelectorAll(".ev-stk").forEach(x => x.classList.remove("peeled"));
   fillSlot(makeSticker("✏️", t.length > T.cut ? t.slice(0, T.cut) + "…" : t, "t-ink"));
@@ -808,6 +920,7 @@ function submit() {
   const t = $("sayText").value.trim();
   if (!pickEv && !t) {
     buzz([30, 40, 30]);
+    SFX.nope();
     const z = $("slot");
     z.classList.remove("shake-x"); void z.offsetWidth; z.classList.add("shake-x");
     $("reasonHint").textContent = T.reasonWarn;
@@ -815,7 +928,7 @@ function submit() {
     return;
   }
   buzz(12);
-  unlockAudio();
+  SFX.submit();
   $("sayText").blur();
   window.scrollTo(0, 0); /* iOS 收起键盘后页面偶尔不复位 */
   if (pickEv) approve(pickEv, evText(pickEv).label, pickTaste, { emo: pickEv.emo, tone: pickTone });
@@ -863,6 +976,7 @@ function approve(ev, reason, taste, stk) {
   const inj = !!(D && D.eventId === ev.id && D.meals && D.meals.length);
   cands = inj ? [D.meals.slice(0, 2)] : candidates(ev, taste).map(m => m.map(k => FOOD_DB.find(f => f.k === k)));
   ci = 0;
+  curNeed = ev.need;
   /* 金章特批：约 1/6，同一天同一事由结果固定（刷新刷不出来，才有炫耀价值） */
   const gold = hashStr(todayStr() + reason + ev.id) % 6 === 0;
   const d = new Date(), dateStr = d.getFullYear() + "." + (d.getMonth() + 1) + "." + d.getDate();
@@ -887,6 +1001,7 @@ function approve(ev, reason, taste, stk) {
   $("certMeal").className = "cert-meal muted";
   $("certMeal").textContent = T.mealWait;
   $("certMeta").textContent = "";
+  $("certRx").innerHTML = "";
   $("certPrice").innerHTML = "";
   $("stampText").innerHTML = gold ? T.stampGold : T.stamp;
   $("stampDate").textContent = dateStr;
@@ -894,10 +1009,11 @@ function approve(ev, reason, taste, stk) {
   $("approveCta").classList.remove("on");
   $("swapBtn").style.display = $("swapDot").style.display = cands.length > 1 ? "" : "none";
   goTo("approve");
+  seq.push(setTimeout(SFX.paper, 120));
 
   const tStamp = typeVerdict(quote((inj && D.verdict) || evText(ev).verdict), 650) + 220;
   seq.push(setTimeout(() => $("stamp").classList.add("hit"), tStamp));
-  seq.push(setTimeout(() => { $("cert").classList.add("shake"); tone(140, { to: 40, dur: .22, vol: .8 }); buzz(25); }, tStamp + 300));
+  seq.push(setTimeout(() => { $("cert").classList.add("shake"); SFX.stamp(); buzz(25); }, tStamp + 300));
   seq.push(setTimeout(() => reveal(inj, gold), tStamp + 650));
   seq.push(setTimeout(() => $("approveCta").classList.add("on"), tStamp + 1250));
 }
@@ -907,7 +1023,7 @@ function typeVerdict(text, start) {
   seq.push(setTimeout(() => { el.className = ""; el.textContent = ""; }, start));
   chars.forEach((ch, i) => seq.push(setTimeout(() => {
     el.textContent += ch;
-    if (i % 2 === 0) tone(1800, { type: "square", dur: .02, vol: .03 });
+    if (i % 2 === 0) SFX.tick();
   }, start + 40 + i * 55)));
   return start + 40 + chars.length * 55;
 }
@@ -917,9 +1033,7 @@ function reveal(inj, gold) {
   const colors = gold ? ["#C9A227", "#FFE08A", "#FFF4C2", "#FFFFFF"] : ["#FFC72C", "#FFFFFF", "#FF7A59", "#FFE08A"];
   confetti(colors);
   launchFireworks(colors);
-  tone(784, { type: "triangle", dur: .5, vol: .22 });
-  tone(1175, { type: "triangle", at: .09, dur: .6, vol: .22 });
-  if (gold) tone(1568, { type: "triangle", at: .18, dur: .8, vol: .2 });
+  SFX.fanfare(gold);
   buzz([12, 60, 12, 60, 30]);
 }
 function showMeal(inj) {
@@ -942,6 +1056,13 @@ function showMeal(inj) {
   $("certMeal").className = "cert-meal";
   $("certMeal").textContent = cur.names;
   $("certMeta").textContent = (inj && D.mealNote) || "";
+  $("certRx").innerHTML = "";
+  const rx = (inj && D.rx) || prescription(items.map(x => x.k), curNeed, LANG);
+  if (rx) {
+    const b = document.createElement("b");
+    b.textContent = T.rxLabel;
+    $("certRx").append(b, rx);
+  }
   $("certPrice").innerHTML = priceHTML();
 }
 /* 价格：有真实券后价（Skill 注入）→ 门店价划线 + 券后价放大标红 + 省多少；
@@ -957,9 +1078,10 @@ $("swapBtn").onclick = () => {
   buzz(10);
   ci = (ci + 1) % cands.length;
   showMeal(false);
-  tone(660, { type: "triangle", dur: .25, vol: .15 });
+  SFX.swap();
+  setTimeout(SFX.land, 260);
 };
-$("againBtn").onclick = () => { buzz(8); toAsk(); };
+$("againBtn").onclick = () => { buzz(8); SFX.back(); toAsk(); };
 
 /* 庆祝：底部烟花升空 + 顶部彩纸飘落，零图片零依赖 */
 function launchFireworks(colors) {
@@ -1006,6 +1128,8 @@ function confetti(colors) {
 /* ---------- Stage 3：领券下单 ---------- */
 $("goDeal").onclick = () => {
   buzz(12);
+  SFX.sheet();
+  SFX.coin();
   $("dealMeal").textContent = cur.names + (cur.kcal != null ? " · " + T.kcal.replace("{n}", cur.kcal) : "");
   fillFood($("dealFood"), $("certFood").innerHTML); /* 复用批准书上已出图/已换插画的结果，不重新请求 */
   const row = $("couponRow");
@@ -1033,11 +1157,12 @@ $("goDeal").onclick = () => {
   $("dealSave").textContent = deal ? T.saved + Number(cur.saved).toFixed(1) : "";
   goTo("deal");
 };
-$("dealUnderlay").onclick = () => goTo("approve");
-$("replayBtn").onclick = () => { buzz(8); toAsk(); };
+$("dealUnderlay").onclick = () => { SFX.back(); goTo("approve"); };
+$("replayBtn").onclick = () => { buzz(8); SFX.back(); toAsk(); };
 $("orderBtn").onclick = () => {
   buzz([15, 50, 15]);
-  alert(T.orderAlert);
+  SFX.order();
+  setTimeout(() => alert(T.orderAlert), 350); /* 等叮咚响完再弹窗，alert 会冻结音频 */
 };
 
 /* ---------- 启动：Skill 注入了 eventId 就直接盖章 ---------- */
