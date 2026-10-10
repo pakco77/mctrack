@@ -447,7 +447,7 @@
 <script type="application/json" id="mc-data">__MCTRACK_DATA__</script>
 <script>
 /* @pure-begin 纯数据与纯函数（verify.py 会单独抽出来跑断言） */
-/* 真实菜单快照：麦当劳 MCP query-meals（东莞门店 1421187，2026-10-09），图片为官方 menu-img.mcd.cn CDN。
+/* 真实菜单快照：麦当劳 MCP query-meals（东莞门店 1421187，2026-10-09；图片地址 2026-10-10 复核，官方会改后缀/文件名，失效就重拉）。
    kcal：MCP list-nutrition-foods（2026-10-10），饮品按中杯、薯条按中份、玉米杯按大杯。
    needs：这样东西能给情绪什么（发泄/安慰/庆祝/犒赏/补能/取暖/恢复/小确幸/安全感），排越前越对症。 */
 const FOOD_DB = [
@@ -457,14 +457,14 @@ const FOOD_DB = [
   { k: "mcSpicy",      name: "麦辣鸡腿汉堡", price: 22.5, kcal: 485, needs: ["refuel", "vent", "reward"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_1440_320.png" },
   { k: "mcChicken",    name: "麦香鸡",       price: 16.5, kcal: 369, needs: ["warm", "comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_1450_320.png" },
   { k: "filet",        name: "麦香鱼",       price: 22,   kcal: 325, needs: ["comfort", "safe"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260101/product/MS_1600_320.png" },
-  { k: "fries",        name: "薯条",         price: 14,   kcal: 289, needs: ["safe", "comfort", "celebrate", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_G4810_320_1745552987716.png" },
+  { k: "fries",        name: "薯条",         price: 14,   kcal: 289, needs: ["safe", "comfort", "celebrate", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20250523/product/MS_G4810_320_1747877491921.png" },
   { k: "nuggets",      name: "麦乐鸡",       price: 14.5, kcal: 213, needs: ["celebrate", "comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260529/product/MS_G1401_320.png" },
   { k: "wings",        name: "麦辣鸡翅",     price: 14.5, kcal: 224, needs: ["vent", "celebrate", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/20260325/product/MS_G1700_320.png" },
   { k: "corn",         name: "玉米杯",       price: 13,   kcal: 87, needs: ["warm", "recover"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_G4437_320.png" },
-  { k: "flurry",       name: "经典麦旋风",   price: 15,   kcal: 266, needs: ["comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008754_320.png" },
-  { k: "sundae",       name: "新地",         price: 12.5, kcal: 282, needs: ["comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008745_320.png" },
+  { k: "flurry",       name: "经典麦旋风",   price: 15,   kcal: 266, needs: ["comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008754_320.gif" },
+  { k: "sundae",       name: "新地",         price: 12.5, kcal: 282, needs: ["comfort", "treat"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008745_320.gif" },
   { k: "cone",         name: "圆筒冰淇淋",   price: 5,    kcal: 93, needs: ["treat"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_515837_320.png" },
-  { k: "coke",         name: "可乐",         price: 9.5,  kcal: 147, needs: ["refuel", "celebrate", "vent"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008751_320.png" },
+  { k: "coke",         name: "可乐",         price: 9.5,  kcal: 147, needs: ["refuel", "celebrate", "vent"], img: "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_9900008751_320.gif" },
   { k: "coffee",       name: "鲜萃咖啡",     price: 10,   kcal: 15, needs: ["refuel", "warm"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/20250324/product/MS_G520688_320.png" },
   { k: "appleJuice",   name: "100% 苹果汁",  price: 11.5, kcal: 88, needs: ["recover"],  img: "https://menu-img.mcd.cn/pcm/prod/menu/20250430/product/MS_6362_320_1745552987716.png" }
 ];
