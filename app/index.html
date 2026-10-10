@@ -178,6 +178,7 @@
   .shake-x { animation: shakeX .36s ease; }
   @keyframes shakeX { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
   .foot-note { text-align: center; font-size: 10px; color: #B4A795; margin-top: 12px; }
+  .foot-note small { display: block; font-size: 9px; opacity: .8; margin-top: 2px; }
 
   /* ===== Stage 2 批准书 ===== */
   #st-approve { align-items: center; padding: 56px 16px max(16px, env(safe-area-inset-bottom)); overflow-x: hidden; overflow-y: auto; }
@@ -286,6 +287,12 @@
   .approve-cta .order-btn { margin-top: 16px; }
   .cta-row { display: flex; justify-content: center; align-items: center; gap: 4px; margin-top: 10px; color: rgba(255,255,255,.5); font-size: 13px; }
   .cta-row button { border: none; background: none; color: #fff; font-size: 14px; font-weight: 700; padding: 6px 8px; }
+  .lang-en .cta-row button { font-size: 12.5px; padding: 6px 5px; } /* 英文三个按钮更长，收小才排得下一行 */
+  /* Star 前置到情绪峰值：盖章揭晓时就给出口，别等抽屉底部 */
+  .star-nudge { display: block; text-align: center; font-size: 12.5px; font-weight: 700; color: rgba(255,255,255,.72); margin-top: 6px; text-decoration: none; }
+  .star-nudge:active { color: #fff; }
+  /* 金章 tease：极轻一句，制造"撞运气"的期待 */
+  .gold-tease { text-align: center; font-size: 11px; color: #B4A795; margin-top: 9px; letter-spacing: .5px; }
 
   /* ===== 存图浮层：canvas 画好的批准书，长按/下载带走 ===== */
   .save-layer { position: absolute; inset: 0; z-index: 90; background: rgba(20,8,6,.86); display: none; align-items: center; justify-content: center; padding: 24px; }
@@ -394,7 +401,8 @@
     <div class="form-label" data-t="tasteQ">嘴巴今天想吃点</div>
     <div class="taste-row" id="tasteBadges"></div>
     <button class="submit" id="submitBtn" data-t="submit">麦麦批准？</button>
-    <div class="foot-note" data-t="foot">一个麦门粉丝的业余作品 · 与金拱门（中国）无关</div>
+    <div class="gold-tease" data-t="goldTease"></div>
+    <div class="foot-note"><span data-t="foot"></span><small data-t="footDisc"></small></div>
   </div>
 </section>
 
@@ -428,6 +436,7 @@
   <div class="approve-cta" id="approveCta">
     <button class="order-btn" id="goDeal" data-t="go">这就去吃 →</button>
     <div class="cta-row"><button id="swapBtn" data-t="swap">不对胃口？换一个</button><span id="swapDot">·</span><button id="saveBtn" data-t="save">存图炫耀一下</button><span>·</span><button id="againBtn" data-t="again">换件事说说</button></div>
+    <a class="star-nudge" id="starNudge" href="https://github.com/pakco77/mctrack" target="_blank" rel="noopener" data-t="starNudge">被说中了？给麦麦点颗星 ⭐</a>
   </div>
 </section>
 
@@ -458,7 +467,7 @@
   <div class="save-card">
     <img id="saveImg" alt="">
     <div class="save-hint" data-t="saveHint"></div>
-    <div class="save-ops"><a class="order-btn" id="saveDl" data-t="saveDl" download="mcapproved.png"></a><button id="saveClose" data-t="saveClose"></button></div>
+    <div class="save-ops"><a class="order-btn" id="saveDl" data-t="saveDl" download="mcapproved.png"></a><button id="copyBtn" data-t="copy"></button><button id="saveClose" data-t="saveClose"></button></div>
   </div>
 </div>
 
@@ -574,7 +583,7 @@ const I18N = {
     reasonQ: "今天怎么样？", reasonHint: "挑一张最像你的", reasonWarn: "先告诉麦麦今天怎么了嘛",
     writeLabel: "✏️ 都不像？自己写", writePh: "比如：甲方又改需求了", writeAria: "自己写今天的事",
     tasteQ: "嘴巴今天想吃点", tasteAria: "想吃", submit: "麦麦批准？", back: "返回",
-    foot: "一个麦门粉丝的业余作品 · 与金拱门（中国）无关",
+    foot: "一个麦门粉丝的业余作品", footDisc: "非官方粉丝作品 · 与金拱门（中国）无关",
     certTitle: "麦麦犒劳批准书", gold: "★ 金章特批 · 今天你最闪 ★",
     dtReason: "今天的事", dtLevel: "你值得", dtTaste: "嘴巴想要", says: "麦麦说",
     pending: "麦麦正在认真看…", mystery: "马上揭晓", mealPre: "批给你的是", mealWait: "盖完章就知道", mealPost: "批给你的是",
@@ -583,7 +592,12 @@ const I18N = {
     go: "这就去吃 →", swap: "不对胃口？换一个", again: "换件事说说",
     save: "存图炫耀一下", saveHint: "长按图片存下来，发群里——今天这顿，是麦麦亲自批的",
     saveDl: "直接下载图片", saveClose: "不炫耀了，先吃",
-    dealTitle: "批准生效，开饭！", couponDemo: "在 WorkBuddy 里用，券会自动帮你领好", couponGot: " · 已帮你领好", couponName: "麦麦省券",
+    starNudge: "被说中了？给麦麦点颗星 ⭐",
+    copy: "复制分享文案", copied: "已复制，发群去吧 ✓",
+    copyIntro: "麦当劳刚批了我一顿：", copyTail: "今天也被批准一下：",
+    goldTease: "麦麦偶尔心情好，会盖金章 · 今天看运气",
+    orderH5: "存图，去麦当劳点这个",
+    dealTitle: "批准生效，开饭！", couponDemo: "拿上这张批准书，去麦当劳 App 领券点餐", couponGot: " · 已帮你领好", couponName: "麦麦省券",
     order: "就吃这个，下单！", share: "截图发群：今天这顿，是麦麦亲自批的", star: "⭐ 被批准到了？去 GitHub 点个 Star",
     replay: "今天还有别的委屈？再批一次", orderAlert: "在 WorkBuddy 里说一句「就吃这个」，麦麦帮你领券下单，热乎的马上到。",
     q: ["「", "」"], cut: 6, rxLabel: "麦麦处方",
@@ -643,7 +657,7 @@ const I18N = {
     reasonQ: "How was today?", reasonHint: "pick the one that's so you", reasonWarn: "tell McD what happened first",
     writeLabel: "✏️ None fits? Write it", writePh: "e.g. 8th redo today", writeAria: "Write your own story",
     tasteQ: "Your mouth is craving", tasteAria: "Craving ", submit: "Approve me, McD?", back: "Back",
-    foot: "Made by a McD fan · not affiliated with McDonald's China",
+    foot: "Made by a McD fan", footDisc: "Unofficial fan work · not affiliated with McDonald's China",
     certTitle: "Official Treat Approval", gold: "★ Golden Approval · You shine today ★",
     dtReason: "Today", dtLevel: "You deserve", dtTaste: "Craving", says: "McD says",
     pending: "McD is reading carefully…", mystery: "coming up", mealPre: "Your treat", mealWait: "revealed after the stamp", mealPost: "Approved for you",
@@ -652,7 +666,12 @@ const I18N = {
     go: "Go eat it →", swap: "Not feeling it? Swap", again: "Tell another story",
     save: "Save & show off", saveHint: "Long-press to save — this meal is officially McD-approved",
     saveDl: "Download image", saveClose: "Nah, food first",
-    dealTitle: "Approved. Let's eat!", couponDemo: "In WorkBuddy, coupons get claimed for you", couponGot: " · claimed for you", couponName: "McD coupon",
+    starNudge: "Felt seen? Give McD a star ⭐",
+    copy: "Copy share text", copied: "Copied — go share it ✓",
+    copyIntro: "McDonald's just approved me a treat:", copyTail: "Get approved too:",
+    goldTease: "Sometimes McD's in a golden mood · luck of the day",
+    orderH5: "Save it, then order at McD",
+    dealTitle: "Approved. Let's eat!", couponDemo: "Take this approval to the McD app for coupons", couponGot: " · claimed for you", couponName: "McD coupon",
     order: "This one. Order it!", share: "Screenshot it: this meal is officially approved", star: "⭐ Felt approved? Star it on GitHub",
     replay: "More to tell? Get approved again", orderAlert: "Say “this one” in WorkBuddy, and McD will claim coupons and order for you. Hot food, on its way.",
     q: ["“", "”"], cut: 12, rxLabel: "McD's prescription",
@@ -1383,6 +1402,33 @@ async function saveCert() {
 $("saveBtn").onclick = saveCert;
 $("saveClose").onclick = () => { buzz(8); SFX.back(); $("saveLayer").classList.remove("on"); };
 $("saveLayer").onclick = e => { if (e.target === $("saveLayer")) $("saveLayer").classList.remove("on"); };
+/* 一键复制分享文案：中文用户发群/朋友圈是主渠道，少一步手动打字 */
+function shareText() {
+  const meal = cur ? cur.names : "";
+  const line = cur && cur.kcal != null ? meal + " · 约 " + cur.kcal + " kcal" : meal;
+  return T.copyIntro + "「" + (appr ? appr.reason : "") + "」→ " + line
+    + (appr && appr.rx ? "\n" + T.rxLabel + " " + appr.rx : "")
+    + "\n" + T.copyTail + "https://pakco77.github.io/mctrack/app/";
+}
+function copyShare() {
+  const text = shareText(), btn = $("copyBtn");
+  const done = () => {
+    SFX.blip(); buzz(10);
+    btn.textContent = T.copied;
+    setTimeout(() => { btn.textContent = T.copy; }, 1800);
+  };
+  const fallback = () => {
+    /* 老浏览器/非安全上下文没有 clipboard API：塞进临时 textarea 选中复制 */
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch (e) {}
+    ta.remove();
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+  else fallback();
+}
+$("copyBtn").onclick = copyShare;
 
 /* 庆祝：底部烟花升空 + 顶部彩纸飘落，零图片零依赖 */
 function launchFireworks(colors) {
@@ -1451,6 +1497,9 @@ $("goDeal").onclick = () => {
     row.appendChild(c);
   }
   const deal = cur.realMenu && cur.saved > 0;
+  /* H5 版没有真实下单通道，别给空承诺：主按钮改成"存图带走"，下单那句留给 WorkBuddy 版 */
+  $("orderBtn").textContent = cur.realMenu ? T.order : T.orderH5;
+  $("orderBtn").classList.toggle("h5", !cur.realMenu);
   $("dealLbl").textContent = deal ? T.after : (cur.realMenu ? T.paid : T.store); /* 真实菜单无券可用时和批准书一致说「实付」 */
   $("dealNow").textContent = "¥" + Number(cur.price).toFixed(1);
   $("dealNow").className = "now" + (deal ? "" : " plain");
@@ -1462,6 +1511,7 @@ $("dealUnderlay").onclick = () => { SFX.back(); goTo("approve"); };
 $("replayBtn").onclick = () => { buzz(8); SFX.back(); toAsk(); };
 $("orderBtn").onclick = () => {
   buzz([15, 50, 15]);
+  if (cur && !cur.realMenu) { SFX.coin(); saveCert(); return; } /* 纯 H5：把批准书给你带走，才是能落地的动作 */
   SFX.order();
   setTimeout(() => alert(T.orderAlert), 350); /* 等叮咚响完再弹窗，alert 会冻结音频 */
 };
