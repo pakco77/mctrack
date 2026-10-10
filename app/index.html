@@ -1124,7 +1124,19 @@ function loadImg(src, cors) {
     i.src = src;
   });
 }
+/* 仓库内置食物图（menu-img.mcd.cn 快照 2026-10-10）：存图走同源，不脏 canvas，官方改 CDN 地址也不怕 */
+const LOCAL_IMG = {
+  bigmac: "food/bigmac.png", doubleCheese: "food/doubleCheese.png", grilled: "food/grilled.png", mcSpicy: "food/mcSpicy.png",
+  mcChicken: "food/mcChicken.png", filet: "food/filet.png", fries: "food/fries.png", nuggets: "food/nuggets.png",
+  wings: "food/wings.png", corn: "food/corn.png", flurry: "food/flurry.gif", sundae: "food/sundae.gif",
+  cone: "food/cone.png", coke: "food/coke.gif", coffee: "food/coffee.png", appleJuice: "food/appleJuice.png"
+};
 async function mealImage(item) {
+  /* file:// 直接打开时本地图也会让 canvas 变脏（opaque origin），跳过走 SVG 兜底 */
+  if (item.k && LOCAL_IMG[item.k] && location.protocol !== "file:") {
+    const l = await loadImg(LOCAL_IMG[item.k], false);
+    if (l) return { img: l, sq: false };
+  }
   if (item.img && imgState[item.img] !== "fail") {
     const p = await loadImg(item.img, true);
     if (p) return { img: p, sq: false };
