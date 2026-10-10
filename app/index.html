@@ -1433,7 +1433,7 @@ $("goDeal").onclick = () => {
     row.appendChild(c);
   }
   const deal = cur.realMenu && cur.saved > 0;
-  $("dealLbl").textContent = deal ? T.after : T.store;
+  $("dealLbl").textContent = deal ? T.after : (cur.realMenu ? T.paid : T.store); /* 真实菜单无券可用时和批准书一致说「实付」 */
   $("dealNow").textContent = "¥" + Number(cur.price).toFixed(1);
   $("dealNow").className = "now" + (deal ? "" : " plain");
   $("dealWas").textContent = deal ? T.store + " ¥" + Number(cur.base).toFixed(1) : "";

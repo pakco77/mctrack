@@ -39,11 +39,11 @@ description: 麦麦批准 McApproved——说一件今天发生的事（加班�
 ## WorkBuddy 中的调用流程
 
 1. **理解原话**：把用户说的事归到上表 eventId（说不清归 `misc`），识别口味偏好（没说就是 `any`），按情绪需求挑对症的餐并写一句「麦麦处方」（`rx`，讲清为什么是它），再写一句判词：毒舌又温柔，≤18 字，只说人不说菜，调侃对象只能是用户的处境，不碰麦当劳品牌与产品。
-2. **查口味史**：`order-list` 拉近期订单，统计最常点的餐品。在同一犒劳档位里优先批准用户真正常点的，并在 `mealNote` 写上依据（如"你点过 12 次"）。没有历史就按上表与口味规则。
-3. **拉真实菜单**：`query-nearby-stores` 定位门店 → `query-meals` 按名称在在售菜单里匹配，取名称/图片/现价；找不到就换同类在售品。
+2. **查口味史**：`order-list` 拉近期订单，统计最常点的餐品。注意展开套餐的 `comboItemList` 子项再计数（单品在 `orderProductList[].productName`）；历史名称可能带前缀（如"新升级板烧鸡腿堡"），按核心词对齐到菜单。在同一犒劳档位里优先批准用户真正常点的，并在 `mealNote` 写上依据（如"你点过 12 次"）。没有历史就按上表与口味规则。
+3. **拉真实菜单**：`query-nearby-stores` 定位门店 → `query-meals` 按名称在在售菜单里匹配（`data.meals` 是按 code 索引的字典，取 `name/image/currentPrice`），取名称/图片/现价；找不到就换同类在售品。
 4. **查热量**：`list-nutrition-foods`，饮品按中杯、薯条按中份。
 5. **领券**：`auto-bind-coupons` 一键领券 → `query-my-coupons` 确认；指定门店时用 `query-store-coupons` 校验。
-6. **算价**：`calculate-price` 传商品列表 + 最优券，得券后价与节省金额。
+6. **算价**：`calculate-price` 传 `storeCode + orderType（1 到店/2 外送，必传）+ beType + items[{productCode, quantity}]`（可带 couponId/couponCode），返回金额单位为**分**，得券后价与节省金额。券是账号私有且限时，常常对不上批准餐品——对不上就 `saved: 0`，页面如实显示"实付"，绝不编优惠。
 7. **生成页面**：读取 `app/index.html`，把唯一的占位符 `__MCTRACK_DATA__` 替换为 JSON（所有 `<` 转义为 `\u003c`，防止截断 script 标签）：
 
 ```json
