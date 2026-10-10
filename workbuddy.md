@@ -81,3 +81,9 @@
 **用户**（10-10 12:48）：保存的截图，食物图片失真了，要改。
 
 **WorkBuddy**：v3.6 存图食物修复。①诊断：菜单图 CDN（menu-img.mcd.cn）不开 CORS，跨域画进 canvas 会污染导致导不出，v3.5 的兜底逻辑把食物全部换成了 SVG 卡通插画——这就是"失真"。②修法：把 16 张官方菜单图直接收进仓库 `app/food/`（1.1MB，从 FOOD_DB 的 img 地址逐张下载，.png/.gif 后缀按原格式），存图时优先同源加载仓库内置图——不脏 canvas、永远出真照片，顺带免疫"官方改 CDN 地址就 404"的老毛病；注入模式按 `meals[].k` 映射本地图，页面展示仍走 CDN 原图不动。③兜底链不变：本地图加载失败 → CDN anonymous 试装 → SVG 插画；file:// 直接打开时本地图也会脏 canvas（opaque origin），跳过走 SVG。④走查：本地 http.server 模拟 Pages 环境，headless 全流程——保存的批准书里麦辣鸡腿汉堡 + 薯条已是真实官方抠图带白边贴纸效果。verify.py 全绿，push 755f6cb。
+
+---
+
+**用户**（10-10 13:31）：帮我上架 WorkBuddy 官方 skill 池子 →（随后扫码完成 SkillHub 登录）。
+
+**WorkBuddy**：SkillHub 上架提交完成。①查明官方池子 = SkillHub（skillhub.cn），发布需登录 + 实名 + 三线安全审核。②备料：outputs/mctrack-skill.zip（SKILL.md + app/ 全部，1.2MB）、PIL 手绘 512×512 品牌图标（红底 + 批准书 + 批字章）、填写资料文案（outputs/skillhub-上架资料.md）。③agent-browser 自动化提交：用户微信扫码登录（账号 Pakco @user_d4847051，已绑 pakco77）→ 发布 Skill → 本地上传 zip（解析出 SKILL.md + app 正常）→ 填 Slug mctrack / 显示名「麦麦批准 McApproved」/ 240 字描述 / 版本 1.0.0 / 变更说明 → 自定义图标（Radix tab 合成事件不响应，改真实鼠标序列激活；动态 file input 用 accept 属性选中上传，裁剪器确认）→ 分类「生活服务 × 本地生活」→ 提交成功。④状态：v1.0.0 安全审核中，通过后在【我的 Skills】点上架即全网可搜。坑记录：agent-browser 对 Radix 组件用 mouse move/down/up 真实序列有效，eval click 无效；页面动态创建的 file input 可以按 accept 属性直接 upload。
