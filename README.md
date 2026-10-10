@@ -2,7 +2,7 @@
 
 > 说一件今天发生的事，麦当劳给你盖章批一顿。
 
-**👉 [在线试玩（手机打开更好玩）](https://pakco77.github.io/mctrack/app/)**　·　[English](https://pakco77.github.io/mctrack/app/?lang=en)　·　觉得好玩，右上角点个 ⭐ Star
+**👉 [在线试玩（手机打开更好玩）](https://pakco77.github.io/mcd-approved/app/)**　·　[English](https://pakco77.github.io/mcd-approved/app/?lang=en)　·　觉得好玩，右上角点个 ⭐ Star
 
 > 中英双语，自动跟随手机系统语言。
 
@@ -50,7 +50,7 @@
 
 ### 方式二：纯 H5（无需 Token）
 
-打开 [在线试玩](https://pakco77.github.io/mctrack/app/)，或直接打开本地 `app/index.html`。使用内置菜单快照，价格为门店价，不领券。
+打开 [在线试玩](https://pakco77.github.io/mcd-approved/app/)，或直接打开本地 `app/index.html`。使用内置菜单快照，价格为门店价，不领券。
 
 ## 目标用户
 

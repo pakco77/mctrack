@@ -429,14 +429,14 @@
       <div class="cert-meta" id="certMeta"></div>
       <div class="cert-price" id="certPrice"></div>
       <div class="cert-sign" data-t="sign">审批人：一直在的麦麦</div>
-      <div class="cert-src" data-t="src">麦麦批准 McApproved · github.com/pakco77/mctrack</div>
+      <div class="cert-src" data-t="src">麦麦批准 McApproved · github.com/pakco77/mcd-approved</div>
       <div class="stamp" id="stamp"><b id="stampText"></b><small id="stampDate"></small></div>
     </div>
   </div>
   <div class="approve-cta" id="approveCta">
     <button class="order-btn" id="goDeal" data-t="go">这就去吃 →</button>
     <div class="cta-row"><button id="swapBtn" data-t="swap">不对胃口？换一个</button><span id="swapDot">·</span><button id="saveBtn" data-t="save">存图炫耀一下</button><span>·</span><button id="againBtn" data-t="again">换件事说说</button></div>
-    <a class="star-nudge" id="starNudge" href="https://github.com/pakco77/mctrack" target="_blank" rel="noopener" data-t="starNudge">被说中了？给麦麦点颗星 ⭐</a>
+    <a class="star-nudge" id="starNudge" href="https://github.com/pakco77/mcd-approved" target="_blank" rel="noopener" data-t="starNudge">被说中了？给麦麦点颗星 ⭐</a>
   </div>
 </section>
 
@@ -457,7 +457,7 @@
     </div>
     <button class="order-btn" id="orderBtn" data-t="order">就吃这个，下单！</button>
     <div class="share-line" data-t="share">截图发群：今天这顿，是麦麦亲自批的</div>
-    <a class="star-link" href="https://github.com/pakco77/mctrack" target="_blank" rel="noopener" data-t="star">⭐ 被批准到了？去 GitHub 点个 Star</a>
+    <a class="star-link" href="https://github.com/pakco77/mcd-approved" target="_blank" rel="noopener" data-t="star">⭐ 被批准到了？去 GitHub 点个 Star</a>
     <div class="replay"><button id="replayBtn" data-t="replay">今天还有别的委屈？再批一次</button></div>
   </div>
 </section>
@@ -571,7 +571,7 @@ function matchEvent(text) {
 const I18N = {
   zh: {
     title: "麦麦批准 · 今天这顿，麦当劳批了",
-    src: "麦麦批准 McApproved · github.com/pakco77/mctrack",
+    src: "麦麦批准 McApproved · github.com/pakco77/mcd-approved",
     kicker: "麦麦批准处 · 今日犒劳受理中",
     wd: ["日", "一", "二", "三", "四", "五", "六"],
     greet: {
@@ -644,7 +644,7 @@ const I18N = {
   },
   en: {
     title: "McApproved · Today's treat, officially approved",
-    src: "McApproved · github.com/pakco77/mctrack",
+    src: "McApproved · github.com/pakco77/mcd-approved",
     kicker: "McAPPROVED · TREAT DESK OPEN",
     wd: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     mon: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
@@ -1408,7 +1408,7 @@ function shareText() {
   const line = cur && cur.kcal != null ? meal + " · " + T.kcal.replace("{n}", cur.kcal) : meal;
   return T.copyIntro + T.q[0] + (appr ? appr.reason : "") + T.q[1] + " → " + line
     + (appr && appr.rx ? "\n" + T.rxLabel + " " + appr.rx : "")
-    + "\n" + T.copyTail + (LANG === "zh" ? "" : " ") + "https://pakco77.github.io/mctrack/app/"; /* 中文冒号后不空格，英文要 */
+    + "\n" + T.copyTail + (LANG === "zh" ? "" : " ") + "https://pakco77.github.io/mcd-approved/app/"; /* 中文冒号后不空格，英文要 */
 }
 function copyShare() {
   const text = shareText(), btn = $("copyBtn");
