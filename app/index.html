@@ -165,6 +165,16 @@
     .form-label { margin: 10px 0 6px; }
     .submit { margin-top: 12px; }
   }
+  /* 英文版：单词更长，字号和字距收一点 */
+  .lang-en .stk-tag { font-size: 10.5px; letter-spacing: 0; }
+  .lang-en .ask-kicker { letter-spacing: 2px; }
+  .lang-en .fh b, .lang-en .cert-head .t { letter-spacing: 1px; }
+  .lang-en .cert-head .t { font-size: 19px; }
+  .lang-en .ask-greet { font-size: 18px; }
+  .lang-en .cert-row dt { width: 80px; }
+  .lang-en .stamp b { font-size: 15px; letter-spacing: .5px; }
+  .lang-en .submit { letter-spacing: 1px; }
+  .lang-en .taste small { font-size: 10px; }
   .shake-x { animation: shakeX .36s ease; }
   @keyframes shakeX { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
   .foot-note { text-align: center; font-size: 10px; color: #B4A795; margin-top: 12px; }
@@ -243,8 +253,8 @@
   .cert-price b { font-size: 22px; font-weight: 900; color: var(--red); }
   .cert-price b small { font-size: 12px; margin-right: 2px; }
   .cert-price em { font-style: normal; font-size: 11px; font-weight: 800; color: #fff; background: var(--green); padding: 2px 7px; border-radius: 999px; }
-  .cert-price .plain { font-size: 15px; font-weight: 800; color: var(--ink); }
-  .cert-price .hint { font-size: 11px; font-weight: 700; color: var(--red); background: rgba(218,41,28,.08); padding: 3px 8px; border-radius: 999px; }
+  .cert-price .plain { font-size: 15px; font-weight: 800; color: var(--ink); white-space: nowrap; }
+  .cert-price .hint { font-size: 11px; font-weight: 700; color: var(--red); background: rgba(218,41,28,.08); padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
   .cert-sign { font-size: 11px; color: var(--ink-soft); margin-top: 12px; padding-top: 9px; border-top: 1px dashed var(--line); }
   .cert-src { text-align: center; font-size: 9px; color: #B4A795; margin-top: 8px; letter-spacing: .5px; }
   .stamp {
@@ -355,23 +365,23 @@
 <!-- Stage 1：犒劳申请单 -->
 <section class="stage red-bg on" id="st-ask">
   <div class="ask-top">
-    <div class="ask-kicker">麦麦批准处 · 犒劳申请</div>
+    <div class="ask-kicker" data-t="kicker">麦麦批准处 · 今日犒劳受理中</div>
     <div class="ask-date" id="askDate"></div>
     <div class="ask-time" id="askTime"></div>
     <div class="ask-greet" id="askGreet"></div>
   </div>
   <div class="form">
     <div class="form-head">
-      <div class="fh"><b>犒劳申请单</b><span id="formNo"></span><em>申请人：今天的你</em></div>
+      <div class="fh"><b data-t="formTitle">犒劳申请单</b><span id="formNo"></span><em data-t="applicant">申请人：辛苦了一天的你</em></div>
       <div class="slot" id="slot"></div>
     </div>
-    <div class="form-label">今天发生了什么？<small id="reasonHint">挑一张贴上去</small></div>
+    <div class="form-label"><span data-t="reasonQ">今天怎么样？</span><small id="reasonHint"></small></div>
     <div class="sheet-panel" id="evSheet"></div>
-    <div class="write-row"><span>✏️ 或者自己写</span><input class="form-input" id="sayText" maxlength="40" placeholder="今天……" enterkeyhint="done" aria-label="自己写申请事由"></div>
-    <div class="form-label">想吃点</div>
+    <div class="write-row"><span data-t="writeLabel">✏️ 都不像？自己写</span><input class="form-input" id="sayText" maxlength="40" enterkeyhint="done"></div>
+    <div class="form-label" data-t="tasteQ">嘴巴今天想吃点</div>
     <div class="taste-row" id="tasteBadges"></div>
-    <button class="submit" id="submitBtn">提交申请</button>
-    <div class="foot-note">非官方粉丝作品 · 与金拱门（中国）无关</div>
+    <button class="submit" id="submitBtn" data-t="submit">麦麦批准？</button>
+    <div class="foot-note" data-t="foot">一个麦门粉丝的业余作品 · 与金拱门（中国）无关</div>
   </div>
 </section>
 
@@ -381,29 +391,29 @@
   <div class="cert-wrap">
     <div class="cert" id="cert">
       <div class="cert-head">
-        <div class="t">麦麦犒劳批准书</div>
+        <div class="t" data-t="certTitle">麦麦犒劳批准书</div>
         <div class="no" id="certNo"></div>
-        <div class="cert-gold">★ 金章特批 · 今日限定 ★</div>
+        <div class="cert-gold" data-t="gold">★ 金章特批 · 今天你最闪 ★</div>
       </div>
       <dl>
-        <div class="cert-row reason-row"><dt>申请事由</dt><dd id="certReason"></dd></div>
-        <div class="cert-row"><dt>犒劳指数</dt><dd class="stars" id="certStars"></dd></div>
-        <div class="cert-row" id="tasteRow"><dt>口味偏好</dt><dd id="certTaste"></dd></div>
+        <div class="cert-row reason-row"><dt data-t="dtReason">今天的事</dt><dd id="certReason"></dd></div>
+        <div class="cert-row"><dt data-t="dtLevel">你值得</dt><dd class="stars" id="certStars"></dd></div>
+        <div class="cert-row" id="tasteRow"><dt data-t="dtTaste">嘴巴想要</dt><dd id="certTaste"></dd></div>
       </dl>
-      <div class="cert-verdict"><small>审批意见</small><p id="certVerdict"></p></div>
+      <div class="cert-verdict"><small data-t="says">麦麦说</small><p id="certVerdict"></p></div>
       <div class="cert-food" id="certFood"></div>
       <div class="cert-meal-label" id="certMealLabel"></div>
       <div class="cert-meal" id="certMeal"></div>
       <div class="cert-meta" id="certMeta"></div>
       <div class="cert-price" id="certPrice"></div>
-      <div class="cert-sign">审批：麦麦批准处</div>
-      <div class="cert-src">麦麦批准 McApproved · github.com/pakco77/mctrack</div>
+      <div class="cert-sign" data-t="sign">审批人：一直在的麦麦</div>
+      <div class="cert-src" data-t="src">麦麦批准 McApproved · github.com/pakco77/mctrack</div>
       <div class="stamp" id="stamp"><b id="stampText"></b><small id="stampDate"></small></div>
     </div>
   </div>
   <div class="approve-cta" id="approveCta">
-    <button class="order-btn" id="goDeal">领券去吃 →</button>
-    <div class="cta-row"><button id="swapBtn">不爱吃？换一个</button><span id="swapDot">·</span><button id="againBtn">重新申请</button></div>
+    <button class="order-btn" id="goDeal" data-t="go">这就去吃 →</button>
+    <div class="cta-row"><button id="swapBtn" data-t="swap">不对胃口？换一个</button><span id="swapDot">·</span><button id="againBtn" data-t="again">换件事说说</button></div>
   </div>
 </section>
 
@@ -412,7 +422,7 @@
   <div class="underlay" id="dealUnderlay"></div>
   <div class="sheet">
     <div class="grabber"></div>
-    <h2>批准已生效</h2>
+    <h2 data-t="dealTitle">批准生效，开饭！</h2>
     <div class="sub2" id="dealMeal">—</div>
     <div class="deal-food" id="dealFood"></div>
     <div class="coupon-row" id="couponRow"></div>
@@ -422,10 +432,10 @@
       <span class="was" id="dealWas"></span>
       <span class="save" id="dealSave"></span>
     </div>
-    <button class="order-btn" id="orderBtn">一键下单 · 就吃这个</button>
-    <div class="share-line">截图批准书发群：今天这顿，是麦当劳批的</div>
-    <a class="star-link" href="https://github.com/pakco77/mctrack" target="_blank" rel="noopener">⭐ 好玩的话，去 GitHub 点个 Star</a>
-    <div class="replay"><button id="replayBtn">换个理由再批一次</button></div>
+    <button class="order-btn" id="orderBtn" data-t="order">就吃这个，下单！</button>
+    <div class="share-line" data-t="share">截图发群：今天这顿，是麦麦亲自批的</div>
+    <a class="star-link" href="https://github.com/pakco77/mctrack" target="_blank" rel="noopener" data-t="star">⭐ 被批准到了？去 GitHub 点个 Star</a>
+    <div class="replay"><button id="replayBtn" data-t="replay">今天还有别的委屈？再批一次</button></div>
   </div>
 </section>
 
@@ -455,29 +465,25 @@ const FOOD_DB = [
 ];
 
 /* 事件表：今天发生的事 → 犒劳指数（1-4 星）定份量；meal 是口味选"都行"时的首选。
-   判词只说人不说菜，换口味/换一个都不穿帮。 */
+   文字（贴纸标签/批准书事由/判词）在 I18N 里；判词只说人不说菜，换口味/换一个都不穿帮。 */
 const EVENTS = [
-  { id: "ot",      emo: "🌙", tag: "加班到深夜", label: "加班到深夜",   level: 4, meal: ["mcSpicy", "fries"],       verdict: "麦门为打工人留灯到凌晨" },
-  { id: "scolded", emo: "💢", tag: "被骂了",     label: "被骂了",       level: 4, meal: ["doubleCheese", "sundae"], verdict: "他骂他的，你吃你的" },
-  { id: "done",    emo: "🎉", tag: "搞定大事",   label: "搞定一件大事", level: 3, meal: ["wings", "fries"],         verdict: "大事落地，这顿算庆功" },
-  { id: "payday",  emo: "💰", tag: "发工资了",   label: "发工资了",     level: 3, meal: ["bigmac", "coke"],         verdict: "钱包最鼓的一天，嘴也别亏着" },
-  { id: "rain",    emo: "☔", tag: "下雨降温",   label: "下雨降温",     level: 2, meal: ["mcChicken", "coffee"],    verdict: "雨是天的事，热乎是你的事" },
-  { id: "emo",     emo: "🥲", tag: "有点emo",    label: "有点 emo",     level: 3, meal: ["nuggets", "flurry"],      verdict: "先吃一口，情绪随后就到" },
-  { id: "workout", emo: "💪", tag: "运动打卡",   label: "运动打卡了",   level: 3, meal: ["grilled", "appleJuice"],  verdict: "汗不白流，这顿记你账上" },
-  { id: "nothing", emo: "🦥", tag: "啥也没干",   label: "啥也没干",     level: 1, meal: ["cone"],                   verdict: "想吃不需要理由，但只够批一份小的" }
+  { id: "ot",      emo: "🌙", level: 4, meal: ["mcSpicy", "fries"] },
+  { id: "scolded", emo: "💢", level: 4, meal: ["doubleCheese", "sundae"] },
+  { id: "done",    emo: "🎉", level: 3, meal: ["wings", "fries"] },
+  { id: "payday",  emo: "💰", level: 3, meal: ["bigmac", "coke"] },
+  { id: "rain",    emo: "☔", level: 2, meal: ["mcChicken", "coffee"] },
+  { id: "emo",     emo: "🥲", level: 3, meal: ["nuggets", "flurry"] },
+  { id: "workout", emo: "💪", level: 3, meal: ["grilled", "appleJuice"] },
+  { id: "nothing", emo: "🦥", level: 1, meal: ["cone"] }
 ];
 /* 一句话没命中任何事件：照抄原话上批准书，给一份标准餐 */
-const EVENT_MISC = { id: "misc", label: "说不清，但值得一顿", level: 3, meal: ["filet", "coke"], verdict: "这事儿值一顿，批了" };
+const EVENT_MISC = { id: "misc", emo: "✏️", level: 3, meal: ["filet", "coke"] };
 
 /* 口味 × 犒劳指数 → 候选餐。犒劳指数定份量，口味定吃什么；第一个是首选，"换一个"按序轮换。
    每个口味都满足：1 星最大份 < 4 星最小份（verify.py 断言）。 */
 const TASTES = [
-  { id: "any",     emo: "🎲", label: "都行",   quip: "交给麦麦" },
-  { id: "burger",  emo: "🍔", label: "汉堡",   quip: "汉堡是正义" },
-  { id: "chicken", emo: "🍗", label: "炸鸡",   quip: "炸鸡治百病" },
-  { id: "spicy",   emo: "🌶️", label: "辣的",   quip: "辣到忘记烦恼" },
-  { id: "sweet",   emo: "🍦", label: "甜的",   quip: "甜的先上" },
-  { id: "light",   emo: "🥗", label: "清淡点", quip: "清淡也要吃饱" }
+  { id: "any", emo: "🎲" }, { id: "burger", emo: "🍔" }, { id: "chicken", emo: "🍗" },
+  { id: "spicy", emo: "🌶️" }, { id: "sweet", emo: "🍦" }, { id: "light", emo: "🥗" }
 ];
 const COMBOS = {
   burger:  { 1: [["mcChicken"], ["fries"]], 2: [["mcChicken", "coffee"], ["filet", "coffee"]], 3: [["doubleCheese", "coke"], ["bigmac", "coffee"], ["mcChicken", "fries"]], 4: [["bigmac", "fries"], ["doubleCheese", "fries"]] },
@@ -494,35 +500,129 @@ function candidates(ev, taste) {
   return pool.filter(m => { const k = m.join("+"); if (seen.has(k)) return false; seen.add(k); return true; });
 }
 
-/* 一句话 → 事件：按序关键词命中。顺序即优先级——"加班被骂"算被骂，"面试挂了"算 emo 不算搞定。
+/* 一句话 → 事件：按序关键词命中（中英都认）。顺序即优先级——"加班被骂"算被骂，"面试挂了/failed"算 emo 不算搞定。
    ponytail: 关键词表，够图一乐；Skill 版由 WorkBuddy 的大模型理解原话后直接注入 eventId。 */
 const EVENT_RULES = [
-  ["scolded", /骂|批评|挨|背锅|委屈|吵架|被怼|返工|甲方/],
-  ["emo",     /挂了|没过|失败|被拒|落榜|分手|失恋/],
-  ["ot",      /加班|通宵|熬夜|ddl|deadline|赶工|凌晨|夜班/i],
-  ["done",    /上线|交付|搞定|完成|考完|答辩|面试|offer|发布|结项|通过/i],
-  ["payday",  /工资|发薪|奖金|年终|到账|涨薪/],
-  ["workout", /跑步|健身|运动|游泳|骑行|打球|公里|撸铁|瑜伽|爬山/],
-  ["rain",    /雨|冷|降温|下雪|台风/],
-  ["emo",     /emo|难过|伤心|想哭|丧|焦虑|烦|孤独|累/i],
-  ["nothing", /没干|无聊|想吃|馋|没事/]
+  ["scolded", /骂|批评|挨|背锅|委屈|吵架|被怼|返工|甲方|\b(yell|scold|criticiz|blame|client)/i],
+  ["emo",     /挂了|没过|失败|被拒|落榜|分手|失恋|\b(fail|reject|dumped|broke up|breakup)/i],
+  ["ot",      /加班|通宵|熬夜|ddl|deadline|赶工|凌晨|夜班|\b(overtime|ot|all-nighter|late night|worked late|crunch)\b/i],
+  ["done",    /上线|交付|搞定|完成|考完|答辩|面试|offer|发布|结项|通过|\b(shipped|launched|finished|nailed|passed|exam|got the job)\b/i],
+  ["payday",  /工资|发薪|奖金|年终|到账|涨薪|\b(payday|paid|salary|bonus|raise)\b/i],
+  ["workout", /跑步|健身|运动|游泳|骑行|打球|公里|撸铁|瑜伽|爬山|\b(gym|workout|worked out|ran|run|running|\d*km|yoga|swim|hike|exercise)\b/i],
+  ["rain",    /雨|冷|降温|下雪|台风|\b(rain|raining|rainy|cold|snow|snowing|freezing|storm)\b/i],
+  ["emo",     /emo|难过|伤心|想哭|丧|焦虑|烦|孤独|累|\b(sad|tired|exhausted|anxious|lonely|meh|depressed|stressed)\b/i],
+  ["nothing", /没干|无聊|想吃|馋|没事|\b(nothing|bored|hungry|craving|lazy)\b/i]
 ];
 function matchEvent(text) {
   for (const [id, re] of EVENT_RULES) if (re.test(text)) return id;
   return "misc";
 }
 
+/* 全部文案：中英两套，按手机系统语言自动切换。每一句都要给情绪价值，不写干巴巴的系统话。 */
+const I18N = {
+  zh: {
+    title: "麦麦批准 · 今天这顿，麦当劳批了",
+    src: "麦麦批准 McApproved · github.com/pakco77/mctrack",
+    kicker: "麦麦批准处 · 今日犒劳受理中",
+    wd: ["日", "一", "二", "三", "四", "五", "六"],
+    greet: {
+      night: "还醒着的人，今天一定不容易", monday: "周一早上，先活下来再说", morning: "起这么早，值得一顿好的",
+      noon: "上午辛苦了，午饭得像样点", friPm: "周五下午，心已经下班了", wkPm: "周末下午，吃点好的不用理由",
+      pm: "下午最难熬，撑住", friEve: "周五晚上，这周辛苦了", eve: "下班了吗？今天过得怎么样", late: "一天快过完了，给它一个交代"
+    },
+    formTitle: "犒劳申请单", applicant: "申请人：辛苦了一天的你", slotPh: "把今天<br>贴在这里",
+    reasonQ: "今天怎么样？", reasonHint: "挑一张最像你的", reasonWarn: "先告诉麦麦今天怎么了嘛",
+    writeLabel: "✏️ 都不像？自己写", writePh: "比如：甲方又改需求了", writeAria: "自己写今天的事",
+    tasteQ: "嘴巴今天想吃点", tasteAria: "想吃", submit: "麦麦批准？", back: "返回",
+    foot: "一个麦门粉丝的业余作品 · 与金拱门（中国）无关",
+    certTitle: "麦麦犒劳批准书", gold: "★ 金章特批 · 今天你最闪 ★",
+    dtReason: "今天的事", dtLevel: "你值得", dtTaste: "嘴巴想要", says: "麦麦说",
+    pending: "麦麦正在认真看…", mystery: "马上揭晓", mealPre: "批给你的是", mealWait: "盖完章就知道", mealPost: "批给你的是",
+    kcal: "约 {n} kcal", store: "门店价", after: "券后", saved: "帮你省 ¥", paid: "实付", priceHint: "领券还能再省，下单时现算",
+    sign: "审批人：一直在的麦麦", stamp: "麦麦<br>批准", stampGold: "麦麦<br>特批",
+    go: "这就去吃 →", swap: "不对胃口？换一个", again: "换件事说说",
+    dealTitle: "批准生效，开饭！", couponDemo: "在 WorkBuddy 里用，券会自动帮你领好", couponGot: " · 已帮你领好", couponName: "麦麦省券",
+    order: "就吃这个，下单！", share: "截图发群：今天这顿，是麦麦亲自批的", star: "⭐ 被批准到了？去 GitHub 点个 Star",
+    replay: "今天还有别的委屈？再批一次", orderAlert: "在 WorkBuddy 里说一句「就吃这个」，麦麦帮你领券下单，热乎的马上到。",
+    q: ["「", "」"], cut: 6,
+    ev: {
+      ot:      { tag: "加班到深夜", label: "加班到深夜",   verdict: "麦门为打工人留灯到凌晨" },
+      scolded: { tag: "被骂了",     label: "被骂了",       verdict: "他骂他的，你吃你的" },
+      done:    { tag: "搞定大事",   label: "搞定一件大事", verdict: "大事落地，这顿算庆功" },
+      payday:  { tag: "发工资了",   label: "发工资了",     verdict: "钱包最鼓的一天，嘴也别亏着" },
+      rain:    { tag: "下雨降温",   label: "下雨降温",     verdict: "雨是天的事，热乎是你的事" },
+      emo:     { tag: "有点emo",    label: "有点 emo",     verdict: "先吃一口，情绪随后就到" },
+      workout: { tag: "运动打卡",   label: "运动打卡了",   verdict: "汗不白流，这顿记你账上" },
+      nothing: { tag: "啥也没干",   label: "啥也没干",     verdict: "想吃不需要理由，但只够批一份小的" },
+      misc:    { tag: "说不清",     label: "说不清，但值得一顿", verdict: "这事儿值一顿，批了" }
+    },
+    taste: {
+      any: { label: "都行", quip: "交给麦麦" }, burger: { label: "汉堡", quip: "汉堡是正义" },
+      chicken: { label: "炸鸡", quip: "炸鸡治百病" }, spicy: { label: "辣的", quip: "辣到忘记烦恼" },
+      sweet: { label: "甜的", quip: "甜的先上" }, light: { label: "清淡点", quip: "清淡也要吃饱" }
+    }
+  },
+  en: {
+    title: "McApproved · Today's treat, officially approved",
+    src: "McApproved · github.com/pakco77/mctrack",
+    kicker: "McAPPROVED · TREAT DESK OPEN",
+    wd: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    mon: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    greet: {
+      night: "Still up? Today must've been a lot.", monday: "Monday morning. Survive first.", morning: "Up this early? You deserve something good.",
+      noon: "Morning's done. Lunch should be a real one.", friPm: "Friday afternoon. Your heart already clocked out.", wkPm: "Weekend afternoon. No excuse needed.",
+      pm: "The afternoon slump is real. Hang in there.", friEve: "Friday night. What a week.", eve: "Off work yet? How was today?", late: "The day's almost over. Give it a proper ending."
+    },
+    formTitle: "Treat Request", applicant: "Applicant: you, after a long day", slotPh: "Stick your<br>day here",
+    reasonQ: "How was today?", reasonHint: "pick the one that's so you", reasonWarn: "tell McD what happened first",
+    writeLabel: "✏️ None fits? Write it", writePh: "e.g. 8th redo today", writeAria: "Write your own story",
+    tasteQ: "Your mouth is craving", tasteAria: "Craving ", submit: "Approve me, McD?", back: "Back",
+    foot: "Made by a McD fan · not affiliated with McDonald's China",
+    certTitle: "Official Treat Approval", gold: "★ Golden Approval · You shine today ★",
+    dtReason: "Today", dtLevel: "You deserve", dtTaste: "Craving", says: "McD says",
+    pending: "McD is reading carefully…", mystery: "coming up", mealPre: "Your treat", mealWait: "revealed after the stamp", mealPost: "Approved for you",
+    kcal: "~{n} kcal", store: "Store", after: "With coupons", saved: "Saved ¥", paid: "Total", priceHint: "more off with coupons",
+    sign: "Approved by: McD, always open", stamp: "Mc<br>APPROVED", stampGold: "GOLDEN<br>APPROVED",
+    go: "Go eat it →", swap: "Not feeling it? Swap", again: "Tell another story",
+    dealTitle: "Approved. Let's eat!", couponDemo: "In WorkBuddy, coupons get claimed for you", couponGot: " · claimed for you", couponName: "McD coupon",
+    order: "This one. Order it!", share: "Screenshot it: this meal is officially approved", star: "⭐ Felt approved? Star it on GitHub",
+    replay: "More to tell? Get approved again", orderAlert: "Say “this one” in WorkBuddy, and McD will claim coupons and order for you. Hot food, on its way.",
+    q: ["“", "”"], cut: 12,
+    ev: {
+      ot:      { tag: "Late OT",     label: "Worked late",            verdict: "McD keeps the lights on for you." },
+      scolded: { tag: "Scolded",     label: "Got scolded",            verdict: "They talk. You chew." },
+      done:    { tag: "Big win",     label: "Nailed something big",   verdict: "Big thing done. This is your victory lap." },
+      payday:  { tag: "Payday!",     label: "Payday!",                verdict: "Fullest wallet of the month. Feed yourself." },
+      rain:    { tag: "Rainy day",   label: "Rainy, chilly day",      verdict: "Rain is the sky's job. Warm is yours." },
+      emo:     { tag: "Feeling meh", label: "Feeling a bit low",      verdict: "Take a bite. The mood will follow." },
+      workout: { tag: "Worked out",  label: "Worked out",             verdict: "Sweat logged. This one's on your tab." },
+      nothing: { tag: "Did nothing", label: "Did absolutely nothing", verdict: "Cravings need no reason. Just a small one, though." },
+      misc:    { tag: "It counts",   label: "Hard to explain, but it counts", verdict: "That counts. Approved." }
+    },
+    taste: {
+      any: { label: "Any", quip: "Trust McD" }, burger: { label: "Burger", quip: "Burgers are justice" },
+      chicken: { label: "Chicken", quip: "Chicken fixes all" }, spicy: { label: "Spicy", quip: "Spice away stress" },
+      sweet: { label: "Sweet", quip: "Dessert first" }, light: { label: "Light", quip: "Light but full" }
+    },
+    food: {
+      bigmac: "Big Mac", doubleCheese: "Double Cheeseburger", grilled: "Grilled Chicken Burger", mcSpicy: "McSpicy Chicken Burger",
+      mcChicken: "McChicken", filet: "Filet-O-Fish", fries: "Fries", nuggets: "Chicken McNuggets", wings: "Spicy Wings",
+      corn: "Corn Cup", flurry: "McFlurry", sundae: "Sundae", cone: "Ice Cream Cone", coke: "Coke", coffee: "Fresh Coffee", appleJuice: "Apple Juice"
+    }
+  }
+};
+
 /* 开屏问候：只用本机时间，不要任何权限，让第一句话就是在说"此刻的你" */
-function greet(d) {
-  const h = d.getHours(), w = d.getDay(), fri = w === 5, weekend = w === 0 || w === 6;
+function greet(d, lang) {
+  const g = I18N[lang].greet, h = d.getHours(), w = d.getDay(), fri = w === 5, weekend = w === 0 || w === 6;
   const time = String(h).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
   const line =
-    h < 5  ? "还醒着的人，今天一定不容易" :
-    h < 10 ? (w === 1 ? "周一早上，先活下来再说" : "起这么早，值得一顿好的") :
-    h < 14 ? "上午辛苦了，午饭得像样点" :
-    h < 18 ? (fri ? "周五下午，心已经下班了" : weekend ? "周末下午，吃点好的不用理由" : "下午最难熬，撑住") :
-    h < 22 ? (fri ? "周五晚上，这周辛苦了" : "下班了吗？今天过得怎么样") :
-             "一天快过完了，给它一个交代";
+    h < 5  ? g.night :
+    h < 10 ? (w === 1 ? g.monday : g.morning) :
+    h < 14 ? g.noon :
+    h < 18 ? (fri ? g.friPm : weekend ? g.wkPm : g.pm) :
+    h < 22 ? (fri ? g.friEve : g.eve) :
+             g.late;
   return { time, line };
 }
 /* @pure-end */
@@ -542,6 +642,28 @@ const MEAL_ART = { bigmac: "burger", doubleCheese: "burger", grilled: "burger", 
 
 /* ---------- 状态 ---------- */
 const $ = id => document.getElementById(id);
+/* ---------- 语言：跟随手机系统，中文系统用中文，其余用英文；?lang=en/zh 可强制 ---------- */
+const LANG = ((new URLSearchParams(location.search).get("lang")) || (navigator.languages && navigator.languages[0]) || navigator.language || "zh").toLowerCase().startsWith("zh") ? "zh" : "en";
+const T = I18N[LANG];
+const evText = ev => T.ev[ev.id];
+const nameOf = x => (LANG === "en" && x.k && T.food[x.k]) || x.name;
+const quote = t => T.q[0] + t + T.q[1];
+function fmtDate(d) {
+  return LANG === "zh"
+    ? "周" + T.wd[d.getDay()] + " · " + (d.getMonth() + 1) + "月" + d.getDate() + "日"
+    : T.wd[d.getDay()] + " · " + T.mon[d.getMonth()] + " " + d.getDate();
+}
+function applyText() {
+  document.documentElement.lang = LANG === "zh" ? "zh-CN" : "en";
+  document.body.classList.toggle("lang-en", LANG === "en");
+  document.title = T.title;
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = T[el.dataset.t]; });
+  $("sayText").placeholder = T.writePh;
+  $("sayText").setAttribute("aria-label", T.writeAria);
+  $("backBtn").setAttribute("aria-label", T.back);
+}
+
+
 const D = (() => { try { return JSON.parse($("mc-data").textContent); } catch (e) { return null; } })();
 let stage = "ask", cur = null, seq = [], pickEv = null, pickTaste = "any", cands = [], ci = 0;
 
@@ -595,8 +717,8 @@ function makeSticker(emo, tag, toneCls) {
 /* 手贴感：每张贴纸固定的歪斜角度和上下错位 */
 const TILTS = [[-7, 2], [5, -2], [-3, 3], [8, 0], [4, 2], [-6, -1], [7, 3], [-4, 0]];
 function buildAsk() {
-  const now = new Date(), g = greet(now);
-  $("askDate").textContent = "周" + "日一二三四五六"[now.getDay()] + " · " + (now.getMonth() + 1) + "月" + now.getDate() + "日";
+  const now = new Date(), g = greet(now, LANG);
+  $("askDate").textContent = fmtDate(now);
   $("askTime").textContent = g.time;
   $("askGreet").textContent = g.line;
   $("formNo").textContent = "No." + todayStr();
@@ -606,16 +728,17 @@ function buildAsk() {
     b.className = "ev-stk";
     b.style.setProperty("--rot", TILTS[i][0] + "deg");
     b.style.setProperty("--dy", TILTS[i][1] + "px");
-    b.setAttribute("aria-label", ev.label);
-    b.appendChild(makeSticker(ev.emo, ev.tag, toneCls));
+    b.setAttribute("aria-label", evText(ev).label);
+    b.appendChild(makeSticker(ev.emo, evText(ev).tag, toneCls));
     b.onclick = () => pickEvent(ev, b, toneCls);
     $("evSheet").appendChild(b);
   });
   TASTES.forEach(t => {
     const b = document.createElement("button");
     b.className = "taste" + (t.id === pickTaste ? " on" : "");
-    b.setAttribute("aria-label", "想吃" + t.label);
-    b.innerHTML = '<span class="taste-badge">' + t.emo + "</span><small>" + t.label + '</small><em class="bubble">' + t.quip + "</em>";
+    const tt = T.taste[t.id];
+    b.setAttribute("aria-label", T.tasteAria + tt.label);
+    b.innerHTML = '<span class="taste-badge">' + t.emo + "</span><small>" + tt.label + '</small><em class="bubble">' + tt.quip + "</em>";
     b.onclick = () => {
       buzz(8);
       unlockAudio();
@@ -628,7 +751,8 @@ function buildAsk() {
 }
 function resetSlot() {
   $("slot").classList.remove("filled");
-  $("slot").innerHTML = '<span class="slot-ph">把今天<br>贴在这里</span>';
+  $("slot").innerHTML = '<span class="slot-ph">' + T.slotPh + "</span>";
+  $("reasonHint").textContent = T.reasonHint;
 }
 /* 往虚线槽里放一张贴纸；level 有值时在槽下方亮出犒劳指数 */
 function fillSlot(body, level) {
@@ -641,10 +765,10 @@ function fillSlot(body, level) {
   if (level) {
     const st = document.createElement("i");
     st.className = "slot-stars";
-    st.textContent = "犒劳指数 " + "★".repeat(level) + "☆".repeat(5 - level);
+    st.textContent = T.dtLevel + " " + "★".repeat(level) + "☆".repeat(5 - level);
     slot.appendChild(st);
   }
-  $("reasonHint").textContent = "挑一张贴上去";
+  $("reasonHint").textContent = T.reasonHint;
   $("reasonHint").classList.remove("warn");
   return wrap;
 }
@@ -658,7 +782,7 @@ function pickEvent(ev, btn, toneCls) {
   $("sayText").value = "";
   const from = btn.querySelector(".stk-body").getBoundingClientRect();
   document.querySelectorAll(".ev-stk").forEach(x => x.classList.toggle("peeled", x === btn));
-  const wrap = fillSlot(makeSticker(ev.emo, ev.tag, toneCls), ev.level);
+  const wrap = fillSlot(makeSticker(ev.emo, evText(ev).tag, toneCls), ev.level);
   if (!wrap.animate) { wrap.classList.add("landed"); return; }
   const to = wrap.getBoundingClientRect();
   const dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top + from.height / 2 - (to.top + to.height / 2);
@@ -678,7 +802,7 @@ $("sayText").oninput = () => {
   if (!t) { if (!pickEv) resetSlot(); return; }
   pickEv = null;
   document.querySelectorAll(".ev-stk").forEach(x => x.classList.remove("peeled"));
-  fillSlot(makeSticker("✏️", t.length > 6 ? t.slice(0, 6) + "…" : t, "t-ink"));
+  fillSlot(makeSticker("✏️", t.length > T.cut ? t.slice(0, T.cut) + "…" : t, "t-ink"));
 };
 function submit() {
   const t = $("sayText").value.trim();
@@ -686,7 +810,7 @@ function submit() {
     buzz([30, 40, 30]);
     const z = $("slot");
     z.classList.remove("shake-x"); void z.offsetWidth; z.classList.add("shake-x");
-    $("reasonHint").textContent = "先挑一张贴纸，或者自己写一句";
+    $("reasonHint").textContent = T.reasonWarn;
     $("reasonHint").classList.add("warn");
     return;
   }
@@ -694,8 +818,8 @@ function submit() {
   unlockAudio();
   $("sayText").blur();
   window.scrollTo(0, 0); /* iOS 收起键盘后页面偶尔不复位 */
-  if (pickEv) approve(pickEv, pickEv.label, pickTaste, { emo: pickEv.emo, tone: pickTone });
-  else approve(EVENTS.find(e => e.id === matchEvent(t)) || EVENT_MISC, "「" + t + "」", pickTaste, { emo: "✏️", tone: "t-ink" });
+  if (pickEv) approve(pickEv, evText(pickEv).label, pickTaste, { emo: pickEv.emo, tone: pickTone });
+  else approve(EVENTS.find(e => e.id === matchEvent(t)) || EVENT_MISC, quote(t), pickTaste, { emo: "✏️", tone: "t-ink" });
 }
 $("submitBtn").onclick = submit;
 $("sayText").onkeydown = e => { if (e.key === "Enter") submit(); };
@@ -716,7 +840,7 @@ function preload(items) {
 }
 function photoHTML(item, cls) {
   const inner = item.img && imgState[item.img] !== "fail"
-    ? '<img src="' + item.img + '" alt="' + item.name + '" data-k="' + (item.k || "burger") + '" onerror="window.__svgFallback(this)">'
+    ? '<img src="' + item.img + '" alt="' + nameOf(item) + '" data-k="' + (item.k || "burger") + '" onerror="window.__svgFallback(this)">'
     : artOf(item.k);
   return '<div class="' + cls + '"><div class="stk">' + inner + "</div></div>";
 }
@@ -742,7 +866,7 @@ function approve(ev, reason, taste, stk) {
   /* 金章特批：约 1/6，同一天同一事由结果固定（刷新刷不出来，才有炫耀价值） */
   const gold = hashStr(todayStr() + reason + ev.id) % 6 === 0;
   const d = new Date(), dateStr = d.getFullYear() + "." + (d.getMonth() + 1) + "." + d.getDate();
-  const tt = TASTES.find(x => x.id === taste && x.id !== "any");
+  const tt = taste && taste !== "any" ? TASTES.find(x => x.id === taste) : null;
 
   $("cert").className = "cert" + (gold ? " gold" : "");
   $("st-approve").classList.toggle("gold", gold);
@@ -754,24 +878,24 @@ function approve(ev, reason, taste, stk) {
   $("certReason").appendChild(makeSticker(stk.emo, reason, stk.tone));
   $("certStars").textContent = "★".repeat(ev.level) + "☆".repeat(5 - ev.level);
   $("tasteRow").style.display = tt ? "" : "none";
-  $("certTaste").textContent = tt ? tt.emo + " " + tt.label : "";
+  $("certTaste").textContent = tt ? tt.emo + " " + T.taste[tt.id].label : "";
   $("certVerdict").className = "pending";
-  $("certVerdict").textContent = "审批中…";
+  $("certVerdict").textContent = T.pending;
   $("certFood").className = "cert-food";
-  $("certFood").innerHTML = '<div class="mystery"><b>?</b><small>待批准</small></div>';
-  $("certMealLabel").textContent = "批准餐品";
+  $("certFood").innerHTML = '<div class="mystery"><b>?</b><small>' + T.mystery + "</small></div>";
+  $("certMealLabel").textContent = T.mealPre;
   $("certMeal").className = "cert-meal muted";
-  $("certMeal").textContent = "审批后揭晓";
+  $("certMeal").textContent = T.mealWait;
   $("certMeta").textContent = "";
   $("certPrice").innerHTML = "";
-  $("stampText").innerHTML = gold ? "麦麦<br>特批" : "麦麦<br>批准";
+  $("stampText").innerHTML = gold ? T.stampGold : T.stamp;
   $("stampDate").textContent = dateStr;
   $("stamp").classList.remove("hit");
   $("approveCta").classList.remove("on");
   $("swapBtn").style.display = $("swapDot").style.display = cands.length > 1 ? "" : "none";
   goTo("approve");
 
-  const tStamp = typeVerdict("「" + ((inj && D.verdict) || ev.verdict) + "」", 650) + 220;
+  const tStamp = typeVerdict(quote((inj && D.verdict) || evText(ev).verdict), 650) + 220;
   seq.push(setTimeout(() => $("stamp").classList.add("hit"), tStamp));
   seq.push(setTimeout(() => { $("cert").classList.add("shake"); tone(140, { to: 40, dur: .22, vol: .8 }); buzz(25); }, tStamp + 300));
   seq.push(setTimeout(() => reveal(inj, gold), tStamp + 650));
@@ -803,7 +927,7 @@ function showMeal(inj) {
   const base = items.reduce((s, x) => s + (x.price || 0), 0);
   cur = {
     items,
-    names: items.map(x => x.name).join(" + "),
+    names: items.map(nameOf).join(" + "),
     base,
     price: inj && D.finalPrice != null ? D.finalPrice : base,
     kcal: items.every(x => x.kcal != null) ? items.reduce((s, x) => s + x.kcal, 0) : null,
@@ -814,7 +938,7 @@ function showMeal(inj) {
   const box = $("certFood");
   box.className = "cert-food reveal";
   fillFood(box, photoHTML(items[0], "photo-a") + (items[1] ? photoHTML(items[1], "photo-b") : ""));
-  $("certMealLabel").textContent = "批准你吃" + (cur.kcal != null ? " · 约 " + cur.kcal + " kcal" : "");
+  $("certMealLabel").textContent = T.mealPost + (cur.kcal != null ? " · " + T.kcal.replace("{n}", cur.kcal) : "");
   $("certMeal").className = "cert-meal";
   $("certMeal").textContent = cur.names;
   $("certMeta").textContent = (inj && D.mealNote) || "";
@@ -825,9 +949,9 @@ function showMeal(inj) {
 function priceHTML() {
   const f = n => Number(n).toFixed(1);
   if (cur.realMenu && cur.saved > 0)
-    return "<s>门店价 ¥" + f(cur.base) + "</s><b><small>券后</small>¥" + f(cur.price) + "</b><em>省 ¥" + f(cur.saved) + "</em>";
-  return '<span class="plain">' + (cur.realMenu ? "实付 ¥" : "门店价 ¥") + f(cur.price) + "</span>"
-    + (cur.realMenu ? "" : '<span class="hint">领券价下单时实时算</span>');
+    return "<s>" + T.store + " ¥" + f(cur.base) + "</s><b><small>" + T.after + "</small>¥" + f(cur.price) + "</b><em>" + T.saved + f(cur.saved) + "</em>";
+  return '<span class="plain">' + (cur.realMenu ? T.paid : T.store) + " ¥" + f(cur.price) + "</span>"
+    + (cur.realMenu ? "" : '<span class="hint">' + T.priceHint + "</span>");
 }
 $("swapBtn").onclick = () => {
   buzz(10);
@@ -882,7 +1006,7 @@ function confetti(colors) {
 /* ---------- Stage 3：领券下单 ---------- */
 $("goDeal").onclick = () => {
   buzz(12);
-  $("dealMeal").textContent = cur.names + (cur.kcal != null ? " · 约 " + cur.kcal + " kcal" : "");
+  $("dealMeal").textContent = cur.names + (cur.kcal != null ? " · " + T.kcal.replace("{n}", cur.kcal) : "");
   fillFood($("dealFood"), $("certFood").innerHTML); /* 复用批准书上已出图/已换插画的结果，不重新请求 */
   const row = $("couponRow");
   row.innerHTML = "";
@@ -892,36 +1016,37 @@ $("goDeal").onclick = () => {
     for (let i = 0; i < Math.min(cur.coupons, 3); i++) {
       const c = document.createElement("div");
       c.className = "coupon";
-      c.textContent = (names[i] || "麦麦省券") + " · 已领";
+      c.textContent = (names[i] || T.couponName) + T.couponGot;
       row.appendChild(c);
     }
   } else {
     const c = document.createElement("div");
     c.className = "coupon";
-    c.textContent = "接入 MCP 后自动领取麦麦省券";
+    c.textContent = T.couponDemo;
     row.appendChild(c);
   }
   const deal = cur.realMenu && cur.saved > 0;
-  $("dealLbl").textContent = deal ? "券后" : "门店价";
+  $("dealLbl").textContent = deal ? T.after : T.store;
   $("dealNow").textContent = "¥" + Number(cur.price).toFixed(1);
   $("dealNow").className = "now" + (deal ? "" : " plain");
-  $("dealWas").textContent = deal ? "门店价 ¥" + Number(cur.base).toFixed(1) : "";
-  $("dealSave").textContent = deal ? "已省 ¥" + Number(cur.saved).toFixed(1) : "";
+  $("dealWas").textContent = deal ? T.store + " ¥" + Number(cur.base).toFixed(1) : "";
+  $("dealSave").textContent = deal ? T.saved + Number(cur.saved).toFixed(1) : "";
   goTo("deal");
 };
 $("dealUnderlay").onclick = () => goTo("approve");
 $("replayBtn").onclick = () => { buzz(8); toAsk(); };
 $("orderBtn").onclick = () => {
   buzz([15, 50, 15]);
-  alert("在 WorkBuddy 里对我说「就吃这个」，我调麦当劳 MCP 帮你领券下单。");
+  alert(T.orderAlert);
 };
 
 /* ---------- 启动：Skill 注入了 eventId 就直接盖章 ---------- */
 preload(FOOD_DB.concat((D && D.meals) || []));
+applyText();
 buildAsk();
 if (D && D.eventId) {
   const ev = EVENTS.find(e => e.id === D.eventId) || EVENT_MISC;
-  approve(ev, D.reason || ev.label, D.taste || "any");
+  approve(ev, D.reason || evText(ev).label, D.taste || "any");
 }
 </script>
 </body>
