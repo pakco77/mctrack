@@ -594,7 +594,7 @@ const I18N = {
     saveDl: "直接下载图片", saveClose: "不炫耀了，先吃",
     starNudge: "被说中了？给麦麦点颗星 ⭐",
     copy: "复制分享文案", copied: "已复制，发群去吧 ✓",
-    copyIntro: "麦当劳刚批了我一顿：", copyTail: "今天也被批准一下：",
+    copyIntro: "麦当劳刚批了我一顿：", copyTail: "发给今天也不容易的 TA · 今天也被批准一下：",
     goldTease: "麦麦偶尔心情好，会盖金章 · 今天看运气",
     orderH5: "存图，去麦当劳点这个",
     dealTitle: "批准生效，开饭！", couponDemo: "拿上这张批准书，去麦当劳 App 领券点餐", couponGot: " · 已帮你领好", couponName: "麦麦省券",
@@ -668,7 +668,7 @@ const I18N = {
     saveDl: "Download image", saveClose: "Nah, food first",
     starNudge: "Felt seen? Give McD a star ⭐",
     copy: "Copy share text", copied: "Copied — go share it ✓",
-    copyIntro: "McDonald's just approved me a treat:", copyTail: "Get approved too:",
+    copyIntro: "McDonald's just approved me a treat:", copyTail: "Send it to someone who also had a rough day · then get approved:",
     goldTease: "Sometimes McD's in a golden mood · luck of the day",
     orderH5: "Save it, then order at McD",
     dealTitle: "Approved. Let's eat!", couponDemo: "Take this approval to the McD app for coupons", couponGot: " · claimed for you", couponName: "McD coupon",
@@ -1405,10 +1405,10 @@ $("saveLayer").onclick = e => { if (e.target === $("saveLayer")) $("saveLayer").
 /* 一键复制分享文案：中文用户发群/朋友圈是主渠道，少一步手动打字 */
 function shareText() {
   const meal = cur ? cur.names : "";
-  const line = cur && cur.kcal != null ? meal + " · 约 " + cur.kcal + " kcal" : meal;
-  return T.copyIntro + "「" + (appr ? appr.reason : "") + "」→ " + line
+  const line = cur && cur.kcal != null ? meal + " · " + T.kcal.replace("{n}", cur.kcal) : meal;
+  return T.copyIntro + T.q[0] + (appr ? appr.reason : "") + T.q[1] + " → " + line
     + (appr && appr.rx ? "\n" + T.rxLabel + " " + appr.rx : "")
-    + "\n" + T.copyTail + "https://pakco77.github.io/mctrack/app/";
+    + "\n" + T.copyTail + (LANG === "zh" ? "" : " ") + "https://pakco77.github.io/mctrack/app/"; /* 中文冒号后不空格，英文要 */
 }
 function copyShare() {
   const text = shareText(), btn = $("copyBtn");
