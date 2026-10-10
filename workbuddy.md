@@ -75,3 +75,9 @@
 **用户**（10-10 12:13）：①删除不是这个版本的多余数据，比如点唱机那些；②WorkBuddy 版 order-list 口味史注入；③适当精简 GitHub 的文字介绍。
 
 **WorkBuddy**：①排查确认仓库文件树与 index.html 无旧版本残留（点唱机只存在于 workbuddy.md 历史段）——按指示把 v0.1–v2.1（点唱机/麦反应时代）逐句记录压缩为一屏摘要，保留版本节点、谁做的、合规动作（艺人白名单），完整原文留 git 历史，文件 130→71 行。②真实跑通口味史注入全链路：order-list 拉到 3 笔真实订单（发现套餐要展开 comboItemList 计数；常点 Top：板烧鸡腿堡×2、脆薯饼×2、麦香鱼×1）→ query-meals 门店 1421187 匹配板烧（code 1406 ¥23.5）+ 苹果汁（6362 ¥11.5）→ auto-bind-coupons 领 3 张（脆薯饼免费/麦旋风买一送一/9.9 冰美式，账号私有且对不上批准餐品）→ calculate-price 实测 ¥35.0 优惠 0（踩坑：orderType 必传；金额单位是分）→ 注入 outputs/mctrack-injected-sample.html（事件 workout、mealNote「你点过 2 次」、saved 0 如实显示实付），headless 走查：打开即盖章、处方/口味史/实付全对、注入模式「换一个」正确隐藏。实测细节（comboItemList 展开、meals 按 code 索引、orderType 必传、单位分、券对不上不编优惠）已回写 SKILL.md。顺手修一处口径不一致：注入模式无券可用时领券抽屉标签改与批准书一致说「实付」。③README 102→77 行：玩法 6 步压 4 步、删与表格重复的使用示例、版本史并一行、新增一键存图与口味史亮点。verify.py 全绿，push 205a2d1。
+
+---
+
+**用户**（10-10 12:48）：保存的截图，食物图片失真了，要改。
+
+**WorkBuddy**：v3.6 存图食物修复。①诊断：菜单图 CDN（menu-img.mcd.cn）不开 CORS，跨域画进 canvas 会污染导致导不出，v3.5 的兜底逻辑把食物全部换成了 SVG 卡通插画——这就是"失真"。②修法：把 16 张官方菜单图直接收进仓库 `app/food/`（1.1MB，从 FOOD_DB 的 img 地址逐张下载，.png/.gif 后缀按原格式），存图时优先同源加载仓库内置图——不脏 canvas、永远出真照片，顺带免疫"官方改 CDN 地址就 404"的老毛病；注入模式按 `meals[].k` 映射本地图，页面展示仍走 CDN 原图不动。③兜底链不变：本地图加载失败 → CDN anonymous 试装 → SVG 插画；file:// 直接打开时本地图也会脏 canvas（opaque origin），跳过走 SVG。④走查：本地 http.server 模拟 Pages 环境，headless 全流程——保存的批准书里麦辣鸡腿汉堡 + 薯条已是真实官方抠图带白边贴纸效果。verify.py 全绿，push 755f6cb。
