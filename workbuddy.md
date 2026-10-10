@@ -69,3 +69,9 @@
 **用户**（10-10 11:52）：发 HANDOFF.md 来接力——开发交回 WorkBuddy。
 
 **WorkBuddy**：v3.5 批准书一键存图（待办第 5 条，拉 Star 的分享弹药）。①接力先跑 verify.py + git log 确认线上 v3.4 干净。②方案：零依赖铁律下不能用 html2canvas，改为 canvas 手工重绘整张批准书（750 宽 2 倍清晰度，高度按内容自适应）——红底 + 纸卡 + 虚线框、标题/编号/金章横幅、事由/犒劳指数/口味三行（dt 实测宽度让位 dd）、麦麦说白卡、食物白边贴纸（离屏 source-in 做白色剪影八向叠画 + 软阴影，和页面 CSS drop-shadow 同款效果）、餐名/热量/麦麦处方（红头黄底）、价格（划线价/券后红字/省多少绿 pill，和页面同一套规则）、审批人/来源行、右上斜盖大章（红/金，双圈 + 中英分行 + 日期）。③坑 1：菜单图 CDN 不开 CORS（实测带 Origin GET 无 ACAO 头），画进 canvas 会污染导不出——先 anonymous 跨域试装，失败回退页面同款兜底 SVG 插画；坑 2：内联 SVG 不带 xmlns 也能显示，但作为图片文档加载必须补 xmlns="http://www.w3.org/2000/svg" 否则静默失败。④状态快照：approve() 时存 appr 对象（事由贴纸 emoji/星级/口味/金章/编号/判词），showMeal() 补处方，画 canvas 不读 DOM。⑤交互：批准书按钮行加「存图炫耀一下」（中英双语键，verify 键一致断言自动覆盖），点按收银音 → 浮层出图：iOS 长按保存 + 「直接下载图片」a[download] 双通道，关闭按钮「不炫耀了，先吃」。⑥走查（puppeteer-core + 本机 Chrome headless）：中英两版各跑一次全流程——英文标题字距 8px 撑出纸边（改 38px/2px）、英文 dt "You deserve" 与 dd 重叠（改为实测 dt 宽度 +32）、英文餐名从单词中间劈开（wrapLines 优先空格断行）、英文印章 APPROVED 8 字母超出章圈（字号 56→34）；中文金章版一遍过。verify.py 全绿，push 5327916 上线。
+
+---
+
+**用户**（10-10 12:13）：①删除不是这个版本的多余数据，比如点唱机那些；②WorkBuddy 版 order-list 口味史注入；③适当精简 GitHub 的文字介绍。
+
+**WorkBuddy**：①排查确认仓库文件树与 index.html 无旧版本残留（点唱机只存在于 workbuddy.md 历史段）——按指示把 v0.1–v2.1（点唱机/麦反应时代）逐句记录压缩为一屏摘要，保留版本节点、谁做的、合规动作（艺人白名单），完整原文留 git 历史，文件 130→71 行。②真实跑通口味史注入全链路：order-list 拉到 3 笔真实订单（发现套餐要展开 comboItemList 计数；常点 Top：板烧鸡腿堡×2、脆薯饼×2、麦香鱼×1）→ query-meals 门店 1421187 匹配板烧（code 1406 ¥23.5）+ 苹果汁（6362 ¥11.5）→ auto-bind-coupons 领 3 张（脆薯饼免费/麦旋风买一送一/9.9 冰美式，账号私有且对不上批准餐品）→ calculate-price 实测 ¥35.0 优惠 0（踩坑：orderType 必传；金额单位是分）→ 注入 outputs/mctrack-injected-sample.html（事件 workout、mealNote「你点过 2 次」、saved 0 如实显示实付），headless 走查：打开即盖章、处方/口味史/实付全对、注入模式「换一个」正确隐藏。实测细节（comboItemList 展开、meals 按 code 索引、orderType 必传、单位分、券对不上不编优惠）已回写 SKILL.md。顺手修一处口径不一致：注入模式无券可用时领券抽屉标签改与批准书一致说「实付」。③README 102→77 行：玩法 6 步压 4 步、删与表格重复的使用示例、版本史并一行、新增一键存图与口味史亮点。verify.py 全绿，push 205a2d1。
